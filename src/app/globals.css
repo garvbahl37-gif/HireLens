@@ -1,26 +1,170 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-bg: #0a0c13;
+  --color-surface: #0f1320;
+  --color-card: #131828;
+  --color-card2: #182036;
+  --color-edge: #222b42;
+  --color-edge2: #313e63;
+  --color-ink: #e9ecf4;
+  --color-muted: #97a0b7;
+  --color-faint: #626d8a;
+  --color-accent: #6d6ffb;
+  --color-accent2: #a06bff;
+  --color-good: #3ddc97;
+  --color-warn: #fbbf24;
+  --color-bad: #ff7070;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared primitives                                                   */
+/* ------------------------------------------------------------------ */
+
+.text-gradient {
+  background: linear-gradient(
+    120deg,
+    #8ea2ff 0%,
+    var(--color-accent) 45%,
+    var(--color-accent2) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-edge);
+  border-radius: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.65rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.62rem 1.15rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, var(--color-accent), var(--color-accent2));
+  color: white;
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+  box-shadow: 0 6px 32px color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--color-edge2);
+  color: var(--color-ink);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-card2);
+  border-color: var(--color-accent);
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-bad) 40%, transparent);
+  color: var(--color-bad);
+}
+.btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bad) 12%, transparent);
+}
+
+.input {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-edge);
+  border-radius: 0.65rem;
+  padding: 0.62rem 0.9rem;
+  font-size: 0.92rem;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input::placeholder {
+  color: var(--color-faint);
+}
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.22rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid var(--color-edge);
+  background: var(--color-card2);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.55s ease both;
+}
+
+/* subtle grid backdrop for hero sections */
+.hero-grid {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-edge) 55%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-edge) 55%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, black 35%, transparent 78%);
 }

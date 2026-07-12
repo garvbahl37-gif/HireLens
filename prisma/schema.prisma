@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  email                  String    @unique
+  passwordHash           String
+  name                   String
+  plan                   Plan      @default(FREE)
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  cancelAtPeriodEnd      Boolean   @default(false)
+  reviews                Review[]
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
+model Review {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobTitle       String
+  company        String?
+  resumeFilename String?
+  resumeText     String
+  jobDescription String
+  overallScore   Int
+  verdict        String
+  result         Json
+  deep           Boolean  @default(false)
+  model          String
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// Processed Stripe webhook events, for idempotency.
+model StripeEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now())
+}
