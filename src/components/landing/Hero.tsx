@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   animate,
   motion,
@@ -14,9 +14,6 @@ import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { scoreColor } from "@/components/ScoreRing";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-
-const HEADLINE_1 = "Know exactly why your";
-const HEADLINE_2 = "resume gets rejected —";
 
 export function Hero({
   authed,
@@ -36,7 +33,7 @@ export function Hero({
         <div className="absolute inset-0 hero-grid" />
       </div>
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-[1.12fr_0.88fr]">
         {/* ---- copy ---- */}
         <div>
           <motion.div
@@ -52,19 +49,42 @@ export function Hero({
             </span>
           </motion.div>
 
-          <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.5rem]">
-            <StaggerWords text={HEADLINE_1} />
-            <br />
-            <StaggerWords text={HEADLINE_2} startAt={HEADLINE_1.split(" ").length} />
-            <br />
-            <motion.span
-              className="text-gradient-animate"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
-            >
-              and fix it.
-            </motion.span>
+          <h1 className="mt-6 text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.05rem]">
+            <MaskLine delay={0.05}>Know exactly why your</MaskLine>
+
+            <MaskLine delay={0.17}>
+              resume gets{" "}
+              <span className="relative inline-block">
+                rejected
+                {/* the strike is the point: the headline performs the problem */}
+                <motion.span
+                  aria-hidden
+                  className="absolute left-0 top-1/2 h-[0.09em] w-full origin-left rounded-full bg-bad"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.5, delay: 1.05, ease: EASE }}
+                />
+              </span>{" "}
+              —
+            </MaskLine>
+
+            <MaskLine delay={0.29}>
+              <span className="relative inline-block">
+                <span className="text-gradient-animate">and fix it.</span>
+                {/* …and then performs the fix */}
+                <motion.span
+                  aria-hidden
+                  className="absolute -bottom-1 left-0 h-[0.07em] w-full origin-left rounded-full"
+                  style={{
+                    background:
+                      "linear-gradient(to right, var(--color-accent), var(--color-accent2))",
+                  }}
+                  initial={{ scaleX: 0, opacity: 0 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ duration: 0.7, delay: 1.5, ease: EASE }}
+                />
+              </span>
+            </MaskLine>
           </h1>
 
           <motion.p
@@ -124,26 +144,33 @@ export function Hero({
 
 /* ------------------------------------------------------------------ */
 
-function StaggerWords({ text, startAt = 0 }: { text: string; startAt?: number }) {
+/**
+ * A line of the headline, revealed from behind a mask.
+ *
+ * The line rises out of an overflow-hidden band rather than fading in — the
+ * type reads as being uncovered rather than materialising, which is the
+ * difference between "considered" and "a stock fade". The band needs vertical
+ * padding or it clips descenders (the 'y' in "why"), and that padding has to
+ * be negated by an equal margin so it doesn't open a gap between the lines.
+ */
+function MaskLine({
+  children,
+  delay,
+}: {
+  children: ReactNode;
+  delay: number;
+}) {
   return (
-    <>
-      {text.split(" ").map((word, i) => (
-        <motion.span
-          key={`${word}-${i}`}
-          className="inline-block"
-          initial={{ opacity: 0, y: 26, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{
-            duration: 0.6,
-            delay: 0.1 + (startAt + i) * 0.06,
-            ease: EASE,
-          }}
-        >
-          {word}
-          {i < text.split(" ").length - 1 ? " " : ""}
-        </motion.span>
-      ))}
-    </>
+    <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
+      <motion.span
+        className="block"
+        initial={{ y: "115%" }}
+        animate={{ y: "0%" }}
+        transition={{ duration: 0.95, delay, ease: EASE }}
+      >
+        {children}
+      </motion.span>
+    </span>
   );
 }
 
