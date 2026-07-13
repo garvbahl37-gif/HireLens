@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { ReviewForm } from "@/components/ReviewForm";
 import { requireUser } from "@/lib/auth";
@@ -10,39 +9,37 @@ export const metadata: Metadata = { title: "New review" };
 
 export default async function NewReviewPage() {
   const user = await requireUser();
-  const used = user.plan === "FREE" ? await monthlyReviewCount(user.id) : null;
+  const isPro = user.plan === "PRO";
+  const used = isPro ? null : await monthlyReviewCount(user.id);
   const remaining = used === null ? null : Math.max(0, FREE_MONTHLY_LIMIT - used);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">New review</h1>
-        <p className="mt-1 text-sm text-muted">
-          {user.plan === "PRO" ? (
-            <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
-              Pro: deep analysis with rewrites, ATS checklist and interview
-              prep.
-            </span>
-          ) : remaining === 0 ? (
-            <>
-              You&apos;re out of free reviews this month.{" "}
-              <Link
-                href="/dashboard/billing?intent=pro"
-                className="font-semibold text-accent hover:underline"
-              >
-                Upgrade to Pro
-              </Link>{" "}
-              for unlimited.
-            </>
-          ) : (
-            <>
-              {remaining} of {FREE_MONTHLY_LIMIT} free reviews left this month.
-            </>
-          )}
+    <div className="relative mx-auto max-w-3xl">
+      {/* ambient wash behind the header */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-28 left-1/2 h-72 w-[680px] max-w-[120vw] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
+        style={{
+          background:
+            "radial-gradient(closest-side, var(--color-accent), transparent)",
+        }}
+      />
+
+      <header className="fade-up relative mb-9">
+        <span className="chip gap-1.5 border-accent/40 text-accent">
+          <Sparkles className="h-3.5 w-3.5" /> New review
+        </span>
+        <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Put your resume <span className="text-gradient">under the lens</span>
+        </h1>
+        <p className="mt-3 max-w-xl leading-relaxed text-muted">
+          Add your resume and the role you&apos;re chasing. In seconds you get a
+          recruiter-calibrated read — keyword gaps, weak bullets rewritten, and
+          the interview questions your gaps will trigger.
         </p>
-      </div>
-      <ReviewForm isPro={user.plan === "PRO"} />
+      </header>
+
+      <ReviewForm isPro={isPro} outOfQuota={remaining === 0} />
     </div>
   );
 }
