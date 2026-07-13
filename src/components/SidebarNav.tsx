@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { CreditCard, LayoutDashboard, Plus } from "lucide-react";
+import { CreditCard, LayoutDashboard, Plus, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/new", label: "New review", icon: Plus, exact: false },
+  { href: "/dashboard/account", label: "Account", icon: User, exact: false },
   {
     href: "/dashboard/billing",
     label: "Billing",
