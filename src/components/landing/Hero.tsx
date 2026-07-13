@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  animate,
   motion,
   useMotionValue,
   useSpring,
@@ -10,7 +11,7 @@ import {
   useTransform,
 } from "motion/react";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
-import { ScoreBar, ScoreRing } from "@/components/ScoreRing";
+import { scoreColor } from "@/components/ScoreRing";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -148,6 +149,104 @@ function StaggerWords({ text, startAt = 0 }: { text: string; startAt?: number })
 
 /* ------------------------------------------------------------------ */
 
+/** Counts from 0 to `to`, starting after `delay`. */
+function Counter({ to, delay = 0 }: { to: number; delay?: number }) {
+  const [n, setN] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, to, {
+      duration: 1.1,
+      delay,
+      ease: EASE,
+      onUpdate: (v) => setN(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [to, delay]);
+
+  return <>{n}</>;
+}
+
+/** The overall score ring: sweeps round while the number spins up to meet it. */
+function HeroRing({ score }: { score: number }) {
+  const size = 64;
+  const stroke = 6;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const color = scoreColor(score);
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <motion.div
+        aria-hidden
+        className="absolute inset-0 rounded-full blur-xl"
+        style={{ background: color }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.25 }}
+        transition={{ delay: 0.8, duration: 0.8 }}
+      />
+      <svg width={size} height={size} className="relative">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--color-edge)"
+          strokeWidth={stroke}
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          initial={{ strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c * (1 - score / 100) }}
+          transition={{ duration: 1.2, delay: 0.7, ease: EASE }}
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-lg font-extrabold tabular-nums">
+        <Counter to={score} delay={0.7} />
+      </span>
+    </div>
+  );
+}
+
+/** A dimension bar that fills while its number counts up. */
+function HeroBar({
+  label,
+  score,
+  delay,
+}: {
+  label: string;
+  score: number;
+  delay: number;
+}) {
+  const color = scoreColor(score);
+  return (
+    <div>
+      <div className="mb-1.5 flex items-baseline justify-between">
+        <span className="text-sm font-semibold">{label}</span>
+        <span className="text-sm font-bold tabular-nums" style={{ color }}>
+          <Counter to={score} delay={delay} />
+        </span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-edge">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: color }}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 1.1, delay, ease: EASE }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function TiltCard() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
@@ -193,21 +292,56 @@ function TiltCard() {
         style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d" }}
         className="float-y relative card p-6 shadow-2xl lg:p-7"
       >
-        <div className="flex items-center justify-between border-b border-edge pb-4">
+        {/* Scan sweep — the lens passing over the resume, on a slow loop.
+            Clipped by its own layer, not the card: the "AI-scored" badge
+            deliberately overflows the card edge and must not be cut off. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl"
+        >
+          <motion.div
+            className="absolute inset-x-0 h-24"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent)",
+            }}
+            initial={{ top: "-15%" }}
+            animate={{ top: ["-15%", "105%"] }}
+            transition={{
+              duration: 2.2,
+              ease: "easeInOut",
+              repeat: Infinity,
+              repeatDelay: 4.5,
+            }}
+          />
+        </div>
+
+        <div className="relative flex items-center justify-between border-b border-edge pb-4">
           <div>
             <p className="text-sm font-bold">Senior Frontend Engineer · Stripe</p>
             <p className="mt-0.5 text-xs text-muted">
               resume_v4_final.pdf · reviewed just now
             </p>
           </div>
-          <ScoreRing score={68} size={64} stroke={6} />
+          <HeroRing score={68} />
         </div>
-        <div className="mt-5 space-y-4">
-          <ScoreBar label="Job match" score={71} />
-          <ScoreBar label="ATS readiness" score={62} />
-          <ScoreBar label="Impact & results" score={55} />
+
+        <div className="relative mt-5 space-y-4">
+          {[
+            { label: "Job match", score: 71 },
+            { label: "ATS readiness", score: 62 },
+            { label: "Impact & results", score: 55 },
+          ].map((b, i) => (
+            <HeroBar
+              key={b.label}
+              label={b.label}
+              score={b.score}
+              delay={0.9 + i * 0.16}
+            />
+          ))}
         </div>
-        <div className="mt-5 border-t border-edge pt-4">
+
+        <div className="relative mt-5 border-t border-edge pt-4">
           <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
             Missing keywords
           </p>
@@ -215,9 +349,14 @@ function TiltCard() {
             {["Kubernetes", "CI/CD", "GraphQL", "Terraform"].map((k, i) => (
               <motion.span
                 key={k}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1 + i * 0.09, ease: EASE }}
+                initial={{ opacity: 0, scale: 0.6, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{
+                  delay: 1.6 + i * 0.09,
+                  type: "spring",
+                  stiffness: 420,
+                  damping: 20,
+                }}
                 className="chip border-bad/30 text-bad"
               >
                 {k}
@@ -225,20 +364,26 @@ function TiltCard() {
             ))}
           </div>
         </div>
-        <div className="mt-4 rounded-xl border border-edge bg-card2 p-3.5 text-xs leading-relaxed text-muted">
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2.1, duration: 0.6, ease: EASE }}
+          className="relative mt-4 rounded-xl border border-edge bg-card2 p-3.5 text-xs leading-relaxed text-muted"
+        >
           <span className="font-semibold text-warn">Fix first:</span> Only 2 of
           11 bullets contain numbers. Rewrite &ldquo;worked on checkout
           flow&rdquo; → &ldquo;cut checkout abandonment 18% by rebuilding the
           payment flow in React&rdquo;.
-        </div>
+        </motion.div>
 
         {/* floating accent badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.6, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 1.3, type: "spring", stiffness: 260, damping: 18 }}
+          transition={{ delay: 2.3, type: "spring", stiffness: 260, damping: 18 }}
           style={{ transform: "translateZ(60px)" }}
-          className="absolute -right-4 -top-4 flex items-center gap-1.5 rounded-full border border-accent/40 bg-card px-3 py-1.5 text-xs font-bold shadow-xl"
+          className="absolute -right-4 -top-4 z-10 flex items-center gap-1.5 rounded-full border border-accent/40 bg-card px-3 py-1.5 text-xs font-bold shadow-xl"
         >
           <Sparkles className="h-3.5 w-3.5 text-accent" />
           AI-scored
