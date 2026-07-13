@@ -31,6 +31,7 @@ export function Hero({
         <div className="aurora" />
         <div className="aurora-3" />
         <div className="absolute inset-0 hero-grid" />
+        <FloatingMockups />
       </div>
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-[1.12fr_0.88fr]">
@@ -175,6 +176,103 @@ function MaskLine({
 }
 
 /* ------------------------------------------------------------------ */
+
+/**
+ * Faint product fragments drifting behind the hero — a score ring, keyword
+ * chips, a bar chart, an interview line. They give the background the sense of
+ * a real product flow humming underneath, without competing with the copy or
+ * the main card, so they're low-opacity, blurred, and pinned to the edges.
+ */
+function FloatingMockups() {
+  const drift = (dur: number, y: number) => ({
+    animate: { y: [0, -y, 0] },
+    transition: { duration: dur, repeat: Infinity, ease: "easeInOut" as const },
+  });
+
+  return (
+    <div className="absolute inset-0 hidden overflow-hidden opacity-[0.55] blur-[0.5px] lg:block">
+      {/* score ring — top left */}
+      <motion.div
+        {...drift(7, 16)}
+        className="absolute left-[3%] top-[22%] flex items-center gap-2.5 rounded-2xl border border-edge2/60 bg-card/70 p-3 backdrop-blur"
+      >
+        <div className="relative flex h-11 w-11 items-center justify-center">
+          <svg width="44" height="44" viewBox="0 0 44 44" className="-rotate-90">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--color-edge)" strokeWidth="4" />
+            <circle
+              cx="22" cy="22" r="18" fill="none"
+              stroke="var(--color-good)" strokeWidth="4" strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 18}
+              strokeDashoffset={2 * Math.PI * 18 * (1 - 0.86)}
+            />
+          </svg>
+          <span className="absolute text-xs font-extrabold">86</span>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold">ATS match</p>
+          <p className="text-[9px] text-muted">Interview-ready</p>
+        </div>
+      </motion.div>
+
+      {/* keyword chips — lower left */}
+      <motion.div
+        {...drift(9, 20)}
+        className="absolute bottom-[16%] left-[6%] max-w-[190px] rounded-2xl border border-edge2/60 bg-card/70 p-3 backdrop-blur"
+      >
+        <p className="mb-2 text-[9px] font-bold uppercase tracking-wider text-muted">
+          Missing keywords
+        </p>
+        <div className="flex flex-wrap gap-1">
+          {["Kubernetes", "GraphQL", "CI/CD"].map((k) => (
+            <span key={k} className="rounded-full border border-bad/30 px-1.5 py-0.5 text-[9px] text-bad">
+              {k}
+            </span>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* interview line — mid right, high up behind the card area */}
+      <motion.div
+        {...drift(8, 14)}
+        className="absolute right-[2%] top-[8%] flex items-center gap-2 rounded-full border border-accent/30 bg-card/70 px-3 py-1.5 backdrop-blur"
+      >
+        <span className="h-2 w-2 rounded-full bg-accent" />
+        <span className="text-[10px] font-semibold text-accent">Speaking…</span>
+      </motion.div>
+
+      {/* mini dimension bars — bottom right-ish */}
+      <motion.div
+        {...drift(10, 18)}
+        className="absolute bottom-[10%] right-[10%] w-40 space-y-2 rounded-2xl border border-edge2/60 bg-card/70 p-3 backdrop-blur"
+      >
+        {[["Job match", 71, "warn"], ["Impact", 55, "bad"], ["Clarity", 84, "good"]].map(
+          ([label, v, band]) => (
+            <div key={label as string}>
+              <div className="mb-0.5 flex justify-between text-[9px] text-muted">
+                <span>{label}</span>
+                <span>{v}</span>
+              </div>
+              <div className="h-1 overflow-hidden rounded-full bg-edge">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${v}%`,
+                    background:
+                      band === "good"
+                        ? "var(--color-good)"
+                        : band === "warn"
+                          ? "var(--color-warn)"
+                          : "var(--color-bad)",
+                  }}
+                />
+              </div>
+            </div>
+          )
+        )}
+      </motion.div>
+    </div>
+  );
+}
 
 /** Counts from 0 to `to`, starting after `delay`. */
 function Counter({ to, delay = 0 }: { to: number; delay?: number }) {

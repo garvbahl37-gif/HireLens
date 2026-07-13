@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, MessageCircleQuestion } from "lucide-react";
 import { Faq } from "@/components/landing/Faq";
 import { Proof } from "@/components/landing/Proof";
+import { InterviewShowcase } from "@/components/landing/InterviewShowcase";
 import { Logo } from "@/components/Logo";
 import { PricingCards } from "@/components/PricingCards";
 import { Navbar } from "@/components/landing/Navbar";
@@ -64,6 +65,25 @@ export default async function LandingPage() {
             </h2>
           </Reveal>
           <Proof />
+        </div>
+      </section>
+
+      {/* ---------------- Mock interview showcase ---------------- */}
+      <section id="interview" className="relative scroll-mt-28 px-5 py-24">
+        <div className="section-glow" />
+        <div className="relative">
+          <Reveal className="mx-auto mb-14 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
+              Mock interview
+            </p>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Then rehearse against{" "}
+              <span className="text-gradient">a real interviewer</span>
+            </h2>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <InterviewShowcase />
+          </Reveal>
         </div>
       </section>
 
