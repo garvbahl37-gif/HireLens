@@ -9,7 +9,16 @@ export default defineConfig({
   datasource: {
     // Migrations need a DIRECT (non-pooled) connection: Neon/Supabase
     // PgBouncer poolers don't support the advisory locks `migrate deploy`
-    // takes. Falls back to DATABASE_URL for local/dev where they're the same.
-    url: process.env.DIRECT_URL || process.env.DATABASE_URL!,
+    // takes.
+    //
+    // Vercel's Neon integration injects the unpooled URL under its own names,
+    // so pick those up automatically — otherwise `vercel-build` would run
+    // migrations through the pooler and fail. Falls back to DATABASE_URL for
+    // local dev, where pooled and direct are the same connection.
+    url:
+      process.env.DIRECT_URL ||
+      process.env.DATABASE_URL_UNPOOLED ||
+      process.env.POSTGRES_URL_NON_POOLING ||
+      process.env.DATABASE_URL!,
   },
 });
