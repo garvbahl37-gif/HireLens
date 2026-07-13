@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import type { Analysis } from "@/lib/ai";
 import { DIMENSION_LABELS } from "@/lib/ai";
-import { ScoreBar, ScoreRing, scoreGrade } from "@/components/ScoreRing";
+import { scoreGrade } from "@/components/ScoreRing";
+import { AnimatedScoreRing } from "@/components/dashboard/AnimatedScoreRing";
+import { AnimatedScoreBar } from "@/components/AnimatedScoreBar";
+import { Stagger } from "@/components/dashboard/Stagger";
 import { cn } from "@/lib/cn";
 
 const SEVERITY_STYLES: Record<string, string> = {
@@ -42,11 +45,19 @@ export function ReviewResult({
   };
 }) {
   return (
-    <div className="space-y-6">
+    <Stagger className="space-y-6">
       {/* ---------- header ---------- */}
-      <div className="card p-6 sm:p-8">
-        <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-          <ScoreRing score={analysis.overallScore} size={124} stroke={11} />
+      <div className="card relative overflow-hidden p-6 sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-20 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(closest-side, var(--color-accent), transparent)",
+          }}
+        />
+        <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+          <AnimatedScoreRing score={analysis.overallScore} size={124} stroke={11} />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-wider text-muted">
               {scoreGrade(analysis.overallScore)}
@@ -79,12 +90,13 @@ export function ReviewResult({
             Object.keys(DIMENSION_LABELS) as Array<
               keyof typeof DIMENSION_LABELS
             >
-          ).map((key) => (
-            <ScoreBar
+          ).map((key, i) => (
+            <AnimatedScoreBar
               key={key}
               label={DIMENSION_LABELS[key]}
               score={analysis.dimensions[key].score}
               note={analysis.dimensions[key].note}
+              delay={0.25 + i * 0.09}
             />
           ))}
         </div>
@@ -311,6 +323,6 @@ export function ReviewResult({
           </Link>
         </div>
       )}
-    </div>
+    </Stagger>
   );
 }

@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { ClipboardPaste, FileUp, Loader2, Lock, X } from "lucide-react";
+import { AnalyzingOverlay } from "@/components/AnalyzingOverlay";
 import { cn } from "@/lib/cn";
 
 type ResumeMode = "upload" | "paste";
 
-export function ReviewForm() {
+export function ReviewForm({ isPro = false }: { isPro?: boolean }) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -255,17 +257,21 @@ export function ReviewForm() {
       <button
         type="submit"
         disabled={pending || limitHit}
-        className="btn btn-primary w-full py-3 text-base"
+        className="btn btn-primary btn-sheen w-full py-3 text-base"
       >
         {pending ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            Analyzing against the job description — usually 10–30 seconds…
+            Analyzing…
           </>
         ) : (
           "Review my resume"
         )}
       </button>
+
+      <AnimatePresence>
+        {pending && <AnalyzingOverlay deep={isPro} />}
+      </AnimatePresence>
     </form>
   );
 }

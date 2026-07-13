@@ -1,5 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
+import { PageTransition } from "@/components/PageTransition";
 import { SidebarNav } from "@/components/SidebarNav";
 import { PlanPanel } from "@/components/dashboard/PlanPanel";
 import { requireUser } from "@/lib/auth";
@@ -94,7 +95,7 @@ export default async function DashboardLayout({
           </div>
         </div>
         <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 lg:px-8">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
     </div>

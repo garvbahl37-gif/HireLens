@@ -42,7 +42,7 @@ export default async function NewReviewPage() {
           )}
         </p>
       </div>
-      <ReviewForm />
+      <ReviewForm isPro={user.plan === "PRO"} />
     </div>
   );
 }
