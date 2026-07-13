@@ -1,26 +1,28 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 import type { ReactNode } from "react";
 
 /**
- * Keyed on the pathname, so each route change replays a short fade-up.
- * Deliberately subtle — long enough to feel intentional, short enough that it
- * never sits between the user and the content.
+ * Fades each route in, keyed on the pathname so a navigation replays it.
+ *
+ * This deliberately uses a CSS animation rather than motion's `initial`/
+ * `animate`. A motion.div with `initial={{ opacity: 0 }}` renders
+ * `style="opacity:0"` into the streamed HTML and only becomes visible once
+ * React has hydrated — which means anything inside it is INVISIBLE during
+ * streaming, including the Suspense fallback from loading.tsx. That is exactly
+ * why the loading animation never appeared on a hard reload: it was mounted
+ * and animating, at zero opacity, inside this wrapper.
+ *
+ * A CSS animation runs on paint, with no JavaScript, so the loader is visible
+ * from the first frame the browser draws.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <motion.div
-      key={pathname}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-1 flex-col"
-    >
+    <div key={pathname} className="fade-up flex flex-1 flex-col">
       {children}
-    </motion.div>
+    </div>
   );
 }
