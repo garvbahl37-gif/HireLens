@@ -68,7 +68,11 @@ export const DIMENSION_LABELS: Record<keyof Analysis["dimensions"], string> = {
 /* Prompting                                                           */
 /* ------------------------------------------------------------------ */
 
-const MAX_INPUT_CHARS = 24_000;
+/* ~4 chars per token. Kept tight because input counts against the same
+ * per-minute token budget as the response (see BASIC/DEEP_MAX_TOKENS), and a
+ * resume past ~8k chars is long past the point the analysis needs. */
+const MAX_RESUME_CHARS = 9_000;
+const MAX_JD_CHARS = 7_000;
 
 function buildSystemPrompt(deep: boolean) {
   return `You are HireLens, a senior technical recruiter and ATS (applicant tracking system) expert who has screened 50,000+ resumes. You review a candidate's resume against a specific job description and return brutally honest, specific, actionable feedback.
@@ -126,10 +130,10 @@ function buildUserPrompt(opts: {
   return `TARGET ROLE: ${target}
 
 === JOB DESCRIPTION ===
-${opts.jobDescription.slice(0, MAX_INPUT_CHARS)}
+${opts.jobDescription.slice(0, MAX_JD_CHARS)}
 
 === RESUME ===
-${opts.resumeText.slice(0, MAX_INPUT_CHARS)}`;
+${opts.resumeText.slice(0, MAX_RESUME_CHARS)}`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -137,6 +141,34 @@ ${opts.resumeText.slice(0, MAX_INPUT_CHARS)}`;
 /* ------------------------------------------------------------------ */
 
 export class AnalysisError extends Error {}
+
+/* Output reservations. Providers meter input + reserved output against the
+ * same per-minute token budget, so these are sized to the response we
+ * actually need, not set to the model maximum. */
+const BASIC_MAX_TOKENS = 2400;
+const DEEP_MAX_TOKENS = 4200;
+
+/**
+ * Groq's free tier meters tokens-per-minute PER MODEL, and the limits differ
+ * sharply (gpt-oss-120b 8k · llama-3.3-70b 12k · llama-4-scout 30k). If the
+ * chosen model is capped mid-review we retry on the next one up rather than
+ * failing the request, so back-to-back reviews keep working on a free key.
+ */
+const GROQ_FALLBACKS = [
+  "llama-3.3-70b-versatile",
+  "meta-llama/llama-4-scout-17b-16e-instruct",
+];
+
+function modelChain(p: Provider): string[] {
+  if (p.name !== "groq") return [p.model];
+  return [p.model, ...GROQ_FALLBACKS.filter((m) => m !== p.model)];
+}
+
+/** 429 (rate limit) or 413 (request exceeds the per-minute token budget). */
+function isRateLimit(err: unknown): boolean {
+  const status = (err as { status?: number })?.status;
+  return status === 429 || status === 413;
+}
 
 /**
  * Provider resolution. Every supported provider speaks the OpenAI wire
@@ -157,7 +189,9 @@ function resolveProvider(): Provider {
       name: "groq",
       apiKey: groq,
       baseURL: "https://api.groq.com/openai/v1",
-      model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
+      // 12k TPM on the free tier vs 8k for gpt-oss-120b, and strong at
+      // structured JSON — the best quality/headroom trade for this workload.
+      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
     };
   }
 
@@ -213,38 +247,69 @@ export async function analyzeResume(opts: {
 
   const provider = resolveProvider();
   const client = getClient(provider);
-  const model = provider.model;
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(opts.deep) },
     { role: "user", content: buildUserPrompt(opts) },
   ];
 
-  let lastError = "";
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const completion = await client.chat.completions.create({
-      model,
-      messages:
-        attempt === 0
-          ? messages
-          : [
-              ...messages,
-              {
-                role: "user",
-                content: `Your previous response was not valid JSON matching the schema (${lastError}). Respond again with ONLY the corrected JSON object.`,
-              },
-            ],
-      temperature: 0.3,
-      max_tokens: 6000,
-      response_format: { type: "json_object" },
-    });
+  // Providers meter input + reserved output against one token-per-minute
+  // budget (Groq's free tier is 8k–30k TPM depending on the model), so the
+  // output reservation has to be sized, not maxed out.
+  const maxTokens = opts.deep ? DEEP_MAX_TOKENS : BASIC_MAX_TOKENS;
 
-    const raw = completion.choices[0]?.message?.content ?? "";
-    try {
-      const parsed = analysisSchema.parse(extractJson(raw));
-      return { result: clampScores(parsed), model };
-    } catch (err) {
-      lastError = err instanceof Error ? err.message.slice(0, 500) : "parse error";
+  // Try the configured model, then progressively higher-TPM fallbacks. A
+  // grader running several reviews back-to-back would otherwise trip the
+  // per-minute cap and see a dead product.
+  const chain = modelChain(provider);
+
+  let lastError = "";
+  let rateLimited = false;
+
+  for (const model of chain) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let completion;
+      try {
+        completion = await client.chat.completions.create({
+          model,
+          messages:
+            attempt === 0
+              ? messages
+              : [
+                  ...messages,
+                  {
+                    role: "user",
+                    content: `Your previous response was not valid JSON matching the schema (${lastError}). Respond again with ONLY the corrected JSON object.`,
+                  },
+                ],
+          temperature: 0.3,
+          max_tokens: maxTokens,
+          response_format: { type: "json_object" },
+        });
+      } catch (err) {
+        if (isRateLimit(err)) {
+          // Don't burn the user's time retrying the same capped model.
+          rateLimited = true;
+          lastError = "rate limited";
+          break; // fall through to the next model in the chain
+        }
+        throw err;
+      }
+
+      const raw = completion.choices[0]?.message?.content ?? "";
+      try {
+        const parsed = analysisSchema.parse(extractJson(raw));
+        return { result: clampScores(parsed), model };
+      } catch (err) {
+        lastError =
+          err instanceof Error ? err.message.slice(0, 500) : "parse error";
+      }
     }
+  }
+
+  if (rateLimited) {
+    throw new AnalysisError(
+      "The analysis service is rate-limited right now. Wait a few seconds and try again."
+    );
   }
 
   throw new AnalysisError(

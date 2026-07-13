@@ -7,7 +7,7 @@ import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
 import { monthlyReviewCount } from "@/lib/usage";
 
 export const runtime = "nodejs";
-// Vercel Hobby caps serverless functions at 60s; Grok analysis fits comfortably.
+// Vercel Hobby caps serverless functions at 60s; the analysis fits comfortably.
 export const maxDuration = 60;
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;

@@ -70,7 +70,7 @@ npm run dev                   # http://localhost:3000
 | `AUTH_SECRET` | yes | `openssl rand -base64 32` |
 | `NEXT_PUBLIC_APP_URL` | yes | `http://localhost:3000`, or your deployed origin |
 | `GROQ_API_KEY` | for real AI | from [console.groq.com](https://console.groq.com) (free tier) |
-| `GROQ_MODEL` | no | defaults to `openai/gpt-oss-120b` |
+| `GROQ_MODEL` | no | defaults to `llama-3.3-70b-versatile` (12k TPM on Groq's free tier, vs 8k for `gpt-oss-120b`) |
 | `MOCK_AI` | no | set to `1` to run without an API key (returns a realistic canned analysis) |
 | `STRIPE_SECRET_KEY` | no | test-mode `sk_test_…`. **Leave empty to run billing in demo mode** |
 | `STRIPE_WEBHOOK_SECRET` | with Stripe | from `stripe listen`, or the dashboard endpoint |
