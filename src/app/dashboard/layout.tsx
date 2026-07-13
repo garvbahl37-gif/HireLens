@@ -4,7 +4,6 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { PageTransition } from "@/components/PageTransition";
 import { SidebarNav } from "@/components/SidebarNav";
 import { SidebarShell } from "@/components/dashboard/SidebarShell";
-import { SidebarFooter } from "@/components/dashboard/SidebarFooter";
 import { requireUser } from "@/lib/auth";
 import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
 import { monthlyReviewCount } from "@/lib/usage";
@@ -25,15 +24,16 @@ export default async function DashboardLayout({
   return (
     <div className="flex flex-1">
       {/* ---------- sidebar (desktop, collapsible) ---------- */}
-      <SidebarShell defaultCollapsed={collapsed}>
-        <SidebarFooter
-          name={user.name}
-          email={user.email}
-          plan={user.plan}
-          used={used}
-          limit={FREE_MONTHLY_LIMIT}
-        />
-      </SidebarShell>
+      <SidebarShell
+        defaultCollapsed={collapsed}
+        user={{
+          name: user.name,
+          email: user.email,
+          plan: user.plan,
+          used,
+          limit: FREE_MONTHLY_LIMIT,
+        }}
+      />
 
       {/* ---------- mobile top bar + content ---------- */}
       <div className="flex min-w-0 flex-1 flex-col">
