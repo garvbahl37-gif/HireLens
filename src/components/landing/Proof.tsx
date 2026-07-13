@@ -19,6 +19,9 @@ function Ring({
   delay: number;
   inView: boolean;
 }) {
+  // The ring is sized in CSS, not in SVG attributes: at a fixed 132px the two
+  // rings plus the arrow overflowed a 390px card and overflow-hidden silently
+  // chopped the "After" score off. viewBox lets it scale down on small screens.
   const size = 132;
   const stroke = 9;
   const r = (size - stroke) / 2;
@@ -27,7 +30,7 @@ function Ring({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative" style={{ width: size, height: size }}>
+      <div className="relative h-24 w-24 sm:h-[132px] sm:w-[132px]">
         <motion.div
           aria-hidden
           className="absolute inset-0 rounded-full blur-2xl"
@@ -36,7 +39,7 @@ function Ring({
           animate={inView ? { opacity: 0.22 } : {}}
           transition={{ delay: delay + 0.4, duration: 0.8 }}
         />
-        <svg width={size} height={size} className="relative">
+        <svg viewBox={`0 0 ${size} ${size}`} className="relative h-full w-full">
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -62,7 +65,7 @@ function Ring({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span
-            className="text-4xl font-extrabold tabular-nums"
+            className="text-3xl font-extrabold tabular-nums sm:text-4xl"
             initial={{ opacity: 0, scale: 0.6 }}
             animate={inView ? { opacity: 1, scale: 1 } : {}}
             transition={{ delay: delay + 0.15, ease: EASE }}
@@ -85,7 +88,7 @@ export function Proof() {
 
   return (
     <div ref={ref} className="mx-auto max-w-5xl">
-      <div className="card relative overflow-hidden p-8 sm:p-12">
+      <div className="card relative overflow-hidden p-6 sm:p-12">
         <div
           aria-hidden
           className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full opacity-[0.14] blur-3xl"
@@ -97,7 +100,7 @@ export function Proof() {
 
         <div className="relative grid items-center gap-10 lg:grid-cols-[auto_1fr] lg:gap-14">
           {/* the two scores */}
-          <div className="flex items-center justify-center gap-6 sm:gap-8">
+          <div className="flex items-center justify-center gap-3 sm:gap-8">
             <Ring score={62} label="Before" delay={0.1} inView={inView} />
 
             <motion.div

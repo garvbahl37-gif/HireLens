@@ -36,9 +36,9 @@ export function PricingCards({
               key={i}
               onClick={() => setInterval(i)}
               className={cn(
-                "rounded-full px-5 py-1.5 text-sm font-semibold transition-all",
+                "rounded-full px-5 py-2.5 text-sm font-semibold transition-all sm:py-1.5",
                 interval === i
-                  ? "bg-gradient-to-r from-accent to-accent2 text-white shadow"
+                  ? "bg-gradient-to-r from-accent to-accent2 text-[#180f0a] shadow"
                   : "text-muted hover:text-ink"
               )}
             >
@@ -47,7 +47,7 @@ export function PricingCards({
                 <span
                   className={cn(
                     "ml-1.5 text-xs",
-                    interval === "yearly" ? "text-white/80" : "text-good"
+                    interval === "yearly" ? "text-[#180f0a]/70" : "text-good"
                   )}
                 >
                   −17%
@@ -60,7 +60,7 @@ export function PricingCards({
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Free */}
-        <div className="card p-8 flex flex-col">
+        <div className="card flex flex-col p-6 sm:p-8">
           <h3 className="text-lg font-bold">Starter</h3>
           <p className="mt-1 text-sm text-muted">
             Kick the tires on a real review.
@@ -83,8 +83,8 @@ export function PricingCards({
         </div>
 
         {/* Pro */}
-        <div className="relative card p-8 flex flex-col border-accent/60 shadow-[0_0_60px_-18px_var(--color-accent)]">
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent to-accent2 px-3 py-0.5 text-xs font-bold text-white">
+        <div className="card relative flex flex-col border-accent/60 p-6 shadow-[0_0_60px_-18px_var(--color-accent)] sm:p-8">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent to-accent2 px-3 py-0.5 text-xs font-bold text-[#180f0a]">
             MOST POPULAR
           </span>
           <h3 className="text-lg font-bold">Pro</h3>

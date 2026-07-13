@@ -105,7 +105,7 @@ export default async function LandingPage() {
           {STEPS.map((s, i) => (
             <Reveal key={s.title} delay={i * 0.1}>
               <div className="relative flex flex-col items-center px-2 text-center md:items-start md:text-left">
-                <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-lg font-bold text-white shadow-[0_0_30px_-6px_var(--color-accent)]">
+                <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-lg font-bold text-[#180f0a] shadow-[0_0_30px_-6px_var(--color-accent)]">
                   {i + 1}
                 </span>
                 <h3 className="mt-5 font-bold">{s.title}</h3>

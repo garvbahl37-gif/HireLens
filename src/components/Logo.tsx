@@ -162,7 +162,7 @@ export function LogoMark({
 
 export function Logo({ href = "/" }: { href?: string }) {
   return (
-    <Link href={href} className="group flex items-center gap-2.5">
+    <Link href={href} className="group -my-1.5 flex items-center gap-2.5 py-1.5">
       <LogoMark />
       <span className="text-lg font-bold tracking-tight">
         Hire<span className="text-gradient">Lens</span>

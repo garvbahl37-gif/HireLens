@@ -9,7 +9,7 @@ import {
   useScroll,
   useSpring,
 } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/cn";
 
@@ -26,6 +26,7 @@ export function Navbar({ authed }: { authed: boolean }) {
   const { scrollY, scrollYProgress } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // spring the progress bar so it glides rather than tracking pixel-for-pixel
   const progress = useSpring(scrollYProgress, {
@@ -169,7 +170,62 @@ export function Navbar({ authed }: { authed: boolean }) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Without this, the section links are simply unreachable on a phone:
+              the pill nav is desktop-only, so Features / Pricing / FAQ had no
+              mobile entry point at all. */}
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-edge bg-card/70 text-muted transition-colors hover:border-accent/40 hover:text-ink md:hidden"
+          >
+            {menuOpen ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
+          </button>
         </div>
+
+        {/* mobile sheet */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.nav
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.24, ease: EASE }}
+              className="absolute inset-x-0 top-full mt-2 overflow-hidden rounded-2xl border border-edge2/70 bg-bg/95 p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl md:hidden"
+            >
+              {LINKS.map((l, i) => (
+                <motion.a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setMenuOpen(false)}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.04 + i * 0.04 }}
+                  className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-muted transition-colors hover:bg-card2 hover:text-ink"
+                >
+                  {l.label}
+                  <ArrowRight className="h-3.5 w-3.5 text-faint" />
+                </motion.a>
+              ))}
+
+              {!authed && (
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-1 flex items-center justify-between rounded-xl border-t border-edge px-4 py-3 text-sm font-semibold text-muted transition-colors hover:bg-card2 hover:text-ink"
+                >
+                  Log in
+                  <ArrowRight className="h-3.5 w-3.5 text-faint" />
+                </Link>
+              )}
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.header>
   );

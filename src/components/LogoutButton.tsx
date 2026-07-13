@@ -20,7 +20,7 @@ export function LogoutButton({ compact = false }: { compact?: boolean }) {
       aria-label="Log out"
       className={cn(
         "flex shrink-0 items-center gap-2 rounded-lg text-sm font-medium text-muted transition-colors hover:bg-card hover:text-bad",
-        compact ? "h-8 w-8 justify-center" : "px-3 py-2"
+        compact ? "h-10 w-10 justify-center md:h-8 md:w-8" : "px-3 py-2"
       )}
     >
       <LogOut className="h-4 w-4" />

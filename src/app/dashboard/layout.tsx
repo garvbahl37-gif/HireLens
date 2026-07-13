@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
 import { PageTransition } from "@/components/PageTransition";
-import { SidebarNav } from "@/components/SidebarNav";
+import { MobileNav } from "@/components/dashboard/MobileNav";
 import { SidebarShell } from "@/components/dashboard/SidebarShell";
 import { requireUser } from "@/lib/auth";
 import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
@@ -35,18 +37,33 @@ export default async function DashboardLayout({
         }}
       />
 
-      {/* ---------- mobile top bar + content ---------- */}
+      {/* ---------- mobile: top bar + bottom tabs ---------- */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-edge bg-bg/80 px-4 py-3 backdrop-blur-xl md:hidden">
+        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-edge bg-bg/85 px-4 py-3 backdrop-blur-xl md:hidden">
           <Logo href="/dashboard" />
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <SidebarNav vertical={false} />
+          <div className="flex items-center gap-2">
+            {user.plan === "PRO" ? (
+              <span className="chip gap-1 border-accent/30 px-3 py-2 text-accent">
+                <Sparkles className="h-3 w-3" /> Pro
+              </span>
+            ) : (
+              <Link
+                href="/dashboard/billing?intent=pro"
+                className="chip gap-1 border-edge2 px-3 py-2 text-muted"
+              >
+                {Math.max(0, FREE_MONTHLY_LIMIT - used)}/{FREE_MONTHLY_LIMIT} left
+              </Link>
+            )}
             <LogoutButton compact />
           </div>
         </div>
-        <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 lg:px-8">
+
+        {/* pb-24 on mobile so the bottom tab bar never covers page content */}
+        <main className="mx-auto w-full max-w-5xl flex-1 px-5 pb-24 pt-6 md:pb-8 md:pt-8 lg:px-8">
           <PageTransition>{children}</PageTransition>
         </main>
+
+        <MobileNav />
       </div>
     </div>
   );
