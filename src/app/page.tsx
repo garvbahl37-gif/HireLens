@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, MessageCircleQuestion } from "lucide-react";
 import { Faq } from "@/components/landing/Faq";
+import { Proof } from "@/components/landing/Proof";
 import { Logo } from "@/components/Logo";
 import { PricingCards } from "@/components/PricingCards";
 import { Navbar } from "@/components/landing/Navbar";
@@ -44,10 +45,26 @@ export default async function LandingPage() {
       </section>
 
       {/* stats */}
-      <section className="relative mx-auto max-w-6xl px-5 py-24">
+      <section className="relative mx-auto max-w-6xl px-5 pb-16 pt-24">
         <Reveal>
           <Stats />
         </Reveal>
+      </section>
+
+      {/* ---------------- Proof: the real 62 → 92 result ---------------- */}
+      <section className="relative scroll-mt-28 px-5 py-16">
+        <div className="section-glow" />
+        <div className="relative">
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
+              Proof
+            </p>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              We took our own advice
+            </h2>
+          </Reveal>
+          <Proof />
+        </div>
       </section>
 
       {/* ---------------- Features ---------------- */}
