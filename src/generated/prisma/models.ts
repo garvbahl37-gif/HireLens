@@ -11,4 +11,5 @@
 export type * from './models/User'
 export type * from './models/Review'
 export type * from './models/StripeEvent'
+export type * from './models/Interview'
 export type * from './commonInputTypes'

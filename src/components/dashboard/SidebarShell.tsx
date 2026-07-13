@@ -8,6 +8,7 @@ import {
   CreditCard,
   Infinity as InfinityIcon,
   LayoutDashboard,
+  MessagesSquare,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -27,6 +28,12 @@ const COLLAPSED = 84;
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/new", label: "New review", icon: Plus, exact: false },
+  {
+    href: "/dashboard/interview",
+    label: "Mock interview",
+    icon: MessagesSquare,
+    exact: false,
+  },
   { href: "/dashboard/account", label: "Account", icon: User, exact: false },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard, exact: false },
 ];

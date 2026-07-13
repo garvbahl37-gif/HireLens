@@ -224,44 +224,123 @@ function getClient(p: Provider) {
   return new OpenAI({ apiKey: p.apiKey, baseURL: p.baseURL });
 }
 
+/* ------------------------------------------------------------------ */
+/* Speech-to-text (Whisper)                                            */
+/* ------------------------------------------------------------------ */
+
+export class TranscriptionError extends Error {}
+
+/** Which provider + model does audio transcription. Only Groq and OpenAI do. */
+function transcriptionProvider(): { provider: Provider; model: string } {
+  const groq = process.env.GROQ_API_KEY;
+  if (groq) {
+    return {
+      provider: {
+        name: "groq",
+        apiKey: groq,
+        baseURL: "https://api.groq.com/openai/v1",
+        model: "",
+      },
+      // Turbo is real-time-fast on Groq and accurate enough for an interview.
+      model: process.env.GROQ_WHISPER_MODEL || "whisper-large-v3-turbo",
+    };
+  }
+  const openai = process.env.OPENAI_API_KEY;
+  if (openai) {
+    return {
+      provider: {
+        name: "openai",
+        apiKey: openai,
+        baseURL: "https://api.openai.com/v1",
+        model: "",
+      },
+      model: "whisper-1",
+    };
+  }
+  throw new TranscriptionError(
+    "No transcription provider configured. Set GROQ_API_KEY or OPENAI_API_KEY."
+  );
+}
+
+/**
+ * Transcribe a recorded answer.
+ *
+ * This replaces the browser's Web Speech API, which ships audio to a Google
+ * service that fails constantly ("network" errors), doesn't exist in Firefox,
+ * and can't be relied on at scale. Recording locally and transcribing here is
+ * browser-independent and deterministic.
+ */
+export async function transcribeAudio(
+  file: File,
+  { language = "en" }: { language?: string } = {}
+): Promise<string> {
+  if (process.env.MOCK_AI === "1") {
+    return "This is a mock transcript. Set a real GROQ_API_KEY to transcribe your actual answer.";
+  }
+
+  const { provider, model } = transcriptionProvider();
+  const client = getClient(provider);
+
+  try {
+    const res = await client.audio.transcriptions.create({
+      file,
+      model,
+      language,
+      // Bias the model toward interview vocabulary; also nudges it to emit the
+      // fillers we measure rather than silently cleaning them up.
+      prompt:
+        "A spoken job-interview answer. Transcribe verbatim, including filler words like um, uh, like, you know.",
+      response_format: "json",
+      temperature: 0,
+    });
+    return (res.text ?? "").trim();
+  } catch (err) {
+    if (isRateLimit(err)) {
+      throw new TranscriptionError(
+        "Transcription is rate-limited right now. Wait a few seconds and try again."
+      );
+    }
+    console.error("[transcribe] failed:", err);
+    throw new TranscriptionError(
+      "Couldn't transcribe the audio. Try again, or type your answer."
+    );
+  }
+}
+
 export function aiModel() {
   if (process.env.MOCK_AI === "1") return "mock";
   return resolveProvider().model;
 }
 
 /**
- * Run the resume analysis. `deep` unlocks the Pro-only sections —
- * this is enforced here (the deep content is never generated for free
- * users) rather than hidden client-side.
+ * One schema-validated model call, with every provider concern handled in one
+ * place: the retry when the model returns invalid JSON, and the fall-through
+ * to a higher-token-limit model when the current one is rate-limited.
+ *
+ * Every feature that talks to a model goes through here, so none of them have
+ * to re-implement the fallback chain (and none of them can forget to).
  */
-export async function analyzeResume(opts: {
-  resumeText: string;
-  jobDescription: string;
-  jobTitle: string;
-  company?: string | null;
-  deep: boolean;
-}): Promise<{ result: Analysis; model: string }> {
+export async function chat<T>(opts: {
+  system: string;
+  user: string;
+  schema: z.ZodType<T>;
+  maxTokens: number;
+  temperature?: number;
+  /** Returned verbatim when MOCK_AI=1, so the app runs with no API key. */
+  mock: () => T;
+}): Promise<{ result: T; model: string }> {
   if (process.env.MOCK_AI === "1") {
-    return { result: mockAnalysis(opts.deep), model: "mock" };
+    return { result: opts.mock(), model: "mock" };
   }
 
   const provider = resolveProvider();
   const client = getClient(provider);
   const messages: OpenAI.ChatCompletionMessageParam[] = [
-    { role: "system", content: buildSystemPrompt(opts.deep) },
-    { role: "user", content: buildUserPrompt(opts) },
+    { role: "system", content: opts.system },
+    { role: "user", content: opts.user },
   ];
 
-  // Providers meter input + reserved output against one token-per-minute
-  // budget (Groq's free tier is 8k–30k TPM depending on the model), so the
-  // output reservation has to be sized, not maxed out.
-  const maxTokens = opts.deep ? DEEP_MAX_TOKENS : BASIC_MAX_TOKENS;
-
-  // Try the configured model, then progressively higher-TPM fallbacks. A
-  // grader running several reviews back-to-back would otherwise trip the
-  // per-minute cap and see a dead product.
   const chain = modelChain(provider);
-
   let lastError = "";
   let rateLimited = false;
 
@@ -281,13 +360,13 @@ export async function analyzeResume(opts: {
                     content: `Your previous response was not valid JSON matching the schema (${lastError}). Respond again with ONLY the corrected JSON object.`,
                   },
                 ],
-          temperature: 0.3,
-          max_tokens: maxTokens,
+          temperature: opts.temperature ?? 0.3,
+          max_tokens: opts.maxTokens,
           response_format: { type: "json_object" },
         });
       } catch (err) {
         if (isRateLimit(err)) {
-          // Don't burn the user's time retrying the same capped model.
+          // Don't burn the user's time retrying a model that is already capped.
           rateLimited = true;
           lastError = "rate limited";
           break; // fall through to the next model in the chain
@@ -297,8 +376,7 @@ export async function analyzeResume(opts: {
 
       const raw = completion.choices[0]?.message?.content ?? "";
       try {
-        const parsed = analysisSchema.parse(extractJson(raw));
-        return { result: clampScores(parsed), model };
+        return { result: opts.schema.parse(extractJson(raw)), model };
       } catch (err) {
         lastError =
           err instanceof Error ? err.message.slice(0, 500) : "parse error";
@@ -308,13 +386,35 @@ export async function analyzeResume(opts: {
 
   if (rateLimited) {
     throw new AnalysisError(
-      "The analysis service is rate-limited right now. Wait a few seconds and try again."
+      "The AI service is rate-limited right now. Wait a few seconds and try again."
     );
   }
-
   throw new AnalysisError(
     "The AI returned an unexpected format. Please try again."
   );
+}
+
+/**
+ * Run the resume analysis. `deep` unlocks the Pro-only sections —
+ * this is enforced here (the deep content is never generated for free
+ * users) rather than hidden client-side.
+ */
+export async function analyzeResume(opts: {
+  resumeText: string;
+  jobDescription: string;
+  jobTitle: string;
+  company?: string | null;
+  deep: boolean;
+}): Promise<{ result: Analysis; model: string }> {
+  const { result, model } = await chat({
+    system: buildSystemPrompt(opts.deep),
+    user: buildUserPrompt(opts),
+    schema: analysisSchema,
+    maxTokens: opts.deep ? DEEP_MAX_TOKENS : BASIC_MAX_TOKENS,
+    temperature: 0.3,
+    mock: () => mockAnalysis(opts.deep),
+  });
+  return { result: clampScores(result), model };
 }
 
 function extractJson(raw: string): unknown {

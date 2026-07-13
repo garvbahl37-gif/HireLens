@@ -24,6 +24,7 @@ model User {
   stripeCurrentPeriodEnd DateTime?
   cancelAtPeriodEnd      Boolean   @default(false)
   reviews                Review[]
+  interviews             Interview[]
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 }
@@ -52,4 +53,51 @@ model StripeEvent {
   id        String   @id
   type      String
   createdAt DateTime @default(now())
+}
+
+enum InterviewStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+/// A mock interview: a resume-grounded, adaptive conversation with an AI
+/// interviewer, ending in a scored report.
+model Interview {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Optional provenance: the review this interview was launched from.
+  reviewId       String?
+
+  jobTitle       String
+  company        String?
+  resumeText     String
+  jobDescription String
+
+  status         InterviewStatus @default(IN_PROGRESS)
+
+  /// The conversation so far: an array of { role, kind, content, askedAt }.
+  /// Stored as JSON rather than a Turn table because a transcript is only ever
+  /// read and written whole -- there is no query that wants a single turn.
+  transcript     Json
+
+  /// Planned number of questions for this run (Pro gets a longer interview).
+  totalQuestions Int
+  /// How many questions have been ANSWERED.
+  answered       Int             @default(0)
+
+  /// The final scored report. Null until the interview is completed.
+  report         Json?
+  overallScore   Int?
+  verdict        String?
+
+  deep           Boolean         @default(false)
+  model          String
+
+  createdAt      DateTime        @default(now())
+  completedAt    DateTime?
+
+  @@index([userId, createdAt(sort: Desc)])
 }

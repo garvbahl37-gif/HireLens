@@ -56,3 +56,9 @@ export type Review = Prisma.ReviewModel
  * 
  */
 export type StripeEvent = Prisma.StripeEventModel
+/**
+ * Model Interview
+ * A mock interview: a resume-grounded, adaptive conversation with an AI
+ * interviewer, ending in a scored report.
+ */
+export type Interview = Prisma.InterviewModel
