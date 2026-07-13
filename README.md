@@ -4,8 +4,8 @@
 
 Upload a resume, paste the job description you're targeting, and get a recruiter-grade scored review in seconds: an overall score, five scored dimensions, the ATS keywords you're missing, section-by-section grades, and a prioritized fix list. Pro users additionally get line-by-line rewrites of their weakest bullets, an ATS optimization checklist, and the interview questions their gaps will trigger.
 
-**Live demo:** _[add your Vercel URL here]_
-**Demo account:** `demo@hirelens.app` / `demo1234`
+**Live demo:** https://hire-lens-tawny.vercel.app
+**Demo account:** `demo@hirelens.app` / `demo1234` — comes preloaded with two reviews: the same resume scored 62/100, then 92/100 after applying the feedback.
 **Billing:** runs in demo mode by default — checkout is simulated and nothing is charged, but the upgrade still flows through the real webhook handler. Add Stripe test keys to switch to live Stripe (test card `4242 4242 4242 4242`).
 
 ---
