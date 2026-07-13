@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isDemoBilling } from "@/lib/demo-billing";
 import { getStripe, proPriceId } from "@/lib/stripe";
 
 const bodySchema = z.object({
@@ -26,6 +27,16 @@ export async function POST(req: NextRequest) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
+
+  // No Stripe account configured → hand off to the simulated checkout,
+  // which pushes a checkout.session.completed event through the same
+  // handler the live webhook uses. See src/lib/demo-billing.ts.
+  if (isDemoBilling()) {
+    return NextResponse.json({
+      url: `/dashboard/billing/demo-checkout?interval=${parsed.data.interval}`,
+      demo: true,
+    });
+  }
 
   try {
     const stripe = getStripe();

@@ -9,7 +9,7 @@
   --color-edge2: #313e63;
   --color-ink: #e9ecf4;
   --color-muted: #97a0b7;
-  --color-faint: #626d8a;
+  --color-faint: #808bab;
   --color-accent: #6d6ffb;
   --color-accent2: #a06bff;
   --color-good: #3ddc97;
@@ -34,109 +34,120 @@ body {
 /* ------------------------------------------------------------------ */
 /* Shared primitives                                                   */
 /* ------------------------------------------------------------------ */
+/* In @layer components so Tailwind utilities (which live in a later    */
+/* layer) always win when stacked on top — e.g. `btn btn-primary        */
+/* px-6 py-3 text-base` or `card border-accent/60`.                     */
 
-.text-gradient {
-  background: linear-gradient(
-    120deg,
-    #8ea2ff 0%,
-    var(--color-accent) 45%,
-    var(--color-accent2) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+@layer components {
+  .text-gradient {
+    background: linear-gradient(
+      120deg,
+      #8ea2ff 0%,
+      var(--color-accent) 45%,
+      var(--color-accent2) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
-.card {
-  background: var(--color-card);
-  border: 1px solid var(--color-edge);
-  border-radius: 1rem;
-}
+  .card {
+    background: var(--color-card);
+    border: 1px solid var(--color-edge);
+    border-radius: 1rem;
+  }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 0.65rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 0.62rem 1.15rem;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.65rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.62rem 1.15rem;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 
-.btn-primary {
-  background: linear-gradient(120deg, var(--color-accent), var(--color-accent2));
-  color: white;
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--color-accent) 35%, transparent);
-}
-.btn-primary:hover:not(:disabled) {
-  filter: brightness(1.12);
-  box-shadow: 0 6px 32px color-mix(in srgb, var(--color-accent) 50%, transparent);
-}
+  .btn-primary {
+    background: linear-gradient(
+      120deg,
+      var(--color-accent),
+      var(--color-accent2)
+    );
+    color: white;
+    box-shadow: 0 4px 24px
+      color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.12);
+    box-shadow: 0 6px 32px
+      color-mix(in srgb, var(--color-accent) 50%, transparent);
+  }
 
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--color-edge2);
-  color: var(--color-ink);
-}
-.btn-ghost:hover:not(:disabled) {
-  background: var(--color-card2);
-  border-color: var(--color-accent);
-}
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--color-edge2);
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--color-card2);
+    border-color: var(--color-accent);
+  }
 
-.btn-danger {
-  background: transparent;
-  border: 1px solid color-mix(in srgb, var(--color-bad) 40%, transparent);
-  color: var(--color-bad);
-}
-.btn-danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-bad) 12%, transparent);
-}
+  .btn-danger {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--color-bad) 40%, transparent);
+    color: var(--color-bad);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-bad) 12%, transparent);
+  }
 
-.input {
-  width: 100%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-edge);
-  border-radius: 0.65rem;
-  padding: 0.62rem 0.9rem;
-  font-size: 0.92rem;
-  color: var(--color-ink);
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.input::placeholder {
-  color: var(--color-faint);
-}
-.input:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
-}
+  .input {
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge);
+    border-radius: 0.65rem;
+    padding: 0.62rem 0.9rem;
+    font-size: 0.92rem;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input::placeholder {
+    color: var(--color-faint);
+  }
+  .input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+  }
 
-.label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-muted);
-  margin-bottom: 0.4rem;
-  letter-spacing: 0.02em;
-}
+  .label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.02em;
+  }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.22rem 0.7rem;
-  font-size: 0.78rem;
-  font-weight: 500;
-  border: 1px solid var(--color-edge);
-  background: var(--color-card2);
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.22rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border: 1px solid var(--color-edge);
+    background: var(--color-card2);
+  }
 }
 
 @keyframes fade-up {
@@ -167,4 +178,264 @@ body {
     );
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, black 35%, transparent 78%);
+}
+
+/* ================================================================== */
+/* Premium motion + surface treatments                                */
+/* ================================================================== */
+
+/* --- animated aurora mesh: slow-drifting colored blobs behind hero --- */
+@keyframes aurora-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6%, -4%, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-5%, 5%, 0) scale(0.94);
+  }
+}
+.aurora {
+  position: absolute;
+  inset: -25% -10% auto -10%;
+  height: 720px;
+  pointer-events: none;
+  filter: blur(60px);
+  opacity: 0.55;
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  mix-blend-mode: screen;
+}
+.aurora::before {
+  width: 46vw;
+  height: 46vw;
+  left: 8%;
+  top: 0;
+  background: radial-gradient(closest-side, #6d6ffb, transparent 70%);
+  animation: aurora-drift 18s ease-in-out infinite;
+}
+.aurora::after {
+  width: 40vw;
+  height: 40vw;
+  right: 6%;
+  top: 4%;
+  background: radial-gradient(closest-side, #a06bff, transparent 70%);
+  animation: aurora-drift 22s ease-in-out infinite reverse;
+}
+.aurora-3 {
+  position: absolute;
+  width: 34vw;
+  height: 34vw;
+  left: 42%;
+  top: 8%;
+  border-radius: 999px;
+  filter: blur(70px);
+  mix-blend-mode: screen;
+  background: radial-gradient(closest-side, #3b82f6, transparent 70%);
+  opacity: 0.4;
+  animation: aurora-drift 26s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* --- fine grain/noise overlay for a filmic, premium texture --- */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- animated gradient text (slow hue sweep) --- */
+@keyframes gradient-pan {
+  to {
+    background-position: 200% center;
+  }
+}
+.text-gradient-animate {
+  background: linear-gradient(
+    100deg,
+    #8ea2ff,
+    #6d6ffb,
+    #a06bff,
+    #6d6ffb,
+    #8ea2ff
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-pan 6s linear infinite;
+}
+
+/* --- sheen sweep across primary buttons on hover --- */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: skewX(-18deg);
+  transition: left 0.6s ease;
+}
+.btn-sheen:hover::after {
+  left: 140%;
+}
+
+/* --- gradient-border card (premium hairline glow) --- */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent) 55%, transparent),
+    transparent 40%,
+    transparent 60%,
+    color-mix(in srgb, var(--color-accent2) 55%, transparent)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* --- floating result card --- */
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.float-y {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+/* --- conic glow ring (badge / accent) --- */
+@keyframes spin-slow {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* --- marquee (trust strip) --- */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.marquee-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 12%,
+    black 88%,
+    transparent
+  );
+}
+
+/* --- shimmer for the badge dot --- */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-good) 60%, transparent);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 2.2s ease-in-out infinite;
+}
+
+/* --- fading gradient hairline: premium alternative to a hard border --- */
+.divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--color-edge2) 90%, transparent),
+    transparent
+  );
+}
+
+/* --- soft ambient glow placed behind a section header for depth --- */
+.section-glow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(760px, 90vw);
+  height: 380px;
+  transform: translate(-50%, -40%);
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.14;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    var(--color-accent),
+    var(--color-accent2) 55%,
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before,
+  .aurora::after,
+  .aurora-3,
+  .text-gradient-animate,
+  .float-y,
+  .spin-slow,
+  .marquee-track,
+  .pulse-dot {
+    animation: none !important;
+  }
+  .fade-up {
+    animation: none !important;
+  }
 }

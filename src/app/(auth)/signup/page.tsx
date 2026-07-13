@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/AuthForm";
+import { safeNext } from "@/lib/safe-redirect";
 
 export const metadata: Metadata = { title: "Create your account" };
 
@@ -25,10 +26,4 @@ export default async function SignupPage({
       <AuthForm mode="signup" nextUrl={nextUrl} />
     </div>
   );
-}
-
-function safeNext(next: string | undefined): string | null {
-  // only allow same-site relative redirects
-  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
-  return null;
 }

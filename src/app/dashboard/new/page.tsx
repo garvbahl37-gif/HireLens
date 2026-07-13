@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { ReviewForm } from "@/components/ReviewForm";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
 import { monthlyReviewCount } from "@/lib/usage";
 
 export const metadata: Metadata = { title: "New review" };
 
 export default async function NewReviewPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requireUser();
   const used = user.plan === "FREE" ? await monthlyReviewCount(user.id) : null;
   const remaining = used === null ? null : Math.max(0, FREE_MONTHLY_LIMIT - used);
 

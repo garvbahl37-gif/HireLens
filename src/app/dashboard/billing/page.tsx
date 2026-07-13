@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { AlertCircle, BadgeCheck, PartyPopper, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  BadgeCheck,
+  PartyPopper,
+  ShieldAlert,
+  Sparkles,
+} from "lucide-react";
 import {
   CancelResumeButton,
   PlanRefresher,
   PortalButton,
   UpgradeButtons,
 } from "@/components/BillingActions";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
+import { isDemoBilling } from "@/lib/demo-billing";
 import { FREE_MONTHLY_LIMIT, PRICING } from "@/lib/plans";
 import { monthlyReviewCount } from "@/lib/usage";
 
@@ -23,8 +30,9 @@ export default async function BillingPage({
   }>;
 }) {
   const params = await searchParams;
-  const user = (await getCurrentUser())!;
+  const user = await requireUser();
   const used = await monthlyReviewCount(user.id);
+  const demoBilling = isDemoBilling();
 
   const justUpgraded = params.upgraded === "1";
   const waitingForWebhook = justUpgraded && user.plan === "FREE";
@@ -41,6 +49,29 @@ export default async function BillingPage({
           Your plan, usage, and subscription.
         </p>
       </div>
+
+      {demoBilling && (
+        <div className="card flex items-start gap-3 border-warn/30 bg-warn/5 p-5">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-warn" />
+          <div className="text-sm">
+            <p className="font-bold text-warn">Billing is in demo mode</p>
+            <p className="mt-1 leading-relaxed text-muted">
+              No Stripe account is connected to this deployment, so checkout is
+              simulated and nothing is ever charged. The upgrade still runs
+              through the real path: a{" "}
+              <code className="rounded bg-card2 px-1 py-0.5 text-xs">
+                checkout.session.completed
+              </code>{" "}
+              event goes through the same webhook handler, which is what flips
+              your plan to Pro in the database. Set{" "}
+              <code className="rounded bg-card2 px-1 py-0.5 text-xs">
+                STRIPE_SECRET_KEY
+              </code>{" "}
+              to switch to live Stripe test mode with no code change.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ---------- banners ---------- */}
       {justUpgraded && user.plan === "PRO" && (
@@ -163,14 +194,15 @@ export default async function BillingPage({
             prep. ${PRICING.monthly.amount}/month or ${PRICING.yearly.amount}
             /year.
           </p>
-          <UpgradeButtons highlight={highlightInterval} />
+          <UpgradeButtons highlight={highlightInterval} demo={demoBilling} />
         </div>
       ) : (
         <div className="card space-y-5 p-6 sm:p-8">
           <h2 className="font-bold">Manage subscription</h2>
           <div className="flex flex-wrap items-center gap-3">
             <CancelResumeButton cancelAtPeriodEnd={user.cancelAtPeriodEnd} />
-            <PortalButton />
+            {/* The hosted Stripe portal only exists with a real Stripe account. */}
+            {!demoBilling && <PortalButton />}
           </div>
           {user.cancelAtPeriodEnd && (
             <p className="text-sm text-muted">

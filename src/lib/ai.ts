@@ -81,7 +81,7 @@ Rules:
 - improvements: concrete problems ordered by severity, each with a specific fix.
 ${
   deep
-    ? `- rewrites: pick the 4-6 weakest bullet points VERBATIM from the resume ("original"), rewrite each into a strong, quantified, achievement-oriented bullet tailored to this job ("improved"), and explain why ("why").
+    ? `- rewrites: pick the 4-6 weakest bullet points VERBATIM from the resume ("original"), rewrite each into a strong, achievement-oriented bullet tailored to this job ("improved"), and explain why ("why"). NEVER invent a metric the candidate didn't provide — where the resume gives no number, leave a clearly-marked placeholder like [X%] or [N] for the candidate to fill in.
 - atsOptimizations: 5-8 specific mechanical changes to survive ATS parsing and keyword filters for THIS job.
 - interviewQuestions: 5 questions an interviewer for THIS role is likely to ask given the resume's gaps.`
     : `- Do NOT include the keys "rewrites", "atsOptimizations" or "interviewQuestions".`
@@ -136,17 +136,64 @@ ${opts.resumeText.slice(0, MAX_INPUT_CHARS)}`;
 /* Client                                                              */
 /* ------------------------------------------------------------------ */
 
-function getClient() {
-  const apiKey = process.env.XAI_API_KEY;
-  if (!apiKey) throw new Error("XAI_API_KEY is not set");
-  return new OpenAI({ apiKey, baseURL: "https://api.x.ai/v1" });
+export class AnalysisError extends Error {}
+
+/**
+ * Provider resolution. Every supported provider speaks the OpenAI wire
+ * format, so only the base URL, key and default model differ. First
+ * configured key wins, which keeps deploys a one-variable change.
+ */
+type Provider = {
+  name: string;
+  apiKey: string;
+  baseURL: string;
+  model: string;
+};
+
+function resolveProvider(): Provider {
+  const groq = process.env.GROQ_API_KEY;
+  if (groq) {
+    return {
+      name: "groq",
+      apiKey: groq,
+      baseURL: "https://api.groq.com/openai/v1",
+      model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
+    };
+  }
+
+  const xai = process.env.XAI_API_KEY;
+  if (xai) {
+    return {
+      name: "xai",
+      apiKey: xai,
+      baseURL: "https://api.x.ai/v1",
+      model: process.env.XAI_MODEL || "grok-4.5",
+    };
+  }
+
+  const openai = process.env.OPENAI_API_KEY;
+  if (openai) {
+    return {
+      name: "openai",
+      apiKey: openai,
+      baseURL: "https://api.openai.com/v1",
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+    };
+  }
+
+  throw new AnalysisError(
+    "No AI provider configured. Set GROQ_API_KEY (or XAI_API_KEY / OPENAI_API_KEY), or MOCK_AI=1 for offline demo output."
+  );
+}
+
+function getClient(p: Provider) {
+  return new OpenAI({ apiKey: p.apiKey, baseURL: p.baseURL });
 }
 
 export function aiModel() {
-  return process.env.XAI_MODEL || "grok-4.5";
+  if (process.env.MOCK_AI === "1") return "mock";
+  return resolveProvider().model;
 }
-
-export class AnalysisError extends Error {}
 
 /**
  * Run the resume analysis. `deep` unlocks the Pro-only sections —
@@ -164,8 +211,9 @@ export async function analyzeResume(opts: {
     return { result: mockAnalysis(opts.deep), model: "mock" };
   }
 
-  const client = getClient();
-  const model = aiModel();
+  const provider = resolveProvider();
+  const client = getClient(provider);
+  const model = provider.model;
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(opts.deep) },
     { role: "user", content: buildUserPrompt(opts) },

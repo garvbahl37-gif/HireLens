@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ReviewResult } from "@/components/ReviewResult";
 import { analysisSchema } from "@/lib/ai";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Review" };
@@ -15,7 +15,7 @@ export default async function ReviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const user = (await getCurrentUser())!;
+  const user = await requireUser();
 
   // Ownership enforced in the query — another user's id 404s.
   const review = await db.review.findFirst({

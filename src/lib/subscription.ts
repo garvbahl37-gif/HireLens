@@ -51,6 +51,16 @@ export async function removeSubscription(sub: Stripe.Subscription) {
   const user = await findUser(sub.metadata?.userId, customerId);
   if (!user) return;
 
+  // Only downgrade if this deletion refers to the subscription we're
+  // currently tracking. A replayed/out-of-order `deleted` for an OLD
+  // subscription must not wipe a newer active one the user just started.
+  if (
+    user.stripeSubscriptionId &&
+    user.stripeSubscriptionId !== sub.id
+  ) {
+    return;
+  }
+
   await db.user.update({
     where: { id: user.id },
     data: {

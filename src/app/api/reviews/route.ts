@@ -7,7 +7,8 @@ import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
 import { monthlyReviewCount } from "@/lib/usage";
 
 export const runtime = "nodejs";
-export const maxDuration = 120; // Grok analysis of a long resume can take a while
+// Vercel Hobby caps serverless functions at 60s; Grok analysis fits comfortably.
+export const maxDuration = 60;
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MIN_RESUME_CHARS = 200;

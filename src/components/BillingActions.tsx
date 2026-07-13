@@ -20,8 +20,10 @@ async function post(url: string, body?: unknown) {
 
 export function UpgradeButtons({
   highlight,
+  demo = false,
 }: {
   highlight?: "monthly" | "yearly";
+  demo?: boolean;
 }) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,9 @@ export function UpgradeButtons({
       </div>
       {error && <p className="mt-3 text-sm text-bad">{error}</p>}
       <p className="mt-3 text-xs text-faint">
-        Test mode — use card 4242 4242 4242 4242, any future expiry, any CVC.
+        {demo
+          ? "Demo mode — checkout is simulated and nothing is charged."
+          : "Stripe test mode — use card 4242 4242 4242 4242, any future expiry, any CVC."}
       </p>
     </div>
   );

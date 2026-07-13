@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/AuthForm";
+import { safeNext } from "@/lib/safe-redirect";
 
 export const metadata: Metadata = { title: "Log in" };
 
@@ -26,9 +27,4 @@ export default async function LoginPage({
       </div>
     </div>
   );
-}
-
-function safeNext(next: string | undefined): string | null {
-  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
-  return null;
 }

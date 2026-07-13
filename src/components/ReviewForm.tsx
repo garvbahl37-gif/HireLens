@@ -108,6 +108,9 @@ export function ReviewForm() {
 
         {mode === "upload" ? (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label="Upload your resume — PDF or text file"
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
@@ -119,8 +122,14 @@ export function ReviewForm() {
               acceptFile(e.dataTransfer.files?.[0]);
             }}
             onClick={() => fileInput.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInput.current?.click();
+              }
+            }}
             className={cn(
-              "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+              "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors focus:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/40",
               dragOver
                 ? "border-accent bg-accent/5"
                 : "border-edge2 hover:border-accent/60"
@@ -221,7 +230,10 @@ export function ReviewForm() {
 
       {/* ------- errors / limit ------- */}
       {error && (
-        <p className="rounded-lg border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad">
+        <p
+          role="alert"
+          className="rounded-lg border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad"
+        >
           {error}
         </p>
       )}

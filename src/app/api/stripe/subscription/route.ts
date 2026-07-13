@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import {
+  demoSubscriptionUpdatedEvent,
+  isDemoBilling,
+  type Interval,
+} from "@/lib/demo-billing";
+import { DuplicateEvent, processStripeEvent } from "@/lib/stripe-events";
 import { getStripe } from "@/lib/stripe";
 
 const bodySchema = z.object({
@@ -31,6 +37,33 @@ export async function POST(req: NextRequest) {
   }
 
   const cancelAtPeriodEnd = parsed.data.action === "cancel";
+
+  // Demo mode: no Stripe account to call, so emit the subscription.updated
+  // event Stripe would have sent and let the shared handler apply it.
+  if (isDemoBilling()) {
+    const interval: Interval = user.stripePriceId?.includes("yearly")
+      ? "yearly"
+      : "monthly";
+    try {
+      await processStripeEvent(
+        demoSubscriptionUpdatedEvent(
+          user.id,
+          interval,
+          user.stripeSubscriptionId,
+          cancelAtPeriodEnd
+        )
+      );
+    } catch (err) {
+      if (!(err instanceof DuplicateEvent)) {
+        console.error("[demo-billing] subscription update failed:", err);
+        return NextResponse.json(
+          { error: "Couldn't update the subscription. Try again." },
+          { status: 500 }
+        );
+      }
+    }
+    return NextResponse.json({ ok: true, cancelAtPeriodEnd });
+  }
 
   try {
     await getStripe().subscriptions.update(user.stripeSubscriptionId, {
