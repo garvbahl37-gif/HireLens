@@ -23,7 +23,7 @@ export default async function LandingPage() {
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(120% 60% at 50% -10%, rgba(109,111,251,0.10), transparent 60%), radial-gradient(90% 50% at 100% 40%, rgba(160,107,255,0.06), transparent 55%), radial-gradient(80% 50% at 0% 75%, rgba(59,130,246,0.05), transparent 55%)",
+            "radial-gradient(120% 60% at 50% -10%, rgba(242,98,46,0.11), transparent 60%), radial-gradient(90% 50% at 100% 40%, rgba(255,154,79,0.07), transparent 55%), radial-gradient(80% 50% at 0% 75%, rgba(201,69,43,0.06), transparent 55%)",
         }}
       />
 

@@ -11,9 +11,9 @@ export function LogoMark({ className }: { className?: string }) {
     >
       <defs>
         <linearGradient id="hl-g" x1="0" y1="0" x2="32" y2="32">
-          <stop offset="0%" stopColor="#8ea2ff" />
-          <stop offset="55%" stopColor="#6d6ffb" />
-          <stop offset="100%" stopColor="#a06bff" />
+          <stop offset="0%" stopColor="#ffb877" />
+          <stop offset="55%" stopColor="#f2622e" />
+          <stop offset="100%" stopColor="#ff9a4f" />
         </linearGradient>
       </defs>
       <circle cx="16" cy="16" r="13" stroke="url(#hl-g)" strokeWidth="2.6" />

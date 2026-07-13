@@ -37,7 +37,7 @@ export function HistoryList({ items }: { items: HistoryItem[] }) {
         >
           <Link
             href={`/dashboard/reviews/${r.id}`}
-            className="card gradient-border group flex items-center gap-5 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-16px_rgba(109,111,251,0.5)]"
+            className="card gradient-border group flex items-center gap-5 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-16px_rgba(242,98,46,0.5)]"
           >
             <ScoreRing score={r.overallScore} size={54} stroke={5} />
 

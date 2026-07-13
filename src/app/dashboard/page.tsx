@@ -111,7 +111,7 @@ export default async function DashboardPage() {
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(100% 50% at 70% -10%, rgba(109,111,251,0.08), transparent 60%), radial-gradient(70% 50% at 0% 90%, rgba(160,107,255,0.05), transparent 55%)",
+            "radial-gradient(100% 50% at 70% -10%, rgba(242,98,46,0.09), transparent 60%), radial-gradient(70% 50% at 0% 90%, rgba(255,154,79,0.06), transparent 55%)",
         }}
       />
 
