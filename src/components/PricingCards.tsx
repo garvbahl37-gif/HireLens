@@ -9,9 +9,11 @@ import { FREE_FEATURES, PRO_FEATURES, PRICING } from "@/lib/plans";
 export function PricingCards({
   authed,
   plan,
+  demo = false,
 }: {
   authed: boolean;
   plan: "FREE" | "PRO" | null;
+  demo?: boolean;
 }) {
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
   const price = PRICING[interval];
@@ -113,9 +115,18 @@ export function PricingCards({
       </div>
 
       <p className="mt-6 text-center text-xs text-faint">
-        Payments run through Stripe in test mode — try card{" "}
-        <code className="font-mono">4242 4242 4242 4242</code>, any future date,
-        any CVC.
+        {demo ? (
+          <>
+            Demo deployment — checkout is simulated and nothing is ever charged.
+            The upgrade still runs through the real webhook handler.
+          </>
+        ) : (
+          <>
+            Payments run through Stripe in test mode — try card{" "}
+            <code className="font-mono">4242 4242 4242 4242</code>, any future
+            date, any CVC.
+          </>
+        )}
       </p>
     </div>
   );

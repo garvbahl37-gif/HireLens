@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageCircleQuestion } from "lucide-react";
+import { Faq } from "@/components/landing/Faq";
 import { Logo } from "@/components/Logo";
 import { PricingCards } from "@/components/PricingCards";
 import { Navbar } from "@/components/landing/Navbar";
@@ -9,11 +10,13 @@ import { Stats } from "@/components/landing/Stats";
 import { FeaturesGrid } from "@/components/landing/FeaturesGrid";
 import { Reveal } from "@/components/landing/Reveal";
 import { getCurrentUser } from "@/lib/auth";
+import { isDemoBilling } from "@/lib/demo-billing";
 import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
 
 export default async function LandingPage() {
   const user = await getCurrentUser();
   const authed = !!user;
+  const demoBilling = isDemoBilling();
 
   return (
     <div className="grain relative flex-1 overflow-hidden bg-bg">
@@ -115,32 +118,49 @@ export default async function LandingPage() {
             </p>
           </Reveal>
           <Reveal delay={0.1} className="mt-14">
-            <PricingCards authed={authed} plan={user?.plan ?? null} />
+            <PricingCards authed={authed} plan={user?.plan ?? null} demo={demoBilling} />
           </Reveal>
         </div>
       </section>
 
       {/* ---------------- FAQ ---------------- */}
-      <section id="faq" className="relative mx-auto max-w-3xl scroll-mt-28 px-5 py-24">
-        <Reveal>
-          <h2 className="text-center text-3xl font-extrabold tracking-tight">
-            Questions
-          </h2>
-        </Reveal>
-        <div className="mt-10 space-y-3">
-          {FAQ.map((f, i) => (
-            <Reveal key={f.q} delay={i * 0.04}>
-              <details className="group card p-5 transition-colors hover:border-edge2">
-                <summary className="flex cursor-pointer list-none items-center justify-between font-semibold">
-                  {f.q}
-                  <span className="text-xl leading-none text-muted transition-transform group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{f.a}</p>
-              </details>
-            </Reveal>
-          ))}
+      <section id="faq" className="relative scroll-mt-28 px-5 py-24">
+        <div className="section-glow" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          {/* sticky editorial column */}
+          <Reveal>
+            <div className="lg:sticky lg:top-28">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
+                FAQ
+              </p>
+              <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Everything you&apos;re <span className="text-gradient">about to ask</span>
+              </h2>
+              <p className="mt-4 leading-relaxed text-muted">
+                The honest answers — including what we do with your resume and
+                what actually separates the free tier from Pro.
+              </p>
+
+              <div className="mt-8 rounded-2xl border border-edge bg-card/60 p-5">
+                <p className="flex items-center gap-2 text-sm font-bold">
+                  <MessageCircleQuestion className="h-4 w-4 text-accent" />
+                  Still deciding?
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted">
+                  The free plan gives you {FREE_MONTHLY_LIMIT} full reviews a
+                  month. No card, no trial timer.
+                </p>
+                <Link
+                  href={authed ? "/dashboard/new" : "/signup"}
+                  className="btn btn-ghost mt-4 w-full text-sm"
+                >
+                  Try it free <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+
+          <Faq items={FAQ} />
         </div>
       </section>
 
@@ -227,6 +247,6 @@ const FAQ = [
   },
   {
     q: "Do you charge real money?",
-    a: "This is a demo deployment: Stripe runs in test mode, so no real charges ever occur. Use test card 4242 4242 4242 4242 to try the full upgrade flow.",
+    a: "No. This is a demo deployment, so checkout is simulated and nothing is ever charged — though the upgrade still runs through the same webhook handler a real payment would, which is what unlocks Pro in the database.",
   },
 ];
