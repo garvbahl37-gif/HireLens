@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { chat } from "@/lib/ai";
+import type { Claim } from "@/lib/ai";
 import {
   aggregate,
   deliveryScore,
@@ -17,6 +18,7 @@ export const QUESTION_KINDS = [
   "technical",
   "gap_probe",
   "resume_deep_dive",
+  "claim_probe",
   "closing",
 ] as const;
 export type QuestionKind = (typeof QUESTION_KINDS)[number];
@@ -27,8 +29,15 @@ export const KIND_LABELS: Record<QuestionKind, string> = {
   technical: "Technical",
   gap_probe: "Gap probe",
   resume_deep_dive: "Resume deep-dive",
+  claim_probe: "Claim check",
   closing: "Closing",
 };
+
+/** How many claims we'll force under the microscope. A short screen gets one;
+ *  a full loop gets three. Bounded so the interview doesn't become an audit. */
+export function claimProbeCap(deep: boolean): number {
+  return deep ? 3 : 1;
+}
 
 /**
  * Measured delivery for a spoken answer. Absent when the answer was typed.
@@ -80,6 +89,14 @@ export const turnSchema = z.object({
   isFollowUp: z.boolean().optional(),
   /** Why the interviewer asked this — shown in the report, not during the run. */
   intent: z.string().optional(),
+  /**
+   * The verbatim resume claim this question attacks. Set in code by the server
+   * when it decides to probe a claim — never by the model — so it is the
+   * authoritative record of what was put under the microscope, and the report's
+   * per-answer verdict is anchored to it rather than to anything the model
+   * might reinterpret.
+   */
+  probesClaim: z.string().optional(),
   /** Candidate turns only, and only when spoken. */
   delivery: deliverySchema.optional(),
   at: z.string(),
@@ -95,6 +112,18 @@ const nextQuestionSchema = z.object({
 });
 export type NextQuestion = z.infer<typeof nextQuestionSchema>;
 
+/**
+ * Whether a probed resume claim survived questioning.
+ *
+ * The wording is load-bearing and deliberately never says "false". UNPROVEN
+ * means "you have no evidence story for this on the page yet", which is a gap to
+ * close, not an accusation. This is the most delicate copy in the product and
+ * the reason it can make a claim about the user's own resume without ever
+ * calling them a liar.
+ */
+export const CLAIM_VERDICTS = ["GROUNDED", "THIN", "UNPROVEN"] as const;
+export type ClaimVerdict = (typeof CLAIM_VERDICTS)[number];
+
 /** Per-answer scoring, produced in the final report pass. */
 const answerScoreSchema = z.object({
   question: z.string(),
@@ -106,6 +135,14 @@ const answerScoreSchema = z.object({
   impact: z.number().min(0).max(100),
   whatWorked: z.string(),
   whatDidnt: z.string(),
+  /**
+   * Set only when this answer was defending a quoted resume claim. `claimText`
+   * is overwritten from the transcript in code (never trusted from the model),
+   * and `claimVerdict` is stripped where no claim was in flight — so a verdict
+   * can never be attached to a question that wasn't a claim probe.
+   */
+  claimText: z.string().optional(),
+  claimVerdict: z.enum(CLAIM_VERDICTS).optional(),
   /** Pro only: what a strong answer to THIS question actually sounds like. */
   modelAnswer: z.string().optional(),
 });
@@ -153,7 +190,57 @@ export type InterviewContext = {
   jobDescription: string;
   totalQuestions: number;
   deep: boolean;
+  /** Verbatim resume claims to put under the microscope. Empty for interviews
+   *  started from pasted text (no prior analysis to draw claims from). */
+  claims?: Claim[];
 };
+
+const CLAIM_RISK_RANK: Record<Claim["risk"], number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
+
+/**
+ * Which resume claim, if any, to attack on the NEXT question — decided in code,
+ * not by the model.
+ *
+ * The whole point of grounding the loop in code is that "did we probe this
+ * claim" and "which claim" are facts, not model outputs. The model writes the
+ * question; the server decides the target. Rules:
+ *  - never the opener (empty transcript) or the closer (one question left),
+ *  - never two claim probes back to back — they interleave with normal and
+ *    follow-up questions so the interview doesn't read as an interrogation,
+ *  - highest-risk unprobed claim first,
+ *  - stop once the cap for this interview length is reached.
+ */
+export function selectClaimToProbe(
+  ctx: InterviewContext,
+  transcript: Turn[]
+): Claim | null {
+  const claims = ctx.claims ?? [];
+  if (claims.length === 0) return null;
+  if (transcript.length === 0) return null; // opener is never a probe
+
+  const answered = transcript.filter((t) => t.role === "candidate").length;
+  if (ctx.totalQuestions - answered <= 1) return null; // save the closer
+
+  const probed = new Set(
+    transcript.filter((t) => t.probesClaim).map((t) => t.probesClaim)
+  );
+  if (probed.size >= claimProbeCap(ctx.deep)) return null;
+
+  // Don't stack probes: if the last interviewer turn was itself a probe, let a
+  // normal or follow-up question breathe first.
+  const lastQuestion = [...transcript].reverse().find((t) => t.role === "interviewer");
+  if (lastQuestion?.probesClaim) return null;
+
+  const next = claims
+    .filter((c) => !probed.has(c.text))
+    .sort((a, b) => CLAIM_RISK_RANK[a.risk] - CLAIM_RISK_RANK[b.risk]);
+
+  return next[0] ?? null;
+}
 
 // Kept tight: the transcript grows every turn, and input plus the reserved
 // output share one per-minute token budget (see src/lib/ai.ts).
@@ -225,27 +312,56 @@ Question kinds:
 - behavioral: a "tell me about a time" grounded in something they actually claim to have done.
 - technical: probe a hard skill the job requires. Ask them to explain HOW, not to define terms.
 - gap_probe: a requirement in the job description their resume does not evidence. Ask directly.
+- claim_probe: a specific factual claim on their resume that you have been told to press on. Quote it back and demand the evidence behind it. You are told when to do this.
 - closing: the final question. Usually "what questions do you have for me" or a forward-looking one.
 
 Respond with ONLY a valid JSON object, no markdown fences, no commentary:
 {
   "question": "the question, in your voice, addressed to the candidate",
-  "kind": "warmup|behavioral|technical|gap_probe|resume_deep_dive|closing",
+  "kind": "warmup|behavioral|technical|gap_probe|resume_deep_dive|claim_probe|closing",
   "isFollowUp": true or false,
   "intent": "one sentence, for the report: what you are trying to find out"
 }`;
 }
 
+/** The instruction block injected when the server has chosen a claim to attack. */
+function claimAttackBlock(claim: Claim): string {
+  return `=== ATTACK THIS CLAIM ===
+The candidate's resume states, verbatim: "${claim.text}"
+What a recruiter needs that is not on the page: ${claim.whatsMissing}
+
+Your NEXT question must press on this exact claim. Quote it back to them and ask
+for the specific evidence a hiring manager would need to believe it — the
+baseline, the number, the mechanism, what they personally did. Do not soften it
+and do not ask about anything else this turn. Set "kind" to "claim_probe".`;
+}
+
 /**
  * Ask the next question. The model sees the full transcript, so it can follow
  * up on a weak answer rather than marching through a fixed list.
+ *
+ * When the server has decided this turn should attack a resume claim, that
+ * decision (and which claim) is returned as `probedClaim` — authoritative and
+ * independent of what the model puts in `kind`, so the transcript and report
+ * can be anchored to a fact rather than a hope.
  */
 export async function nextQuestion(
   ctx: InterviewContext,
   transcript: Turn[]
-): Promise<{ result: NextQuestion; model: string }> {
+): Promise<{ result: NextQuestion; model: string; probedClaim?: Claim }> {
   const answered = transcript.filter((t) => t.role === "candidate").length;
   const remaining = ctx.totalQuestions - answered;
+
+  const probedClaim = selectClaimToProbe(ctx, transcript);
+
+  const turnInstruction =
+    transcript.length === 0
+      ? "Open the interview. Ask your first question."
+      : remaining <= 1
+        ? "This is the LAST question. Ask a closing question (kind: closing)."
+        : probedClaim
+          ? claimAttackBlock(probedClaim)
+          : `${answered} of ${ctx.totalQuestions} questions answered. Ask the next one. If the last answer was thin, vague, unquantified, or dodged the question, follow up on it instead of moving on.`;
 
   const user = `${contextBlock(ctx)}
 
@@ -253,22 +369,22 @@ export async function nextQuestion(
 ${transcriptBlock(transcript)}
 
 === YOUR TURN ===
-${
-  transcript.length === 0
-    ? "Open the interview. Ask your first question."
-    : remaining <= 1
-      ? "This is the LAST question. Ask a closing question (kind: closing)."
-      : `${answered} of ${ctx.totalQuestions} questions answered. Ask the next one. If the last answer was thin, vague, unquantified, or dodged the question, follow up on it instead of moving on.`
-}`;
+${turnInstruction}`;
 
-  return chat({
+  const { result, model } = await chat({
     system: interviewerSystem(ctx),
     user,
     schema: nextQuestionSchema,
     maxTokens: 400,
     temperature: 0.6,
-    mock: () => mockQuestion(answered, ctx),
+    mock: () => mockQuestion(answered, ctx, probedClaim),
   });
+
+  // The server chose the target, so the server owns the label — a model that
+  // returns the wrong kind can't misrepresent whether this was a claim probe.
+  if (probedClaim) result.kind = "claim_probe";
+
+  return { result, model, probedClaim: probedClaim ?? undefined };
 }
 
 /* ------------------------------------------------------------------ */
@@ -308,10 +424,25 @@ Long hesitations (over 1.5s mid-answer): ${agg.pauseCount}, longest ${agg.longes
 Computed delivery score: ${deliveryScore(agg)}/100`;
 }
 
+/**
+ * The claim each question attacked, in question order — the same order the
+ * report's `answers` array must follow. Aligned to interviewer turns because
+ * that is exactly how transcriptBlock numbers questions, so index i here is
+ * QUESTION i+1 there. This is the authority the report's per-answer claim
+ * verdict is pinned to; the model never gets to decide which answer was
+ * defending which claim.
+ */
+function probedClaimByQuestion(transcript: Turn[]): (string | null)[] {
+  return transcript
+    .filter((t) => t.role === "interviewer")
+    .map((t) => t.probesClaim ?? null);
+}
+
 function reporterSystem(
   ctx: InterviewContext,
   questionCount: number,
-  hasVoice: boolean
+  hasVoice: boolean,
+  hasClaims: boolean
 ): string {
   return `You are the same hiring manager, writing up your notes immediately after the interview. You are honest, specific, and you do not inflate. Most real candidates land between 45 and 75.
 
@@ -337,6 +468,15 @@ ${
 }
 - The "answers" array must contain exactly ${questionCount} entries, one per question asked, in order.
 ${
+  hasClaims
+    ? `- claimVerdict: SOME questions were flagged as claim checks — you will be told which ones and what evidence was missing. For EACH of those answers, judge whether the candidate supplied the missing evidence when pressed:
+  - "GROUNDED": they gave the specific evidence — the baseline, the number, the mechanism, what they personally did. The claim now stands up.
+  - "THIN": they said more but still left the key piece out. Partly defended.
+  - "UNPROVEN": they could not supply the evidence, changed the subject, or repeated the claim without backing it.
+  Set claimVerdict ONLY on the flagged answers; omit it on all others. This is never a judgement that the claim is false — only whether they can back it up out loud. Reflect it in "whatDidnt".`
+    : ""
+}
+${
   ctx.deep
     ? `- modelAnswer: for each answer, write what a strong response to THAT question actually sounds like, using THIS candidate's real background. 3-4 sentences, first person.
 - drillQuestions: 5 questions they should rehearse before the real thing.`
@@ -359,6 +499,8 @@ Respond with ONLY a valid JSON object, no markdown fences:
     "impact": 0-100,
     "whatWorked": "specific, quoting them",
     "whatDidnt": "specific and actionable, quoting them"${
+      hasClaims ? ',\n    "claimVerdict": "GROUNDED|THIN|UNPROVEN (only on flagged claim-check answers)"' : ""
+    }${
       ctx.deep ? ',\n    "modelAnswer": "first person, 3-4 sentences"' : ""
     }
   }],
@@ -378,11 +520,37 @@ export async function generateReport(
 
   const delivery = deliveryBlock(transcript);
 
+  // Which question attacked which claim — authoritative, from the transcript.
+  const probed = probedClaimByQuestion(transcript);
+  const claimsByText = new Map((ctx.claims ?? []).map((c) => [c.text, c]));
+  const claimsTested = probed
+    .map((text, i) =>
+      text
+        ? {
+            q: i + 1,
+            text,
+            whatsMissing: claimsByText.get(text)?.whatsMissing ?? "",
+          }
+        : null
+    )
+    .filter((x): x is { q: number; text: string; whatsMissing: string } => x !== null);
+
+  const claimsBlock =
+    claimsTested.length > 0
+      ? `\n=== CLAIMS UNDER TEST (judge claimVerdict for exactly these answers) ===
+${claimsTested
+  .map(
+    (c) =>
+      `QUESTION ${c.q} pressed on the resume claim "${c.text}". Evidence a recruiter needed: ${c.whatsMissing || "the specifics behind it"}. Did they supply it when pushed?`
+  )
+  .join("\n")}\n`
+      : "";
+
   const user = `${contextBlock(ctx)}
 
 === THE INTERVIEW ===
 ${transcriptBlock(transcript, true)}
-${delivery ? `\n${delivery}\n` : ""}
+${delivery ? `\n${delivery}\n` : ""}${claimsBlock}
 Write up your notes. The "answers" array must contain EXACTLY ${questionCount} objects — one for QUESTION 1 through QUESTION ${questionCount}, in order. Do not merge them. Do not skip any.`;
 
   // The array length is part of the contract, not a hope. Without this the
@@ -394,7 +562,12 @@ Write up your notes. The "answers" array must contain EXACTLY ${questionCount} o
   });
 
   const { result, model } = await chat({
-    system: reporterSystem(ctx, questionCount, delivery !== null),
+    system: reporterSystem(
+      ctx,
+      questionCount,
+      delivery !== null,
+      claimsTested.length > 0
+    ),
     user,
     schema: strictReport,
     // Sized for the worst case: 9 answers, each with a model answer.
@@ -403,10 +576,14 @@ Write up your notes. The "answers" array must contain EXACTLY ${questionCount} o
     mock: () => mockReport(transcript, ctx),
   });
 
-  return { result: clampReport(result, ctx.deep), model };
+  return { result: clampReport(result, ctx.deep, probed), model };
 }
 
-function clampReport(r: InterviewReport, deep: boolean): InterviewReport {
+function clampReport(
+  r: InterviewReport,
+  deep: boolean,
+  probed: (string | null)[]
+): InterviewReport {
   const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
   return {
     ...r,
@@ -416,15 +593,23 @@ function clampReport(r: InterviewReport, deep: boolean): InterviewReport {
     // drillQuestions gets them stripped before anything is persisted, so Pro
     // content can never leak onto a free interview.
     drillQuestions: deep ? r.drillQuestions : undefined,
-    answers: r.answers.map((a) => ({
-      ...a,
-      score: clamp(a.score),
-      structure: clamp(a.structure),
-      specificity: clamp(a.specificity),
-      relevance: clamp(a.relevance),
-      impact: clamp(a.impact),
-      modelAnswer: deep ? a.modelAnswer : undefined,
-    })),
+    answers: r.answers.map((a, i) => {
+      // claimText is code-authoritative (from the transcript), so a hallucinated
+      // quote can never appear; the verdict is kept only where a claim was
+      // genuinely in flight, so it can't be pinned to a non-probe answer.
+      const claimText = probed[i] ?? undefined;
+      return {
+        ...a,
+        score: clamp(a.score),
+        structure: clamp(a.structure),
+        specificity: clamp(a.specificity),
+        relevance: clamp(a.relevance),
+        impact: clamp(a.impact),
+        claimText,
+        claimVerdict: claimText ? a.claimVerdict : undefined,
+        modelAnswer: deep ? a.modelAnswer : undefined,
+      };
+    }),
   };
 }
 
@@ -432,7 +617,21 @@ function clampReport(r: InterviewReport, deep: boolean): InterviewReport {
 /* Offline mode (MOCK_AI=1)                                            */
 /* ------------------------------------------------------------------ */
 
-function mockQuestion(answered: number, ctx: InterviewContext): NextQuestion {
+function mockQuestion(
+  answered: number,
+  ctx: InterviewContext,
+  probedClaim?: Claim | null
+): NextQuestion {
+  // Offline mode still exercises the claim path so the loop is demoable with no
+  // API key: when the server picked a claim to attack, the mock attacks it.
+  if (probedClaim) {
+    return {
+      question: `Your resume says "${probedClaim.text}". Walk me through the number behind that — where did it start, where did it land, and how did you measure it?`,
+      kind: "claim_probe",
+      isFollowUp: false,
+      intent: `Test whether the candidate can defend the claim: ${probedClaim.text}`,
+    };
+  }
   const bank: NextQuestion[] = [
     {
       question: `Walk me through your background — but only the parts that matter for a ${ctx.jobTitle} role. What makes you a fit?`,
@@ -489,6 +688,7 @@ function mockReport(
     .filter((t) => t.role === "candidate" && t.delivery)
     .map((t) => t.delivery!);
   const agg = spoken.length > 0 ? aggregate(spoken) : null;
+  const verdicts: ClaimVerdict[] = ["UNPROVEN", "THIN", "GROUNDED"];
   const answers = questions.map((q, i) => ({
     question: q.content,
     score: [58, 64, 41, 72, 55, 68][i % 6],
@@ -500,6 +700,11 @@ function mockReport(
       "You answered the question that was actually asked, and the narrative was easy to follow.",
     whatDidnt:
       "You said you 'improved performance' without a number. An interviewer needs to hear: improved it from what, to what, measured how?",
+    // clampReport overwrites claimText and gates the verdict, so this only
+    // surfaces where the transcript actually recorded a probe.
+    ...(q.probesClaim
+      ? { claimVerdict: verdicts[i % verdicts.length] }
+      : {}),
     ...(ctx.deep
       ? {
           modelAnswer:

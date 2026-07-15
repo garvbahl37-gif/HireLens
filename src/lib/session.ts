@@ -15,8 +15,24 @@ function secretKey() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSessionToken(userId: string): Promise<string> {
-  return new SignJWT({})
+/**
+ * `tokenVersion` is stamped into the token as `v`.
+ *
+ * A stateless 30-day JWT cannot be revoked — which meant changing your password
+ * did NOT evict the stolen session it exists to evict. The attacker's cookie
+ * kept working for a month. Carrying the version the token was minted with, and
+ * comparing it against the user row at read time, makes every outstanding token
+ * invalid the moment that column is bumped. It costs nothing: the user row is
+ * already fetched on every authenticated request.
+ *
+ * The comparison happens in getCurrentUser()/requireUser(), not here, because
+ * this module is imported by the edge proxy and must stay database-free.
+ */
+export async function createSessionToken(
+  userId: string,
+  tokenVersion: number
+): Promise<string> {
+  return new SignJWT({ v: tokenVersion })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(userId)
     .setIssuedAt()
@@ -24,13 +40,24 @@ export async function createSessionToken(userId: string): Promise<string> {
     .sign(secretKey());
 }
 
-/** Returns the user id, or null for a missing/expired/tampered token. */
-export async function verifySessionToken(token: string): Promise<string | null> {
+export type SessionClaims = { userId: string; tokenVersion: number };
+
+/** Returns the claims, or null for a missing/expired/tampered token. */
+export async function verifySessionToken(
+  token: string
+): Promise<SessionClaims | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey(), {
       algorithms: ["HS256"],
     });
-    return payload.sub ?? null;
+    if (!payload.sub) return null;
+    return {
+      userId: payload.sub,
+      // Tokens minted before `v` existed are version 0, which is the default on
+      // every existing user row — so they stay valid rather than logging the
+      // whole userbase out on deploy.
+      tokenVersion: typeof payload.v === "number" ? payload.v : 0,
+    };
   } catch {
     return null;
   }

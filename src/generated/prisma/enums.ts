@@ -17,6 +17,13 @@ export const Plan = {
 export type Plan = (typeof Plan)[keyof typeof Plan]
 
 
+export const TokenType = {
+  RESET: 'RESET'
+} as const
+
+export type TokenType = (typeof TokenType)[keyof typeof TokenType]
+
+
 export const InterviewStatus = {
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED',

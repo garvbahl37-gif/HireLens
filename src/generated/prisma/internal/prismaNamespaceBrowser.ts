@@ -52,6 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  VerificationToken: 'VerificationToken',
+  RateLimit: 'RateLimit',
   Review: 'Review',
   StripeEvent: 'StripeEvent',
   Interview: 'Interview'
@@ -79,6 +81,7 @@ export const UserScalarFieldEnum = {
   passwordHash: 'passwordHash',
   name: 'name',
   plan: 'plan',
+  tokenVersion: 'tokenVersion',
   stripeCustomerId: 'stripeCustomerId',
   stripeSubscriptionId: 'stripeSubscriptionId',
   stripePriceId: 'stripePriceId',
@@ -89,6 +92,28 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const VerificationTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type VerificationTokenScalarFieldEnum = (typeof VerificationTokenScalarFieldEnum)[keyof typeof VerificationTokenScalarFieldEnum]
+
+
+export const RateLimitScalarFieldEnum = {
+  key: 'key',
+  count: 'count',
+  windowStart: 'windowStart'
+} as const
+
+export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
 
 
 export const ReviewScalarFieldEnum = {
@@ -104,6 +129,7 @@ export const ReviewScalarFieldEnum = {
   result: 'result',
   deep: 'deep',
   model: 'model',
+  promptVersion: 'promptVersion',
   createdAt: 'createdAt'
 } as const
 
@@ -129,6 +155,7 @@ export const InterviewScalarFieldEnum = {
   jobDescription: 'jobDescription',
   status: 'status',
   transcript: 'transcript',
+  claims: 'claims',
   totalQuestions: 'totalQuestions',
   answered: 'answered',
   report: 'report',

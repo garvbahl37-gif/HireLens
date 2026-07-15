@@ -17,9 +17,19 @@ export const getCurrentUser = cache(async () => {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const userId = await verifySessionToken(token);
-  if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  const claims = await verifySessionToken(token);
+  if (!claims) return null;
+
+  const user = await db.user.findUnique({ where: { id: claims.userId } });
+  if (!user) return null;
+
+  // Revocation. The token carries the tokenVersion it was minted with; a
+  // password change or reset bumps the column, and every token issued before
+  // that moment stops working here. Without this a stolen 30-day session
+  // outlives the password change made specifically to kill it.
+  if (user.tokenVersion !== claims.tokenVersion) return null;
+
+  return user;
 });
 
 /**
@@ -38,17 +48,27 @@ export async function requireUser() {
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) redirect("/login");
 
-  const userId = await verifySessionToken(token);
-  if (!userId) redirect("/api/auth/logout");
+  const claims = await verifySessionToken(token);
+  if (!claims) redirect("/api/auth/logout");
 
-  const user = await db.user.findUnique({ where: { id: userId } });
+  const user = await db.user.findUnique({ where: { id: claims.userId } });
   if (!user) redirect("/api/auth/logout");
+
+  // A revoked session is indistinguishable from a stale one for redirect
+  // purposes: clear the cookie via logout so the next request lands on /login
+  // rather than looping against the still-signature-valid JWT the proxy sees.
+  if (user.tokenVersion !== claims.tokenVersion) redirect("/api/auth/logout");
+
   return user;
 }
 
-export async function startSession(userId: string) {
+export async function startSession(userId: string, tokenVersion: number) {
   const store = await cookies();
-  store.set(SESSION_COOKIE, await createSessionToken(userId), sessionCookieOptions);
+  store.set(
+    SESSION_COOKIE,
+    await createSessionToken(userId, tokenVersion),
+    sessionCookieOptions
+  );
 }
 
 export async function endSession() {

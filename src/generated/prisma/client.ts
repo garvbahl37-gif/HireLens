@@ -47,6 +47,23 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model VerificationToken
+ * A single-use, short-lived token for out-of-band account actions.
+ * Only the SHA-256 of the token is stored: a database leak must not hand the
+ * attacker a working password-reset link.
+ */
+export type VerificationToken = Prisma.VerificationTokenModel
+/**
+ * Model RateLimit
+ * Fixed-window rate limit counters, keyed by a salted hash of the caller.
+ * 
+ * In Postgres rather than Redis because the app already has exactly one
+ * stateful dependency and adding a second to count integers is a bad trade.
+ * The window is advanced in a single atomic statement (see src/lib/ratelimit.ts),
+ * so concurrent requests cannot both reset it.
+ */
+export type RateLimit = Prisma.RateLimitModel
+/**
  * Model Review
  * 
  */

@@ -1,14 +1,53 @@
 import OpenAI from "openai";
 import { z } from "zod";
+import { grounder, inventedNumbers } from "@/lib/evidence";
 
 /* ------------------------------------------------------------------ */
 /* Result shape                                                        */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Bump whenever buildSystemPrompt() changes in a way that could move scores.
+ * Persisted on every Review, because two scores from different prompts are not
+ * comparable and a trend line that mixes them is a lie told with a chart.
+ */
+export const PROMPT_VERSION = "2026-07-15.claims";
+
 const dimension = z.object({
   score: z.number().min(0).max(100),
   note: z.string(),
 });
+
+/**
+ * A checkable factual assertion the candidate makes about themselves.
+ *
+ * This is the seam the whole product turns on: these are the sentences a real
+ * interviewer will make them prove. `text` MUST be a verbatim span of the
+ * resume -- enforced in code (see src/lib/evidence.ts), not requested in the
+ * prompt -- because the interviewer quotes it back at the candidate and a
+ * fabricated quote would be indefensible.
+ */
+export const claimSchema = z.object({
+  /** Verbatim from the resume. Verified against it before we keep it. */
+  text: z.string().min(8).max(300),
+  kind: z.enum(["metric", "scope", "ownership", "tech"]),
+  /**
+   * What a recruiter will ask for that the resume does not supply.
+   * The whole value of the claim: not "this is false" but "you have no
+   * evidence story for this yet, and you will be asked for one".
+   */
+  whatsMissing: z.string().max(300),
+  /** How exposed this claim is under questioning. Drives which ones get probed. */
+  risk: z.enum(["high", "medium", "low"]),
+});
+export type Claim = z.infer<typeof claimSchema>;
+
+export const CLAIM_KIND_LABELS: Record<Claim["kind"], string> = {
+  metric: "Metric",
+  scope: "Scope",
+  ownership: "Ownership",
+  tech: "Technology",
+};
 
 export const analysisSchema = z.object({
   overallScore: z.number().min(0).max(100),
@@ -40,6 +79,12 @@ export const analysisSchema = z.object({
       feedback: z.string(),
     })
   ),
+  /**
+   * The claims a recruiter will make them defend. Optional because rows
+   * written before this feature existed do not have it, and because a claim
+   * that fails the verbatim check is dropped rather than faked.
+   */
+  claims: z.array(claimSchema).optional(),
   // Deep analysis — generated for Pro users only.
   rewrites: z
     .array(
@@ -56,9 +101,25 @@ export const analysisSchema = z.object({
 
 export type Analysis = z.infer<typeof analysisSchema>;
 
+/**
+ * "atsReadiness" is a lie we no longer tell.
+ *
+ * No applicant tracking system emits a 0-100 readiness percentage, and the
+ * founding statistic of that entire genre ("75% of resumes are auto-rejected")
+ * traces to a 2012 sales deck from a company that folded in 2013 without ever
+ * publishing a method. Greenhouse's own documentation states that matching more
+ * keywords does not raise a candidate's match. An LLM guessing a number about a
+ * system it has never touched is exactly the artifact this category is being
+ * credibly attacked for.
+ *
+ * So the label now says what the score actually is: one experienced reader's
+ * judgment of whether this resume survives a six-second human skim. The
+ * database key stays `atsReadiness` -- renaming it would strand every existing
+ * row's JSON, and the honesty problem was the claim, not the identifier.
+ */
 export const DIMENSION_LABELS: Record<keyof Analysis["dimensions"], string> = {
   jobMatch: "Job match",
-  atsReadiness: "ATS readiness",
+  atsReadiness: "Recruiter skim",
   impact: "Impact & results",
   clarity: "Clarity",
   formatting: "Structure",
@@ -75,7 +136,7 @@ const MAX_RESUME_CHARS = 9_000;
 const MAX_JD_CHARS = 7_000;
 
 function buildSystemPrompt(deep: boolean) {
-  return `You are HireLens, a senior technical recruiter and ATS (applicant tracking system) expert who has screened 50,000+ resumes. You review a candidate's resume against a specific job description and return brutally honest, specific, actionable feedback.
+  return `You are HireLens, a senior technical recruiter who has screened 50,000+ resumes. You review a candidate's resume against a specific job description and return brutally honest, specific, actionable feedback.
 
 Rules:
 - Ground EVERY point in the actual resume text. Quote or reference concrete lines. Never invent experience the candidate doesn't have.
@@ -83,10 +144,19 @@ Rules:
 - matchedKeywords / missingKeywords: the most important hard skills, tools, and qualifications from the JOB DESCRIPTION that do / do not appear in the resume (max 12 each).
 - sectionFeedback: one entry per real section of the resume (e.g. Summary, Experience, Projects, Skills, Education). Grade A-F.
 - improvements: concrete problems ordered by severity, each with a specific fix.
+
+The "atsReadiness" dimension is NOT a simulation of any applicant tracking system, and you must never claim it is. No ATS emits a readiness percentage, and you have never seen inside one. Score it as what it actually is: whether this resume survives a SIX-SECOND HUMAN SKIM — does the relevant experience jump out, is the hierarchy scannable, is the important thing above the fold. Judge the reader, not the robot.
+
+CLAIMS — the most important thing you produce:
+- claims: 4-8 factual assertions the candidate makes about themselves that a real interviewer will make them PROVE. These are the load-bearing sentences of the resume: the numbers, the scale, the ownership, the technologies.
+- "text" MUST be copied VERBATIM from the resume, character for character. Do not paraphrase, tidy, re-punctuate or shorten it. It is quoted back to the candidate in an interview, and it is verified against the resume before it is shown — a paraphrase will be silently discarded and your work wasted.
+- Prefer the claims that are IMPRESSIVE BUT UNSUPPORTED: a percentage with no baseline, a team size with no role, "led"/"owned"/"architected" with no detail, a technology listed but never evidenced in any bullet.
+- "whatsMissing" is the specific thing a recruiter will ask for that the resume does not supply. Be concrete: "No baseline — 40% down from what, measured how?" not "needs more detail". This is never an accusation that the claim is false. It is the evidence they will be asked for and do not yet have on the page.
+- "risk": high = they will be asked and currently cannot answer with what is on this page. low = it stands on its own.
 ${
   deep
-    ? `- rewrites: pick the 4-6 weakest bullet points VERBATIM from the resume ("original"), rewrite each into a strong, achievement-oriented bullet tailored to this job ("improved"), and explain why ("why"). NEVER invent a metric the candidate didn't provide — where the resume gives no number, leave a clearly-marked placeholder like [X%] or [N] for the candidate to fill in.
-- atsOptimizations: 5-8 specific mechanical changes to survive ATS parsing and keyword filters for THIS job.
+    ? `- rewrites: pick the 4-6 weakest bullet points VERBATIM from the resume ("original"), rewrite each into a strong, achievement-oriented bullet tailored to this job ("improved"), and explain why ("why"). NEVER invent a metric the candidate didn't provide — where the resume gives no number, leave a clearly-marked placeholder like [X%] or [N] for the candidate to fill in. Every digit you write in "improved" must already appear in the resume, or be inside a [placeholder]. This is checked in code and violations are discarded.
+- atsOptimizations: 5-8 specific MECHANICAL changes that make the file parse cleanly and read fast — section naming, single-column layout, spelled-out acronyms, real text instead of images. Mechanical parse-ability only. Do not promise these will beat a filter or raise a match score; you do not know that and neither does anyone else.
 - interviewQuestions: 5 questions an interviewer for THIS role is likely to ask given the resume's gaps.`
     : `- Do NOT include the keys "rewrites", "atsOptimizations" or "interviewQuestions".`
 }
@@ -107,7 +177,8 @@ Respond with ONLY a valid JSON object (no markdown fences, no commentary) with e
   "improvements": [{ "issue": "...", "severity": "high|medium|low", "fix": "..." }],
   "matchedKeywords": ["..."],
   "missingKeywords": ["..."],
-  "sectionFeedback": [{ "section": "...", "grade": "A|B|C|D|F", "feedback": "..." }]${
+  "sectionFeedback": [{ "section": "...", "grade": "A|B|C|D|F", "feedback": "..." }],
+  "claims": [{ "text": "verbatim from the resume", "kind": "metric|scope|ownership|tech", "whatsMissing": "...", "risk": "high|medium|low" }]${
     deep
       ? `,
   "rewrites": [{ "original": "...", "improved": "...", "why": "..." }],
@@ -405,16 +476,21 @@ export async function analyzeResume(opts: {
   jobTitle: string;
   company?: string | null;
   deep: boolean;
-}): Promise<{ result: Analysis; model: string }> {
+}): Promise<{ result: Analysis; model: string; promptVersion: string }> {
   const { result, model } = await chat({
     system: buildSystemPrompt(opts.deep),
     user: buildUserPrompt(opts),
     schema: analysisSchema,
     maxTokens: opts.deep ? DEEP_MAX_TOKENS : BASIC_MAX_TOKENS,
     temperature: 0.3,
-    mock: () => mockAnalysis(opts.deep),
+    mock: () => mockAnalysis(opts.deep, opts.resumeText),
   });
-  return { result: clampScores(result), model };
+
+  return {
+    result: clampAnalysis(result, opts.deep, opts.resumeText),
+    model,
+    promptVersion: PROMPT_VERSION,
+  };
 }
 
 function extractJson(raw: string): unknown {
@@ -422,14 +498,80 @@ function extractJson(raw: string): unknown {
   return JSON.parse(trimmed);
 }
 
-function clampScores(a: Analysis): Analysis {
+/**
+ * Everything the model is TRUSTED to do, re-checked in code.
+ *
+ * Three jobs, in order of how much damage they prevent:
+ *
+ *  1. THE PAYWALL. `deep` gating used to live only in the system prompt — a
+ *     sentence asking the model not to emit the Pro keys — while every one of
+ *     them is `.optional()` in the schema and so validates fine if it does. A
+ *     stray token, a retry, or a resume carrying an injected instruction handed
+ *     a free user the entire Pro deliverable. The interview side has always
+ *     stripped these in code (clampReport); the review side merely asked
+ *     nicely. Now it doesn't ask.
+ *
+ *  2. THE QUOTES. A claim whose `text` is not actually in the resume is
+ *     dropped. The interviewer reads these back to the candidate verbatim —
+ *     showing someone a sentence they never wrote, in quotation marks, as their
+ *     own, is the single worst thing this product could do.
+ *
+ *  3. THE NUMBERS. A rewrite may not contain a metric the resume never stated.
+ *     This is the guardrail every competitor requests in a prompt and none of
+ *     them enforces, which is why theirs invent "reduced latency 40%" for a
+ *     candidate who never measured it — and why that candidate gets caught.
+ *
+ * All three FAIL SOFT: bad items are dropped, never thrown. A grounding miss is
+ * a quality problem, and turning it into a 502 on the primary revenue path
+ * would trade a small quality problem for a total outage.
+ */
+function clampAnalysis(a: Analysis, deep: boolean, resumeText: string): Analysis {
   const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+
   a.overallScore = clamp(a.overallScore);
   for (const key of Object.keys(a.dimensions) as Array<
     keyof Analysis["dimensions"]
   >) {
     a.dimensions[key].score = clamp(a.dimensions[key].score);
   }
+
+  /* ---- 2. claims must be real quotes ---- */
+  if (a.claims?.length) {
+    const isGrounded = grounder(resumeText);
+    const kept = a.claims.filter((c) => isGrounded(c.text));
+    const dropped = a.claims.length - kept.length;
+    if (dropped > 0) {
+      // PDF text is a swamp and the model paraphrases under pressure. A high
+      // drop rate silently guts the feature, so it has to be visible.
+      console.warn(
+        `[claims] dropped ${dropped}/${a.claims.length} — not verbatim in the resume`
+      );
+    }
+    a.claims = kept.slice(0, 8);
+  }
+
+  /* ---- 1. the paywall, enforced in code ---- */
+  if (!deep) {
+    a.rewrites = undefined;
+    a.atsOptimizations = undefined;
+    a.interviewQuestions = undefined;
+    return a;
+  }
+
+  /* ---- 3. no invented metrics ---- */
+  if (a.rewrites?.length) {
+    a.rewrites = a.rewrites.filter((r) => {
+      const invented = inventedNumbers(r.improved, resumeText);
+      if (invented.length > 0) {
+        console.warn(
+          `[rewrites] dropped — invented ${invented.join(", ")}: "${r.improved.slice(0, 80)}"`
+        );
+        return false;
+      }
+      return true;
+    });
+  }
+
   return a;
 }
 
@@ -437,8 +579,47 @@ function clampScores(a: Analysis): Analysis {
 /* Mock (local dev without an API key — MOCK_AI=1)                     */
 /* ------------------------------------------------------------------ */
 
-export function mockAnalysis(deep: boolean): Analysis {
+/**
+ * The mock's claims are lifted from the REAL resume, not hardcoded.
+ *
+ * A fixed set of fake claims would be dropped by the grounding check in
+ * clampAnalysis (they aren't in the user's resume), so the offline demo would
+ * show an empty claim list — the one feature you most want to see working
+ * would be the one feature that looked broken. Picking real spans also means
+ * MOCK_AI=1 genuinely exercises the verbatim path instead of tiptoeing around
+ * it.
+ */
+function mockClaims(resumeText: string): Claim[] {
+  const kinds = ["metric", "scope", "ownership", "tech"] as const;
+  const missing = [
+    "No baseline. Down from what, measured how, over what period?",
+    "The resume says what happened but not what you owned. Whose decision was it?",
+    "\"Led\" is doing a lot of work here. How many people, and what did you actually decide?",
+    "Listed as a skill but never evidenced in a single bullet. Where did you use it?",
+  ];
+
+  const lines = resumeText
+    .split(/\r?\n/)
+    .map((l) => l.replace(/^[\s•▪●·‣\-*]+/, "").trim())
+    .filter((l) => l.length >= 30 && l.length <= 220);
+
+  // The interesting bullets are the ones carrying a number or an ownership verb.
+  const juicy = lines.filter((l) =>
+    /\d|led|owned|built|architected|designed|managed|migrated/i.test(l)
+  );
+  const picked = (juicy.length >= 3 ? juicy : lines).slice(0, 4);
+
+  return picked.map((text, i) => ({
+    text,
+    kind: kinds[i % kinds.length],
+    whatsMissing: missing[i % missing.length],
+    risk: (i === 0 ? "high" : i === 1 ? "high" : "medium") as Claim["risk"],
+  }));
+}
+
+export function mockAnalysis(deep: boolean, resumeText = ""): Analysis {
   const base: Analysis = {
+    claims: mockClaims(resumeText),
     overallScore: 68,
     verdict: "Strong engineering story, but the resume undersells measurable impact.",
     summary:

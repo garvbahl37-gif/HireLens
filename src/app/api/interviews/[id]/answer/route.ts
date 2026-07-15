@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { AnalysisError } from "@/lib/ai";
+import type { Claim } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -104,6 +105,10 @@ export async function POST(
 
   const answered = withAnswer.filter((t) => t.role === "candidate").length;
 
+  // Claims were snapshotted onto the row at start. Loosely typed as Json in
+  // Prisma; we wrote it as Claim[], so cast rather than re-validate on every turn.
+  const claims = (interview.claims as Claim[] | null) ?? [];
+
   const ctx: InterviewContext = {
     jobTitle: interview.jobTitle,
     company: interview.company,
@@ -111,6 +116,7 @@ export async function POST(
     jobDescription: interview.jobDescription,
     totalQuestions: interview.totalQuestions,
     deep: interview.deep,
+    claims,
   };
 
   /* ---------- the interview is over: write the report ---------- */
@@ -156,7 +162,7 @@ export async function POST(
 
   /* ---------- otherwise: ask the next question ---------- */
   try {
-    const { result } = await nextQuestion(ctx, withAnswer);
+    const { result, probedClaim } = await nextQuestion(ctx, withAnswer);
 
     const questionTurn: Turn = {
       role: "interviewer",
@@ -164,6 +170,9 @@ export async function POST(
       content: result.question,
       isFollowUp: result.isFollowUp,
       intent: result.intent,
+      // Server-decided, so the transcript records which claim was attacked as a
+      // fact — this is what the report's per-answer verdict is anchored to.
+      probesClaim: probedClaim?.text,
       at: new Date().toISOString(),
     };
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { AnalysisError } from "@/lib/ai";
+import { AnalysisError, analysisSchema } from "@/lib/ai";
+import type { Claim } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -75,6 +76,10 @@ export async function POST(req: NextRequest) {
   let company: string | null;
   let resumeText: string;
   let jobDescription: string;
+  // The claims to attack, drawn from the launching review's analysis. Snapshotted
+  // onto the interview row so a later edit to the review can't mutate a run in
+  // flight. Empty for manual (pasted-text) interviews — nothing was analysed.
+  let claims: Claim[] = [];
   const b = parsed.data;
 
   if (b.reviewId) {
@@ -86,6 +91,7 @@ export async function POST(req: NextRequest) {
         company: true,
         resumeText: true,
         jobDescription: true,
+        result: true,
       },
     });
     if (!review) {
@@ -95,6 +101,12 @@ export async function POST(req: NextRequest) {
     company = review.company;
     resumeText = review.resumeText;
     jobDescription = review.jobDescription;
+    // The result JSON is trusted (we wrote it) but old rows predate claims, so
+    // parse defensively and just carry an empty list when they're absent.
+    const analysis = analysisSchema.safeParse(review.result);
+    if (analysis.success && analysis.data.claims) {
+      claims = analysis.data.claims;
+    }
   } else {
     jobTitle = b.jobTitle!;
     company = b.company?.trim() ? b.company : null;
@@ -113,6 +125,7 @@ export async function POST(req: NextRequest) {
     jobDescription,
     totalQuestions,
     deep: isPro,
+    claims,
   };
 
   try {
@@ -146,6 +159,7 @@ export async function POST(req: NextRequest) {
             company,
             resumeText,
             jobDescription,
+            claims: claims.length > 0 ? claims : undefined,
             transcript: [opening],
             totalQuestions,
             deep: isPro,

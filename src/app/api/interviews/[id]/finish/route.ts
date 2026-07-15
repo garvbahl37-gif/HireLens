@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { AnalysisError } from "@/lib/ai";
+import type { Claim } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -69,6 +70,9 @@ export async function POST(
     // Score against what was actually asked, not what was planned.
     totalQuestions: answered,
     deep: interview.deep,
+    // The per-answer claim verdicts are read from the transcript's probesClaim
+    // stamps, so an early finish still audits the claims that were pressed.
+    claims: (interview.claims as Claim[] | null) ?? [],
   };
 
   try {

@@ -13,6 +13,7 @@ import { DIMENSION_LABELS } from "@/lib/ai";
 import { scoreGrade } from "@/components/ScoreRing";
 import { AnimatedScoreRing } from "@/components/dashboard/AnimatedScoreRing";
 import { AnimatedScoreBar } from "@/components/AnimatedScoreBar";
+import { ClaimsCard } from "@/components/ClaimsCard";
 import { Stagger } from "@/components/dashboard/Stagger";
 import { cn } from "@/lib/cn";
 
@@ -34,6 +35,7 @@ export function ReviewResult({
   analysis,
   deep,
   meta,
+  reviewId,
 }: {
   analysis: Analysis;
   deep: boolean;
@@ -43,6 +45,8 @@ export function ReviewResult({
     resumeFilename: string | null;
     createdAt: Date;
   };
+  /** Lets the claims card launch an interview aimed back at this review. */
+  reviewId?: string;
 }) {
   return (
     <Stagger className="space-y-6">
@@ -81,6 +85,11 @@ export function ReviewResult({
           </div>
         </div>
       </div>
+
+      {/* ---------- claims: the resume→interview hinge ---------- */}
+      {analysis.claims && analysis.claims.length > 0 && (
+        <ClaimsCard claims={analysis.claims} reviewId={reviewId} />
+      )}
 
       {/* ---------- dimensions ---------- */}
       <div className="card p-6 sm:p-8">

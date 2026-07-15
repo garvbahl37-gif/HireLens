@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · HireLens",
   },
   description:
-    "Upload your resume, paste the job description, and get a recruiter-grade scored review in seconds: keyword gaps, ATS readiness, and line-by-line rewrites.",
+    "Upload your resume, paste the job description, and get a recruiter-grade scored review in seconds — then defend every claim on it in a voice mock interview that quotes your resume back at you.",
 };
 
 export default function RootLayout({

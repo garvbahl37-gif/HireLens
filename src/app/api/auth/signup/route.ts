@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { startSession } from "@/lib/auth";
+import { enforce } from "@/lib/ratelimit";
 
 const bodySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -11,6 +12,9 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const limited = await enforce(req, "signup");
+  if (limited) return limited;
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -35,6 +39,6 @@ export async function POST(req: NextRequest) {
     data: { name, email, passwordHash },
   });
 
-  await startSession(user.id);
+  await startSession(user.id, user.tokenVersion);
   return NextResponse.json({ ok: true });
 }

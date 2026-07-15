@@ -23,19 +23,26 @@ export function InterviewSetup({
   isPro,
   questions,
   limitHit,
+  initialReviewId,
 }: {
   reviews: PastReview[];
   isPro: boolean;
   questions: number;
   limitHit: boolean;
+  /** Preselect a review — set when arriving from a review's "Defend these claims". */
+  initialReviewId?: string;
 }) {
   const router = useRouter();
+  // Honour an incoming reviewId only if it's actually one of theirs; otherwise
+  // fall back to the most recent, so a stale or forged id can't select nothing.
+  const preselected =
+    initialReviewId && reviews.some((r) => r.id === initialReviewId)
+      ? initialReviewId
+      : reviews[0]?.id ?? null;
   const [mode, setMode] = useState<"review" | "manual">(
     reviews.length > 0 ? "review" : "manual"
   );
-  const [reviewId, setReviewId] = useState<string | null>(
-    reviews[0]?.id ?? null
-  );
+  const [reviewId, setReviewId] = useState<string | null>(preselected);
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
   const [resumeText, setResumeText] = useState("");

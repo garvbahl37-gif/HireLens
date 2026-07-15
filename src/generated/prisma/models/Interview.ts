@@ -87,6 +87,7 @@ export type InterviewCountAggregateOutputType = {
   jobDescription: number
   status: number
   transcript: number
+  claims: number
   totalQuestions: number
   answered: number
   report: number
@@ -160,6 +161,7 @@ export type InterviewCountAggregateInputType = {
   jobDescription?: true
   status?: true
   transcript?: true
+  claims?: true
   totalQuestions?: true
   answered?: true
   report?: true
@@ -268,6 +270,7 @@ export type InterviewGroupByOutputType = {
   jobDescription: string
   status: $Enums.InterviewStatus
   transcript: runtime.JsonValue
+  claims: runtime.JsonValue | null
   totalQuestions: number
   answered: number
   report: runtime.JsonValue | null
@@ -312,6 +315,7 @@ export type InterviewWhereInput = {
   jobDescription?: Prisma.StringFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusFilter<"Interview"> | $Enums.InterviewStatus
   transcript?: Prisma.JsonFilter<"Interview">
+  claims?: Prisma.JsonNullableFilter<"Interview">
   totalQuestions?: Prisma.IntFilter<"Interview"> | number
   answered?: Prisma.IntFilter<"Interview"> | number
   report?: Prisma.JsonNullableFilter<"Interview">
@@ -334,6 +338,7 @@ export type InterviewOrderByWithRelationInput = {
   jobDescription?: Prisma.SortOrder
   status?: Prisma.SortOrder
   transcript?: Prisma.SortOrder
+  claims?: Prisma.SortOrderInput | Prisma.SortOrder
   totalQuestions?: Prisma.SortOrder
   answered?: Prisma.SortOrder
   report?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -359,6 +364,7 @@ export type InterviewWhereUniqueInput = Prisma.AtLeast<{
   jobDescription?: Prisma.StringFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusFilter<"Interview"> | $Enums.InterviewStatus
   transcript?: Prisma.JsonFilter<"Interview">
+  claims?: Prisma.JsonNullableFilter<"Interview">
   totalQuestions?: Prisma.IntFilter<"Interview"> | number
   answered?: Prisma.IntFilter<"Interview"> | number
   report?: Prisma.JsonNullableFilter<"Interview">
@@ -381,6 +387,7 @@ export type InterviewOrderByWithAggregationInput = {
   jobDescription?: Prisma.SortOrder
   status?: Prisma.SortOrder
   transcript?: Prisma.SortOrder
+  claims?: Prisma.SortOrderInput | Prisma.SortOrder
   totalQuestions?: Prisma.SortOrder
   answered?: Prisma.SortOrder
   report?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -410,6 +417,7 @@ export type InterviewScalarWhereWithAggregatesInput = {
   jobDescription?: Prisma.StringWithAggregatesFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusWithAggregatesFilter<"Interview"> | $Enums.InterviewStatus
   transcript?: Prisma.JsonWithAggregatesFilter<"Interview">
+  claims?: Prisma.JsonNullableWithAggregatesFilter<"Interview">
   totalQuestions?: Prisma.IntWithAggregatesFilter<"Interview"> | number
   answered?: Prisma.IntWithAggregatesFilter<"Interview"> | number
   report?: Prisma.JsonNullableWithAggregatesFilter<"Interview">
@@ -430,6 +438,7 @@ export type InterviewCreateInput = {
   jobDescription: string
   status?: $Enums.InterviewStatus
   transcript: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions: number
   answered?: number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -452,6 +461,7 @@ export type InterviewUncheckedCreateInput = {
   jobDescription: string
   status?: $Enums.InterviewStatus
   transcript: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions: number
   answered?: number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -472,6 +482,7 @@ export type InterviewUpdateInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -494,6 +505,7 @@ export type InterviewUncheckedUpdateInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -515,6 +527,7 @@ export type InterviewCreateManyInput = {
   jobDescription: string
   status?: $Enums.InterviewStatus
   transcript: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions: number
   answered?: number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -535,6 +548,7 @@ export type InterviewUpdateManyMutationInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -556,6 +570,7 @@ export type InterviewUncheckedUpdateManyInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -587,6 +602,7 @@ export type InterviewCountOrderByAggregateInput = {
   jobDescription?: Prisma.SortOrder
   status?: Prisma.SortOrder
   transcript?: Prisma.SortOrder
+  claims?: Prisma.SortOrder
   totalQuestions?: Prisma.SortOrder
   answered?: Prisma.SortOrder
   report?: Prisma.SortOrder
@@ -711,6 +727,7 @@ export type InterviewCreateWithoutUserInput = {
   jobDescription: string
   status?: $Enums.InterviewStatus
   transcript: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions: number
   answered?: number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -731,6 +748,7 @@ export type InterviewUncheckedCreateWithoutUserInput = {
   jobDescription: string
   status?: $Enums.InterviewStatus
   transcript: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions: number
   answered?: number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -781,6 +799,7 @@ export type InterviewScalarWhereInput = {
   jobDescription?: Prisma.StringFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusFilter<"Interview"> | $Enums.InterviewStatus
   transcript?: Prisma.JsonFilter<"Interview">
+  claims?: Prisma.JsonNullableFilter<"Interview">
   totalQuestions?: Prisma.IntFilter<"Interview"> | number
   answered?: Prisma.IntFilter<"Interview"> | number
   report?: Prisma.JsonNullableFilter<"Interview">
@@ -801,6 +820,7 @@ export type InterviewCreateManyUserInput = {
   jobDescription: string
   status?: $Enums.InterviewStatus
   transcript: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions: number
   answered?: number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -821,6 +841,7 @@ export type InterviewUpdateWithoutUserInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -841,6 +862,7 @@ export type InterviewUncheckedUpdateWithoutUserInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -861,6 +883,7 @@ export type InterviewUncheckedUpdateManyWithoutUserInput = {
   jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   transcript?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  claims?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totalQuestions?: Prisma.IntFieldUpdateOperationsInput | number
   answered?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -884,6 +907,7 @@ export type InterviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   jobDescription?: boolean
   status?: boolean
   transcript?: boolean
+  claims?: boolean
   totalQuestions?: boolean
   answered?: boolean
   report?: boolean
@@ -906,6 +930,7 @@ export type InterviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   jobDescription?: boolean
   status?: boolean
   transcript?: boolean
+  claims?: boolean
   totalQuestions?: boolean
   answered?: boolean
   report?: boolean
@@ -928,6 +953,7 @@ export type InterviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   jobDescription?: boolean
   status?: boolean
   transcript?: boolean
+  claims?: boolean
   totalQuestions?: boolean
   answered?: boolean
   report?: boolean
@@ -950,6 +976,7 @@ export type InterviewSelectScalar = {
   jobDescription?: boolean
   status?: boolean
   transcript?: boolean
+  claims?: boolean
   totalQuestions?: boolean
   answered?: boolean
   report?: boolean
@@ -961,7 +988,7 @@ export type InterviewSelectScalar = {
   completedAt?: boolean
 }
 
-export type InterviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "reviewId" | "jobTitle" | "company" | "resumeText" | "jobDescription" | "status" | "transcript" | "totalQuestions" | "answered" | "report" | "overallScore" | "verdict" | "deep" | "model" | "createdAt" | "completedAt", ExtArgs["result"]["interview"]>
+export type InterviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "reviewId" | "jobTitle" | "company" | "resumeText" | "jobDescription" | "status" | "transcript" | "claims" | "totalQuestions" | "answered" | "report" | "overallScore" | "verdict" | "deep" | "model" | "createdAt" | "completedAt", ExtArgs["result"]["interview"]>
 export type InterviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -995,6 +1022,14 @@ export type $InterviewPayload<ExtArgs extends runtime.Types.Extensions.InternalA
      * read and written whole -- there is no query that wants a single turn.
      */
     transcript: runtime.JsonValue
+    /**
+     * The resume claims to attack, snapshotted from the launching review at
+     * start (same discipline as `deep`/`totalQuestions`): editing the review
+     * afterwards must not mutate an interview already in flight. Null for
+     * interviews started from pasted text, which have no prior analysis. Shape
+     * is Claim[] from src/lib/ai.ts.
+     */
+    claims: runtime.JsonValue | null
     /**
      * Planned number of questions for this run (Pro gets a longer interview).
      */
@@ -1446,6 +1481,7 @@ export interface InterviewFieldRefs {
   readonly jobDescription: Prisma.FieldRef<"Interview", 'String'>
   readonly status: Prisma.FieldRef<"Interview", 'InterviewStatus'>
   readonly transcript: Prisma.FieldRef<"Interview", 'Json'>
+  readonly claims: Prisma.FieldRef<"Interview", 'Json'>
   readonly totalQuestions: Prisma.FieldRef<"Interview", 'Int'>
   readonly answered: Prisma.FieldRef<"Interview", 'Int'>
   readonly report: Prisma.FieldRef<"Interview", 'Json'>

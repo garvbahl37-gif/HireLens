@@ -9,15 +9,18 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  const userId = token ? await verifySessionToken(token) : null;
+  // Signature only. The token's tokenVersion can't be checked here — that needs
+  // the user row, and this runs at the edge. getCurrentUser()/requireUser() do
+  // the revocation check, which is the layer that actually gates data.
+  const claims = token ? await verifySessionToken(token) : null;
 
-  if (pathname.startsWith("/dashboard") && !userId) {
+  if (pathname.startsWith("/dashboard") && !claims) {
     const url = new URL("/login", req.url);
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
 
-  if ((pathname === "/login" || pathname === "/signup") && userId) {
+  if ((pathname === "/login" || pathname === "/signup") && claims) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

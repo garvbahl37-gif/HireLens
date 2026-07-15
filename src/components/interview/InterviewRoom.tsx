@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Code2,
+  Crosshair,
   Flag,
   Loader2,
   MessageSquareText,
@@ -33,6 +34,7 @@ const KIND_ICON: Record<QuestionKind, LucideIcon> = {
   technical: Code2,
   gap_probe: Target,
   resume_deep_dive: ScanSearch,
+  claim_probe: Crosshair,
   closing: Waypoints,
 };
 

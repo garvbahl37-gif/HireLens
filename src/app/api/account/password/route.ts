@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, startSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -40,10 +40,22 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await db.user.update({
+  // Bumping tokenVersion invalidates every session token minted before now.
+  // Rotating the hash alone did not do this: the 30-day JWT in the attacker's
+  // browser kept working, so the password change failed at the one job it is
+  // most often performed to do.
+  const updated = await db.user.update({
     where: { id: user.id },
-    data: { passwordHash: await bcrypt.hash(parsed.data.newPassword, 12) },
+    data: {
+      passwordHash: await bcrypt.hash(parsed.data.newPassword, 12),
+      tokenVersion: { increment: 1 },
+    },
+    select: { id: true, tokenVersion: true },
   });
+
+  // ...including this one, so re-issue it. The person who just proved they know
+  // the current password is the one user who should NOT be logged out.
+  await startSession(updated.id, updated.tokenVersion);
 
   return NextResponse.json({ ok: true });
 }

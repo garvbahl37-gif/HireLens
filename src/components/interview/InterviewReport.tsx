@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  Crosshair,
   Dumbbell,
   Lightbulb,
   Lock,
@@ -18,7 +19,7 @@ import { type Delivery, aggregate, fillerBand } from "@/lib/speech-metrics";
 import { AnimatedScoreRing } from "@/components/dashboard/AnimatedScoreRing";
 import { AnimatedScoreBar } from "@/components/AnimatedScoreBar";
 import { Stagger } from "@/components/dashboard/Stagger";
-import type { InterviewReport as Report } from "@/lib/interview";
+import type { ClaimVerdict, InterviewReport as Report } from "@/lib/interview";
 import { cn } from "@/lib/cn";
 
 /** The verdict is the headline. Colour it like a real panel would feel it. */
@@ -28,6 +29,32 @@ const VERDICT_STYLE: Record<string, string> = {
   "Lean hire": "border-warn/40 text-warn bg-warn/5",
   "Lean no hire": "border-warn/50 text-warn bg-warn/10",
   "No hire": "border-bad/50 text-bad bg-bad/10",
+};
+
+/**
+ * How a probed claim held up. The labels describe EVIDENCE, never truth —
+ * "no evidence yet" is a gap to close before the real interview, not a charge
+ * that the candidate lied. That distinction is the whole feature.
+ */
+const CLAIM_VERDICT_META: Record<
+  ClaimVerdict,
+  { label: string; chip: string; dot: string }
+> = {
+  GROUNDED: {
+    label: "Backed it up",
+    chip: "border-good/40 text-good bg-good/10",
+    dot: "bg-good",
+  },
+  THIN: {
+    label: "Partly backed",
+    chip: "border-warn/40 text-warn bg-warn/10",
+    dot: "bg-warn",
+  },
+  UNPROVEN: {
+    label: "No evidence yet",
+    chip: "border-bad/40 text-bad bg-bad/10",
+    dot: "bg-bad",
+  },
 };
 
 export function InterviewReport({
@@ -52,6 +79,17 @@ export function InterviewReport({
 
   const spoken = deliveries.filter(Boolean) as Delivery[];
   const session = spoken.length > 0 ? aggregate(spoken) : null;
+
+  // The claims that were put under the microscope, in the order they were
+  // pressed. This is the artifact the whole resume→interview loop exists to
+  // produce: which of your own resume lines you could defend out loud.
+  const audited = report.answers
+    .map((a, i) => ({ ...a, i }))
+    .filter(
+      (a): a is typeof a & { claimText: string; claimVerdict: ClaimVerdict } =>
+        !!a.claimText && !!a.claimVerdict
+    );
+  const held = audited.filter((a) => a.claimVerdict === "GROUNDED").length;
 
   return (
     <Stagger className="space-y-6">
@@ -101,6 +139,111 @@ export function InterviewReport({
         </p>
         <p className="mt-3 leading-relaxed">{report.focusNext}</p>
       </div>
+
+      {/* ---------- claim audit: the resume→interview loop, closed ---------- */}
+      {audited.length > 0 && (
+        <div className="card overflow-hidden p-0">
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
+                  <Crosshair className="h-3.5 w-3.5" /> Defensibility
+                </p>
+                <h2 className="mt-2 text-lg font-bold">Your resume, under oath</h2>
+                <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">
+                  We took the claims off your resume and made you defend them
+                  out loud. This is about what&rsquo;s on the page, not your
+                  honesty — &ldquo;no evidence yet&rdquo; means the proof a
+                  recruiter wants isn&rsquo;t there to give.
+                </p>
+              </div>
+              {/* The tally as a fraction, big — the number is the headline. */}
+              <div className="shrink-0 text-right">
+                <p className="text-3xl font-extrabold tabular-nums leading-none">
+                  {held}
+                  <span className="text-lg font-bold text-faint">
+                    /{audited.length}
+                  </span>
+                </p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-faint">
+                  held up
+                </p>
+              </div>
+            </div>
+
+            {/* Segmented strength meter — verdict distribution as temperature. */}
+            <div className="mt-5 flex h-2 gap-1 overflow-hidden rounded-full">
+              {audited.map((a) => (
+                <span
+                  key={a.i}
+                  title={CLAIM_VERDICT_META[a.claimVerdict].label}
+                  className={cn(
+                    "h-full flex-1 rounded-full",
+                    CLAIM_VERDICT_META[a.claimVerdict].dot
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Ledger: each claim a line item with a status rail keyed to its verdict. */}
+          <ul className="border-t border-edge">
+            {audited.map((a, idx) => {
+              const meta = CLAIM_VERDICT_META[a.claimVerdict];
+              return (
+                <li
+                  key={a.i}
+                  className={cn(
+                    "flex gap-4 p-5 sm:px-8",
+                    idx > 0 && "border-t border-edge"
+                  )}
+                >
+                  {/* the rail: colour = how well the claim held up */}
+                  <span
+                    className={cn(
+                      "mt-0.5 w-1 shrink-0 rounded-full",
+                      meta.dot
+                    )}
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <p className="flex gap-2 text-sm font-medium leading-relaxed text-ink">
+                        <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" />
+                        <span>{a.claimText}</span>
+                      </p>
+                      <span
+                        className={cn(
+                          "chip shrink-0 gap-1.5 px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                          meta.chip
+                        )}
+                      >
+                        <span
+                          className={cn("h-1.5 w-1.5 rounded-full", meta.dot)}
+                        />
+                        {meta.label}
+                      </span>
+                    </div>
+                    {a.claimVerdict !== "GROUNDED" && a.whatDidnt && (
+                      <p className="mt-2 pl-[1.375rem] text-xs leading-relaxed text-muted">
+                        {a.whatDidnt}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {audited.some((a) => a.claimVerdict !== "GROUNDED") && (
+            <p className="border-t border-edge bg-card2/40 px-6 py-4 text-xs leading-relaxed text-faint sm:px-8">
+              The lines you couldn&rsquo;t back up are the ones to strengthen or
+              cut before the real interview — a recruiter will ask exactly what
+              we just did.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ---------- how they came across ---------- */}
       {session && (
@@ -164,9 +307,22 @@ export function InterviewReport({
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold uppercase tracking-wider text-faint">
-                    Question {i + 1}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-faint">
+                      Question {i + 1}
+                    </p>
+                    {a.claimText && a.claimVerdict && (
+                      <span
+                        className={cn(
+                          "chip gap-1.5 px-2 py-0 text-[10px] uppercase tracking-wider",
+                          CLAIM_VERDICT_META[a.claimVerdict].chip
+                        )}
+                      >
+                        <Crosshair className="h-2.5 w-2.5" />
+                        Claim check · {CLAIM_VERDICT_META[a.claimVerdict].label}
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-1.5 font-semibold leading-snug">
                     {a.question}
                   </p>

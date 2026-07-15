@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TranscriptionError, transcribeAudio } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
+import { enforce } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -15,6 +16,10 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
+
+  // Whisper bills per second of audio, and the upload cap is 20 MB.
+  const limited = await enforce(req, "transcribe", user.id);
+  if (limited) return limited;
 
   let form: FormData;
   try {

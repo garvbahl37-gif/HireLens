@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
+import { enforce } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,10 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
+
+  // ElevenLabs bills per character. Auth alone is not a budget.
+  const limited = await enforce(req, "tts", user.id);
+  if (limited) return limited;
 
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) {

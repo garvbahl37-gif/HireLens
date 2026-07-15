@@ -18,6 +18,13 @@ model User {
   passwordHash           String
   name                   String
   plan                   Plan      @default(FREE)
+
+  /// Bumped on every password change and reset. The session JWT carries the
+  /// value it was minted with, so bumping it invalidates every outstanding
+  /// token at once -- which is what makes a password change actually evict a
+  /// stolen 30-day session, and what "log out everywhere" would be built on.
+  tokenVersion           Int       @default(0)
+
   stripeCustomerId       String?   @unique
   stripeSubscriptionId   String?
   stripePriceId          String?
@@ -25,8 +32,41 @@ model User {
   cancelAtPeriodEnd      Boolean   @default(false)
   reviews                Review[]
   interviews             Interview[]
+  tokens                 VerificationToken[]
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+}
+
+enum TokenType {
+  RESET
+}
+
+/// A single-use, short-lived token for out-of-band account actions.
+/// Only the SHA-256 of the token is stored: a database leak must not hand the
+/// attacker a working password-reset link.
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      TokenType
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Fixed-window rate limit counters, keyed by a salted hash of the caller.
+///
+/// In Postgres rather than Redis because the app already has exactly one
+/// stateful dependency and adding a second to count integers is a bad trade.
+/// The window is advanced in a single atomic statement (see src/lib/ratelimit.ts),
+/// so concurrent requests cannot both reset it.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
 }
 
 model Review {
@@ -43,6 +83,13 @@ model Review {
   result         Json
   deep           Boolean  @default(false)
   model          String
+
+  /// Which revision of the analysis prompt produced this row. Scores from
+  /// different prompt versions are not comparable, and the day someone edits
+  /// buildSystemPrompt() the score trend would silently start lying without
+  /// this. Rows written before the field existed are "legacy".
+  promptVersion  String   @default("legacy")
+
   createdAt      DateTime @default(now())
 
   @@index([userId, createdAt(sort: Desc)])
@@ -82,6 +129,13 @@ model Interview {
   /// Stored as JSON rather than a Turn table because a transcript is only ever
   /// read and written whole -- there is no query that wants a single turn.
   transcript     Json
+
+  /// The resume claims to attack, snapshotted from the launching review at
+  /// start (same discipline as `deep`/`totalQuestions`): editing the review
+  /// afterwards must not mutate an interview already in flight. Null for
+  /// interviews started from pasted text, which have no prior analysis. Shape
+  /// is Claim[] from src/lib/ai.ts.
+  claims         Json?
 
   /// Planned number of questions for this run (Pro gets a longer interview).
   totalQuestions Int

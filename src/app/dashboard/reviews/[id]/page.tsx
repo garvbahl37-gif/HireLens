@@ -37,6 +37,7 @@ export default async function ReviewPage({
       <ReviewResult
         analysis={parsed.data}
         deep={review.deep}
+        reviewId={review.id}
         meta={{
           jobTitle: review.jobTitle,
           company: review.company,

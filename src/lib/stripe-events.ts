@@ -66,6 +66,14 @@ export async function processStripeEvent(event: Stripe.Event): Promise<void> {
 
       case "invoice.paid": {
         // Renewal payments: refresh the period end / plan state.
+        //
+        // `invoice.payment_failed` is deliberately NOT handled here. A failed
+        // renewal moves the subscription to `past_due`, which is an ACTIVE
+        // status by design (see subscription.ts) — Pro stays on through the
+        // dunning grace window, and the downgrade arrives as a
+        // `customer.subscription.updated`/`.deleted` when dunning finally
+        // gives up. Adding a case here would spend a Stripe API call to
+        // re-derive a plan that is intentionally unchanged.
         const invoice = event.data.object as Stripe.Invoice;
         const subRef = invoice.parent?.subscription_details?.subscription;
         const subId = typeof subRef === "string" ? subRef : subRef?.id;

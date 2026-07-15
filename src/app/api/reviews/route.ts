@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractText } from "unpdf";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { AnalysisError, aiModel, analyzeResume } from "@/lib/ai";
+import { AnalysisError, analyzeResume } from "@/lib/ai";
 import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
+import { enforce } from "@/lib/ratelimit";
 import { monthlyReviewCount } from "@/lib/usage";
 
 export const runtime = "nodejs";
@@ -19,6 +20,12 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
+
+  // A Pro user is unlimited by the month but not by the second: this bounds the
+  // burst, so a runaway client can't turn "unlimited reviews" into an unlimited
+  // inference bill.
+  const limited = await enforce(req, "analysis", user.id);
+  if (limited) return limited;
 
   /* ---- plan gate (server-side, the only place that counts) ---- */
   if (user.plan === "FREE") {
@@ -141,7 +148,13 @@ export async function POST(req: NextRequest) {
       verdict: analysis.result.verdict,
       result: JSON.parse(JSON.stringify(analysis.result)),
       deep,
-      model: analysis.model === "mock" ? "mock" : aiModel(),
+      // The model that ACTUALLY ran, not the provider's default. chat() falls
+      // through its model chain when the first one is rate-limited, so recording
+      // aiModel() here logged every fallback hop as the model it wasn't. You
+      // cannot debug a quality regression you are mislabelling, and you cannot
+      // compare two scores when the row lies about which model produced them.
+      model: analysis.model,
+      promptVersion: analysis.promptVersion,
     },
   });
 

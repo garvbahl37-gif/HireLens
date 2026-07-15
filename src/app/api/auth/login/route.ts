@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { startSession } from "@/lib/auth";
+import { enforce } from "@/lib/ratelimit";
 
 const bodySchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -14,6 +15,11 @@ const bodySchema = z.object({
 const DUMMY_HASH = bcrypt.hashSync("timing-equalizer", 10);
 
 export async function POST(req: NextRequest) {
+  // Before the bcrypt compare, not after: the hash is the expensive part, and
+  // an unmetered one is both a credential-stuffing oracle and a CPU DoS.
+  const limited = await enforce(req, "login");
+  if (limited) return limited;
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -38,6 +44,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await startSession(user.id);
+  await startSession(user.id, user.tokenVersion);
   return NextResponse.json({ ok: true });
 }

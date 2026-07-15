@@ -46,6 +46,7 @@ export type ReviewMinAggregateOutputType = {
   verdict: string | null
   deep: boolean | null
   model: string | null
+  promptVersion: string | null
   createdAt: Date | null
 }
 
@@ -61,6 +62,7 @@ export type ReviewMaxAggregateOutputType = {
   verdict: string | null
   deep: boolean | null
   model: string | null
+  promptVersion: string | null
   createdAt: Date | null
 }
 
@@ -77,6 +79,7 @@ export type ReviewCountAggregateOutputType = {
   result: number
   deep: number
   model: number
+  promptVersion: number
   createdAt: number
   _all: number
 }
@@ -102,6 +105,7 @@ export type ReviewMinAggregateInputType = {
   verdict?: true
   deep?: true
   model?: true
+  promptVersion?: true
   createdAt?: true
 }
 
@@ -117,6 +121,7 @@ export type ReviewMaxAggregateInputType = {
   verdict?: true
   deep?: true
   model?: true
+  promptVersion?: true
   createdAt?: true
 }
 
@@ -133,6 +138,7 @@ export type ReviewCountAggregateInputType = {
   result?: true
   deep?: true
   model?: true
+  promptVersion?: true
   createdAt?: true
   _all?: true
 }
@@ -236,6 +242,7 @@ export type ReviewGroupByOutputType = {
   result: runtime.JsonValue
   deep: boolean
   model: string
+  promptVersion: string
   createdAt: Date
   _count: ReviewCountAggregateOutputType | null
   _avg: ReviewAvgAggregateOutputType | null
@@ -275,6 +282,7 @@ export type ReviewWhereInput = {
   result?: Prisma.JsonFilter<"Review">
   deep?: Prisma.BoolFilter<"Review"> | boolean
   model?: Prisma.StringFilter<"Review"> | string
+  promptVersion?: Prisma.StringFilter<"Review"> | string
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -292,6 +300,7 @@ export type ReviewOrderByWithRelationInput = {
   result?: Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
+  promptVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
 }
@@ -312,6 +321,7 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   result?: Prisma.JsonFilter<"Review">
   deep?: Prisma.BoolFilter<"Review"> | boolean
   model?: Prisma.StringFilter<"Review"> | string
+  promptVersion?: Prisma.StringFilter<"Review"> | string
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
@@ -329,6 +339,7 @@ export type ReviewOrderByWithAggregationInput = {
   result?: Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
+  promptVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ReviewCountOrderByAggregateInput
   _avg?: Prisma.ReviewAvgOrderByAggregateInput
@@ -353,6 +364,7 @@ export type ReviewScalarWhereWithAggregatesInput = {
   result?: Prisma.JsonWithAggregatesFilter<"Review">
   deep?: Prisma.BoolWithAggregatesFilter<"Review"> | boolean
   model?: Prisma.StringWithAggregatesFilter<"Review"> | string
+  promptVersion?: Prisma.StringWithAggregatesFilter<"Review"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
 }
 
@@ -368,6 +380,7 @@ export type ReviewCreateInput = {
   result: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
+  promptVersion?: string
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
 }
@@ -385,6 +398,7 @@ export type ReviewUncheckedCreateInput = {
   result: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
+  promptVersion?: string
   createdAt?: Date | string
 }
 
@@ -400,6 +414,7 @@ export type ReviewUpdateInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
 }
@@ -417,6 +432,7 @@ export type ReviewUncheckedUpdateInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -433,6 +449,7 @@ export type ReviewCreateManyInput = {
   result: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
+  promptVersion?: string
   createdAt?: Date | string
 }
 
@@ -448,6 +465,7 @@ export type ReviewUpdateManyMutationInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -464,6 +482,7 @@ export type ReviewUncheckedUpdateManyInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -490,6 +509,7 @@ export type ReviewCountOrderByAggregateInput = {
   result?: Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
+  promptVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -509,6 +529,7 @@ export type ReviewMaxOrderByAggregateInput = {
   verdict?: Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
+  promptVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -524,6 +545,7 @@ export type ReviewMinOrderByAggregateInput = {
   verdict?: Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
+  promptVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -573,14 +595,6 @@ export type ReviewUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ReviewCreateWithoutUserInput = {
   id?: string
   jobTitle: string
@@ -593,6 +607,7 @@ export type ReviewCreateWithoutUserInput = {
   result: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
+  promptVersion?: string
   createdAt?: Date | string
 }
 
@@ -608,6 +623,7 @@ export type ReviewUncheckedCreateWithoutUserInput = {
   result: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
+  promptVersion?: string
   createdAt?: Date | string
 }
 
@@ -653,6 +669,7 @@ export type ReviewScalarWhereInput = {
   result?: Prisma.JsonFilter<"Review">
   deep?: Prisma.BoolFilter<"Review"> | boolean
   model?: Prisma.StringFilter<"Review"> | string
+  promptVersion?: Prisma.StringFilter<"Review"> | string
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
 }
 
@@ -668,6 +685,7 @@ export type ReviewCreateManyUserInput = {
   result: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
+  promptVersion?: string
   createdAt?: Date | string
 }
 
@@ -683,6 +701,7 @@ export type ReviewUpdateWithoutUserInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -698,6 +717,7 @@ export type ReviewUncheckedUpdateWithoutUserInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -713,6 +733,7 @@ export type ReviewUncheckedUpdateManyWithoutUserInput = {
   result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -731,6 +752,7 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   result?: boolean
   deep?: boolean
   model?: boolean
+  promptVersion?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
@@ -748,6 +770,7 @@ export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   result?: boolean
   deep?: boolean
   model?: boolean
+  promptVersion?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
@@ -765,6 +788,7 @@ export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   result?: boolean
   deep?: boolean
   model?: boolean
+  promptVersion?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
@@ -782,10 +806,11 @@ export type ReviewSelectScalar = {
   result?: boolean
   deep?: boolean
   model?: boolean
+  promptVersion?: boolean
   createdAt?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "jobTitle" | "company" | "resumeFilename" | "resumeText" | "jobDescription" | "overallScore" | "verdict" | "result" | "deep" | "model" | "createdAt", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "jobTitle" | "company" | "resumeFilename" | "resumeText" | "jobDescription" | "overallScore" | "verdict" | "result" | "deep" | "model" | "promptVersion" | "createdAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -814,6 +839,13 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     result: runtime.JsonValue
     deep: boolean
     model: string
+    /**
+     * Which revision of the analysis prompt produced this row. Scores from
+     * different prompt versions are not comparable, and the day someone edits
+     * buildSystemPrompt() the score trend would silently start lying without
+     * this. Rows written before the field existed are "legacy".
+     */
+    promptVersion: string
     createdAt: Date
   }, ExtArgs["result"]["review"]>
   composites: {}
@@ -1251,6 +1283,7 @@ export interface ReviewFieldRefs {
   readonly result: Prisma.FieldRef<"Review", 'Json'>
   readonly deep: Prisma.FieldRef<"Review", 'Boolean'>
   readonly model: Prisma.FieldRef<"Review", 'String'>
+  readonly promptVersion: Prisma.FieldRef<"Review", 'String'>
   readonly createdAt: Prisma.FieldRef<"Review", 'DateTime'>
 }
     
