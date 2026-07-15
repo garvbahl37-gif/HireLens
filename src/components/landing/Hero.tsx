@@ -203,14 +203,6 @@ function HeroRing({ score }: { score: number }) {
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 rounded-full blur-xl"
-        style={{ background: color }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.25 }}
-        transition={{ delay: 0.8, duration: 0.8 }}
-      />
       <svg width={size} height={size} className="relative">
         <circle
           cx={size / 2}

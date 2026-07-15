@@ -46,15 +46,19 @@ export function Loader({
             "radial-gradient(60% 48% at 50% 42%, rgba(242,98,46,0.13), transparent 72%), radial-gradient(40% 30% at 50% 42%, rgba(255,154,79,0.08), transparent 70%)",
         }}
       />
-      {/* filmic vignette to pull the eye to centre */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(125% 90% at 50% 48%, transparent 52%, rgba(0,0,0,0.55) 100%)",
-        }}
-      />
+      {/* filmic vignette to pull the eye to centre — tinted to the app
+          background (not pure black) so it blends seamlessly and never reads as
+          a foreign dark box, and only when we own the full screen. */}
+      {fullscreen && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(125% 90% at 50% 48%, transparent 60%, rgba(16,12,10,0.55) 100%)",
+          }}
+        />
+      )}
 
       {/* drifting embers */}
       <div

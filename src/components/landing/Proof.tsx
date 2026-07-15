@@ -31,14 +31,6 @@ function Ring({
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative h-24 w-24 sm:h-[132px] sm:w-[132px]">
-        <motion.div
-          aria-hidden
-          className="absolute inset-0 rounded-full blur-2xl"
-          style={{ background: color }}
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 0.22 } : {}}
-          transition={{ delay: delay + 0.4, duration: 0.8 }}
-        />
         <svg viewBox={`0 0 ${size} ${size}`} className="relative h-full w-full">
           <circle
             cx={size / 2}
