@@ -5,15 +5,15 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
+  AudioLines,
   CreditCard,
+  FilePlus2,
   Infinity as InfinityIcon,
   LayoutDashboard,
-  MessagesSquare,
   PanelLeftClose,
   PanelLeftOpen,
-  Plus,
   Sparkles,
-  User,
+  UserRound,
   Zap,
 } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -27,14 +27,16 @@ const COLLAPSED = 84;
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/new", label: "New review", icon: Plus, exact: false },
+  { href: "/dashboard/new", label: "New review", icon: FilePlus2, exact: false },
   {
+    // A voice glyph, because the mock interview is spoken — more evocative than
+    // a generic chat bubble.
     href: "/dashboard/interview",
     label: "Mock interview",
-    icon: MessagesSquare,
+    icon: AudioLines,
     exact: false,
   },
-  { href: "/dashboard/account", label: "Account", icon: User, exact: false },
+  { href: "/dashboard/account", label: "Account", icon: UserRound, exact: false },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard, exact: false },
 ];
 
@@ -277,20 +279,27 @@ function Nav({ collapsed }: { collapsed: boolean }) {
               // over one shared pill while both are mounted.
               <motion.span
                 layoutId={collapsed ? "pill-collapsed" : "pill-expanded"}
-                className="absolute inset-0 rounded-xl border border-edge2 bg-card2"
+                className="absolute inset-0 rounded-xl border border-edge2/80 bg-card2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}
 
             <span
               className={cn(
-                "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors",
+                "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border transition-[transform,background-color,border-color,color] duration-200 ease-out",
                 active
-                  ? "border-accent/40 bg-accent/10 text-accent"
-                  : "border-transparent text-faint group-hover:border-edge group-hover:bg-card group-hover:text-muted"
+                  ? // Machined accent chip: a warm gradient fill, a hairline
+                    // accent edge, and a top inner highlight so it reads as lit,
+                    // not flat. No blur — nothing here can clip to a box.
+                    "border-accent/45 bg-gradient-to-br from-accent/25 to-accent/[0.06] text-accent shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]"
+                  : "border-transparent text-faint group-hover:-translate-y-px group-hover:border-edge2 group-hover:bg-card group-hover:text-ink"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon
+                className="h-[18px] w-[18px]"
+                strokeWidth={active ? 2.2 : 1.75}
+                absoluteStrokeWidth
+              />
             </span>
 
             {!collapsed && (
