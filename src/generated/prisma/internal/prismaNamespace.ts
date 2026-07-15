@@ -947,6 +947,8 @@ export const ReviewScalarFieldEnum = {
   deep: 'deep',
   model: 'model',
   promptVersion: 'promptVersion',
+  parentReviewId: 'parentReviewId',
+  coverLetter: 'coverLetter',
   createdAt: 'createdAt'
 } as const
 
@@ -978,6 +980,7 @@ export const InterviewScalarFieldEnum = {
   report: 'report',
   overallScore: 'overallScore',
   verdict: 'verdict',
+  panel: 'panel',
   deep: 'deep',
   model: 'model',
   createdAt: 'createdAt',

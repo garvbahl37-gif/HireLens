@@ -90,9 +90,22 @@ model Review {
   /// this. Rows written before the field existed are "legacy".
   promptVersion  String   @default("legacy")
 
+  /// The review this one iterates on. A re-score is a child of the review it
+  /// was launched from, so a resume's improvement over a single job is a chain
+  /// you can walk. Null for a first-pass review. Self-relation.
+  parentReviewId String?
+  parent         Review?  @relation("ReviewIteration", fields: [parentReviewId], references: [id], onDelete: SetNull)
+  iterations     Review[] @relation("ReviewIteration")
+
+  /// A tailored cover letter generated from this resume + job (Pro). Grounded
+  /// and number-guarded like the rewrites; null until generated. Shape is
+  /// CoverLetter from src/lib/ai.ts.
+  coverLetter    Json?
+
   createdAt      DateTime @default(now())
 
   @@index([userId, createdAt(sort: Desc)])
+  @@index([parentReviewId])
 }
 
 // Processed Stripe webhook events, for idempotency.
@@ -146,6 +159,12 @@ model Interview {
   report         Json?
   overallScore   Int?
   verdict        String?
+
+  /// A convened panel: several role-differentiated interviewers each score the
+  /// finished transcript from their own lens, then reach a verdict (Pro,
+  /// on-demand). Null until convened. Shape is PanelReport from
+  /// src/lib/interview.ts. Run once and cached — the deliberation is expensive.
+  panel          Json?
 
   deep           Boolean         @default(false)
   model          String

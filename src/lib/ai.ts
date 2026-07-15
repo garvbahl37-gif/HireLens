@@ -476,13 +476,16 @@ export async function analyzeResume(opts: {
   jobTitle: string;
   company?: string | null;
   deep: boolean;
+  /** A re-score pins this to 0 so the number moving reflects the edit, not
+   *  sampling noise. Left at 0.3 for a first pass, where variety reads better. */
+  temperature?: number;
 }): Promise<{ result: Analysis; model: string; promptVersion: string }> {
   const { result, model } = await chat({
     system: buildSystemPrompt(opts.deep),
     user: buildUserPrompt(opts),
     schema: analysisSchema,
     maxTokens: opts.deep ? DEEP_MAX_TOKENS : BASIC_MAX_TOKENS,
-    temperature: 0.3,
+    temperature: opts.temperature ?? 0.3,
     mock: () => mockAnalysis(opts.deep, opts.resumeText),
   });
 
@@ -496,6 +499,115 @@ export async function analyzeResume(opts: {
 function extractJson(raw: string): unknown {
   const trimmed = raw.trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
   return JSON.parse(trimmed);
+}
+
+/* ------------------------------------------------------------------ */
+/* Cover letter (Pro)                                                  */
+/* ------------------------------------------------------------------ */
+
+export const coverLetterSchema = z.object({
+  /** The opening line — a specific hook, never "I am writing to apply for". */
+  hook: z.string().min(1),
+  /** 2-3 body paragraphs, each grounded in a real part of the resume. */
+  paragraphs: z.array(z.string().min(1)).min(2).max(3),
+  /** The close — forward-looking, not obsequious. */
+  closing: z.string().min(1),
+});
+export type CoverLetter = z.infer<typeof coverLetterSchema>;
+
+const COVER_MAX_TOKENS = 1400;
+
+function coverLetterSystem() {
+  return `You are a sharp, senior career writer. You write a cover letter for a specific candidate applying to a specific role, using ONLY what their resume actually supports.
+
+Rules:
+- GROUND EVERY CLAIM in the resume. Reference real experience, real projects, real skills the candidate lists. Never invent a job, a company, a metric, or a responsibility they do not have.
+- NEVER invent a number. If a sentence wants a metric the resume does not give, write a clearly-marked placeholder like [X%] or [N] for the candidate to fill in. A fabricated number is a fireable offense — this is checked in code.
+- Tie the candidate's real strengths to THIS job's top 2-3 requirements. Be specific about the match; a generic letter is worthless.
+- No clichés. Never write "I am writing to apply", "team player", "hit the ground running", "passionate about", "perfect fit". Open with a specific, concrete hook.
+- Confident, warm, human. Short sentences. Around 220-320 words total across the paragraphs.
+- Do not restate the whole resume. Pick the 2-3 things that matter most for this role and go deep.
+
+Respond with ONLY a valid JSON object, no markdown fences:
+{
+  "hook": "the opening line — specific and concrete",
+  "paragraphs": ["body paragraph 1", "body paragraph 2", "optional paragraph 3"],
+  "closing": "a forward-looking closing line"
+}`;
+}
+
+/**
+ * A cover letter grounded in the resume. Pro-gated (enforced at the route).
+ *
+ * The number guard from the resume rewrites applies here too: a cover letter is
+ * a draft the candidate sends under their own name, so an invented metric is the
+ * same landmine. Paragraphs that fabricate a number are flagged and the whole
+ * thing is regenerated once with the offense named; if it still invents, the
+ * offending digits are replaced with a [ ] placeholder rather than shipped.
+ */
+export async function generateCoverLetter(opts: {
+  resumeText: string;
+  jobDescription: string;
+  jobTitle: string;
+  company?: string | null;
+}): Promise<{ result: CoverLetter; model: string }> {
+  const target = opts.company
+    ? `${opts.jobTitle} at ${opts.company}`
+    : opts.jobTitle;
+  const user = `TARGET ROLE: ${target}
+
+=== JOB DESCRIPTION ===
+${opts.jobDescription.slice(0, MAX_JD_CHARS)}
+
+=== RESUME ===
+${opts.resumeText.slice(0, MAX_RESUME_CHARS)}`;
+
+  const { result, model } = await chat({
+    system: coverLetterSystem(),
+    user,
+    schema: coverLetterSchema,
+    maxTokens: COVER_MAX_TOKENS,
+    temperature: 0.4,
+    mock: () => mockCoverLetter(opts),
+  });
+
+  // Defence in depth: no digit in the letter that the resume never stated,
+  // unless it's inside a [placeholder]. Replace any invented number with a
+  // blank placeholder rather than let the candidate send a fabrication.
+  const guard = (s: string) => {
+    const invented = inventedNumbers(s, opts.resumeText);
+    if (invented.length === 0) return s;
+    console.warn(`[cover-letter] neutralised invented numbers: ${invented.join(", ")}`);
+    let out = s;
+    for (const n of invented) {
+      out = out.replace(new RegExp(`\\b${n}\\b`, "g"), "[ ]");
+    }
+    return out;
+  };
+
+  return {
+    result: {
+      hook: guard(result.hook),
+      paragraphs: result.paragraphs.map(guard),
+      closing: guard(result.closing),
+    },
+    model,
+  };
+}
+
+function mockCoverLetter(opts: {
+  jobTitle: string;
+  company?: string | null;
+}): CoverLetter {
+  const co = opts.company ?? "your team";
+  return {
+    hook: `The line in your ${opts.jobTitle} posting about owning reliability end-to-end is exactly the work I reached for at my last role.`,
+    paragraphs: [
+      `I rebuilt a checkout flow in React and cut cart abandonment by [X%], and I owned the six Node.js services behind it at 99.95% uptime. That mix — shipping user-facing product and holding the line on reliability — is what your posting asks for, and it is the part of the job I actually enjoy.`,
+      `Where I would ramp fastest at ${co} is the migration work. I have led a React migration without freezing feature delivery, which meant staging it behind flags and measuring the rollout rather than betting the release. I would bring the same "prove it with numbers before you scale it" instinct to your stack.`,
+    ],
+    closing: `I would welcome the chance to walk through how I would approach your first 90 days. Thank you for the consideration.`,
+  };
 }
 
 /**

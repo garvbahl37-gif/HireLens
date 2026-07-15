@@ -47,6 +47,7 @@ export type ReviewMinAggregateOutputType = {
   deep: boolean | null
   model: string | null
   promptVersion: string | null
+  parentReviewId: string | null
   createdAt: Date | null
 }
 
@@ -63,6 +64,7 @@ export type ReviewMaxAggregateOutputType = {
   deep: boolean | null
   model: string | null
   promptVersion: string | null
+  parentReviewId: string | null
   createdAt: Date | null
 }
 
@@ -80,6 +82,8 @@ export type ReviewCountAggregateOutputType = {
   deep: number
   model: number
   promptVersion: number
+  parentReviewId: number
+  coverLetter: number
   createdAt: number
   _all: number
 }
@@ -106,6 +110,7 @@ export type ReviewMinAggregateInputType = {
   deep?: true
   model?: true
   promptVersion?: true
+  parentReviewId?: true
   createdAt?: true
 }
 
@@ -122,6 +127,7 @@ export type ReviewMaxAggregateInputType = {
   deep?: true
   model?: true
   promptVersion?: true
+  parentReviewId?: true
   createdAt?: true
 }
 
@@ -139,6 +145,8 @@ export type ReviewCountAggregateInputType = {
   deep?: true
   model?: true
   promptVersion?: true
+  parentReviewId?: true
+  coverLetter?: true
   createdAt?: true
   _all?: true
 }
@@ -243,6 +251,8 @@ export type ReviewGroupByOutputType = {
   deep: boolean
   model: string
   promptVersion: string
+  parentReviewId: string | null
+  coverLetter: runtime.JsonValue | null
   createdAt: Date
   _count: ReviewCountAggregateOutputType | null
   _avg: ReviewAvgAggregateOutputType | null
@@ -283,8 +293,12 @@ export type ReviewWhereInput = {
   deep?: Prisma.BoolFilter<"Review"> | boolean
   model?: Prisma.StringFilter<"Review"> | string
   promptVersion?: Prisma.StringFilter<"Review"> | string
+  parentReviewId?: Prisma.StringNullableFilter<"Review"> | string | null
+  coverLetter?: Prisma.JsonNullableFilter<"Review">
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  parent?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
+  iterations?: Prisma.ReviewListRelationFilter
 }
 
 export type ReviewOrderByWithRelationInput = {
@@ -301,8 +315,12 @@ export type ReviewOrderByWithRelationInput = {
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
+  parentReviewId?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverLetter?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  parent?: Prisma.ReviewOrderByWithRelationInput
+  iterations?: Prisma.ReviewOrderByRelationAggregateInput
 }
 
 export type ReviewWhereUniqueInput = Prisma.AtLeast<{
@@ -322,8 +340,12 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   deep?: Prisma.BoolFilter<"Review"> | boolean
   model?: Prisma.StringFilter<"Review"> | string
   promptVersion?: Prisma.StringFilter<"Review"> | string
+  parentReviewId?: Prisma.StringNullableFilter<"Review"> | string | null
+  coverLetter?: Prisma.JsonNullableFilter<"Review">
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  parent?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
+  iterations?: Prisma.ReviewListRelationFilter
 }, "id">
 
 export type ReviewOrderByWithAggregationInput = {
@@ -340,6 +362,8 @@ export type ReviewOrderByWithAggregationInput = {
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
+  parentReviewId?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverLetter?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ReviewCountOrderByAggregateInput
   _avg?: Prisma.ReviewAvgOrderByAggregateInput
@@ -365,6 +389,8 @@ export type ReviewScalarWhereWithAggregatesInput = {
   deep?: Prisma.BoolWithAggregatesFilter<"Review"> | boolean
   model?: Prisma.StringWithAggregatesFilter<"Review"> | string
   promptVersion?: Prisma.StringWithAggregatesFilter<"Review"> | string
+  parentReviewId?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
+  coverLetter?: Prisma.JsonNullableWithAggregatesFilter<"Review">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
 }
 
@@ -381,8 +407,11 @@ export type ReviewCreateInput = {
   deep?: boolean
   model: string
   promptVersion?: string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
+  parent?: Prisma.ReviewCreateNestedOneWithoutIterationsInput
+  iterations?: Prisma.ReviewCreateNestedManyWithoutParentInput
 }
 
 export type ReviewUncheckedCreateInput = {
@@ -399,7 +428,10 @@ export type ReviewUncheckedCreateInput = {
   deep?: boolean
   model: string
   promptVersion?: string
+  parentReviewId?: string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  iterations?: Prisma.ReviewUncheckedCreateNestedManyWithoutParentInput
 }
 
 export type ReviewUpdateInput = {
@@ -415,8 +447,11 @@ export type ReviewUpdateInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
+  parent?: Prisma.ReviewUpdateOneWithoutIterationsNestedInput
+  iterations?: Prisma.ReviewUpdateManyWithoutParentNestedInput
 }
 
 export type ReviewUncheckedUpdateInput = {
@@ -433,7 +468,10 @@ export type ReviewUncheckedUpdateInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  parentReviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  iterations?: Prisma.ReviewUncheckedUpdateManyWithoutParentNestedInput
 }
 
 export type ReviewCreateManyInput = {
@@ -450,6 +488,8 @@ export type ReviewCreateManyInput = {
   deep?: boolean
   model: string
   promptVersion?: string
+  parentReviewId?: string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -466,6 +506,7 @@ export type ReviewUpdateManyMutationInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -483,6 +524,8 @@ export type ReviewUncheckedUpdateManyInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  parentReviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -494,6 +537,11 @@ export type ReviewListRelationFilter = {
 
 export type ReviewOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ReviewNullableScalarRelationFilter = {
+  is?: Prisma.ReviewWhereInput | null
+  isNot?: Prisma.ReviewWhereInput | null
 }
 
 export type ReviewCountOrderByAggregateInput = {
@@ -510,6 +558,8 @@ export type ReviewCountOrderByAggregateInput = {
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
+  parentReviewId?: Prisma.SortOrder
+  coverLetter?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -530,6 +580,7 @@ export type ReviewMaxOrderByAggregateInput = {
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
+  parentReviewId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -546,6 +597,7 @@ export type ReviewMinOrderByAggregateInput = {
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
+  parentReviewId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -595,6 +647,64 @@ export type ReviewUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
 }
 
+export type ReviewCreateNestedOneWithoutIterationsInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutIterationsInput, Prisma.ReviewUncheckedCreateWithoutIterationsInput>
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutIterationsInput
+  connect?: Prisma.ReviewWhereUniqueInput
+}
+
+export type ReviewCreateNestedManyWithoutParentInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutParentInput, Prisma.ReviewUncheckedCreateWithoutParentInput> | Prisma.ReviewCreateWithoutParentInput[] | Prisma.ReviewUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutParentInput | Prisma.ReviewCreateOrConnectWithoutParentInput[]
+  createMany?: Prisma.ReviewCreateManyParentInputEnvelope
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+}
+
+export type ReviewUncheckedCreateNestedManyWithoutParentInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutParentInput, Prisma.ReviewUncheckedCreateWithoutParentInput> | Prisma.ReviewCreateWithoutParentInput[] | Prisma.ReviewUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutParentInput | Prisma.ReviewCreateOrConnectWithoutParentInput[]
+  createMany?: Prisma.ReviewCreateManyParentInputEnvelope
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+}
+
+export type ReviewUpdateOneWithoutIterationsNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutIterationsInput, Prisma.ReviewUncheckedCreateWithoutIterationsInput>
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutIterationsInput
+  upsert?: Prisma.ReviewUpsertWithoutIterationsInput
+  disconnect?: Prisma.ReviewWhereInput | boolean
+  delete?: Prisma.ReviewWhereInput | boolean
+  connect?: Prisma.ReviewWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReviewUpdateToOneWithWhereWithoutIterationsInput, Prisma.ReviewUpdateWithoutIterationsInput>, Prisma.ReviewUncheckedUpdateWithoutIterationsInput>
+}
+
+export type ReviewUpdateManyWithoutParentNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutParentInput, Prisma.ReviewUncheckedCreateWithoutParentInput> | Prisma.ReviewCreateWithoutParentInput[] | Prisma.ReviewUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutParentInput | Prisma.ReviewCreateOrConnectWithoutParentInput[]
+  upsert?: Prisma.ReviewUpsertWithWhereUniqueWithoutParentInput | Prisma.ReviewUpsertWithWhereUniqueWithoutParentInput[]
+  createMany?: Prisma.ReviewCreateManyParentInputEnvelope
+  set?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  disconnect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  delete?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  update?: Prisma.ReviewUpdateWithWhereUniqueWithoutParentInput | Prisma.ReviewUpdateWithWhereUniqueWithoutParentInput[]
+  updateMany?: Prisma.ReviewUpdateManyWithWhereWithoutParentInput | Prisma.ReviewUpdateManyWithWhereWithoutParentInput[]
+  deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+}
+
+export type ReviewUncheckedUpdateManyWithoutParentNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutParentInput, Prisma.ReviewUncheckedCreateWithoutParentInput> | Prisma.ReviewCreateWithoutParentInput[] | Prisma.ReviewUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutParentInput | Prisma.ReviewCreateOrConnectWithoutParentInput[]
+  upsert?: Prisma.ReviewUpsertWithWhereUniqueWithoutParentInput | Prisma.ReviewUpsertWithWhereUniqueWithoutParentInput[]
+  createMany?: Prisma.ReviewCreateManyParentInputEnvelope
+  set?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  disconnect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  delete?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  update?: Prisma.ReviewUpdateWithWhereUniqueWithoutParentInput | Prisma.ReviewUpdateWithWhereUniqueWithoutParentInput[]
+  updateMany?: Prisma.ReviewUpdateManyWithWhereWithoutParentInput | Prisma.ReviewUpdateManyWithWhereWithoutParentInput[]
+  deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+}
+
 export type ReviewCreateWithoutUserInput = {
   id?: string
   jobTitle: string
@@ -608,7 +718,10 @@ export type ReviewCreateWithoutUserInput = {
   deep?: boolean
   model: string
   promptVersion?: string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  parent?: Prisma.ReviewCreateNestedOneWithoutIterationsInput
+  iterations?: Prisma.ReviewCreateNestedManyWithoutParentInput
 }
 
 export type ReviewUncheckedCreateWithoutUserInput = {
@@ -624,7 +737,10 @@ export type ReviewUncheckedCreateWithoutUserInput = {
   deep?: boolean
   model: string
   promptVersion?: string
+  parentReviewId?: string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  iterations?: Prisma.ReviewUncheckedCreateNestedManyWithoutParentInput
 }
 
 export type ReviewCreateOrConnectWithoutUserInput = {
@@ -670,7 +786,165 @@ export type ReviewScalarWhereInput = {
   deep?: Prisma.BoolFilter<"Review"> | boolean
   model?: Prisma.StringFilter<"Review"> | string
   promptVersion?: Prisma.StringFilter<"Review"> | string
+  parentReviewId?: Prisma.StringNullableFilter<"Review"> | string | null
+  coverLetter?: Prisma.JsonNullableFilter<"Review">
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+}
+
+export type ReviewCreateWithoutIterationsInput = {
+  id?: string
+  jobTitle: string
+  company?: string | null
+  resumeFilename?: string | null
+  resumeText: string
+  jobDescription: string
+  overallScore: number
+  verdict: string
+  result: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: boolean
+  model: string
+  promptVersion?: string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutReviewsInput
+  parent?: Prisma.ReviewCreateNestedOneWithoutIterationsInput
+}
+
+export type ReviewUncheckedCreateWithoutIterationsInput = {
+  id?: string
+  userId: string
+  jobTitle: string
+  company?: string | null
+  resumeFilename?: string | null
+  resumeText: string
+  jobDescription: string
+  overallScore: number
+  verdict: string
+  result: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: boolean
+  model: string
+  promptVersion?: string
+  parentReviewId?: string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+}
+
+export type ReviewCreateOrConnectWithoutIterationsInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutIterationsInput, Prisma.ReviewUncheckedCreateWithoutIterationsInput>
+}
+
+export type ReviewCreateWithoutParentInput = {
+  id?: string
+  jobTitle: string
+  company?: string | null
+  resumeFilename?: string | null
+  resumeText: string
+  jobDescription: string
+  overallScore: number
+  verdict: string
+  result: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: boolean
+  model: string
+  promptVersion?: string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutReviewsInput
+  iterations?: Prisma.ReviewCreateNestedManyWithoutParentInput
+}
+
+export type ReviewUncheckedCreateWithoutParentInput = {
+  id?: string
+  userId: string
+  jobTitle: string
+  company?: string | null
+  resumeFilename?: string | null
+  resumeText: string
+  jobDescription: string
+  overallScore: number
+  verdict: string
+  result: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: boolean
+  model: string
+  promptVersion?: string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  iterations?: Prisma.ReviewUncheckedCreateNestedManyWithoutParentInput
+}
+
+export type ReviewCreateOrConnectWithoutParentInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutParentInput, Prisma.ReviewUncheckedCreateWithoutParentInput>
+}
+
+export type ReviewCreateManyParentInputEnvelope = {
+  data: Prisma.ReviewCreateManyParentInput | Prisma.ReviewCreateManyParentInput[]
+  skipDuplicates?: boolean
+}
+
+export type ReviewUpsertWithoutIterationsInput = {
+  update: Prisma.XOR<Prisma.ReviewUpdateWithoutIterationsInput, Prisma.ReviewUncheckedUpdateWithoutIterationsInput>
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutIterationsInput, Prisma.ReviewUncheckedCreateWithoutIterationsInput>
+  where?: Prisma.ReviewWhereInput
+}
+
+export type ReviewUpdateToOneWithWhereWithoutIterationsInput = {
+  where?: Prisma.ReviewWhereInput
+  data: Prisma.XOR<Prisma.ReviewUpdateWithoutIterationsInput, Prisma.ReviewUncheckedUpdateWithoutIterationsInput>
+}
+
+export type ReviewUpdateWithoutIterationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  overallScore?: Prisma.IntFieldUpdateOperationsInput | number
+  verdict?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
+  parent?: Prisma.ReviewUpdateOneWithoutIterationsNestedInput
+}
+
+export type ReviewUncheckedUpdateWithoutIterationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  overallScore?: Prisma.IntFieldUpdateOperationsInput | number
+  verdict?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  parentReviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ReviewUpsertWithWhereUniqueWithoutParentInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  update: Prisma.XOR<Prisma.ReviewUpdateWithoutParentInput, Prisma.ReviewUncheckedUpdateWithoutParentInput>
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutParentInput, Prisma.ReviewUncheckedCreateWithoutParentInput>
+}
+
+export type ReviewUpdateWithWhereUniqueWithoutParentInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  data: Prisma.XOR<Prisma.ReviewUpdateWithoutParentInput, Prisma.ReviewUncheckedUpdateWithoutParentInput>
+}
+
+export type ReviewUpdateManyWithWhereWithoutParentInput = {
+  where: Prisma.ReviewScalarWhereInput
+  data: Prisma.XOR<Prisma.ReviewUpdateManyMutationInput, Prisma.ReviewUncheckedUpdateManyWithoutParentInput>
 }
 
 export type ReviewCreateManyUserInput = {
@@ -686,6 +960,8 @@ export type ReviewCreateManyUserInput = {
   deep?: boolean
   model: string
   promptVersion?: string
+  parentReviewId?: string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -702,7 +978,10 @@ export type ReviewUpdateWithoutUserInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  parent?: Prisma.ReviewUpdateOneWithoutIterationsNestedInput
+  iterations?: Prisma.ReviewUpdateManyWithoutParentNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutUserInput = {
@@ -718,7 +997,10 @@ export type ReviewUncheckedUpdateWithoutUserInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  parentReviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  iterations?: Prisma.ReviewUncheckedUpdateManyWithoutParentNestedInput
 }
 
 export type ReviewUncheckedUpdateManyWithoutUserInput = {
@@ -734,9 +1016,114 @@ export type ReviewUncheckedUpdateManyWithoutUserInput = {
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  parentReviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type ReviewCreateManyParentInput = {
+  id?: string
+  userId: string
+  jobTitle: string
+  company?: string | null
+  resumeFilename?: string | null
+  resumeText: string
+  jobDescription: string
+  overallScore: number
+  verdict: string
+  result: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: boolean
+  model: string
+  promptVersion?: string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+}
+
+export type ReviewUpdateWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  overallScore?: Prisma.IntFieldUpdateOperationsInput | number
+  verdict?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
+  iterations?: Prisma.ReviewUpdateManyWithoutParentNestedInput
+}
+
+export type ReviewUncheckedUpdateWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  overallScore?: Prisma.IntFieldUpdateOperationsInput | number
+  verdict?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  iterations?: Prisma.ReviewUncheckedUpdateManyWithoutParentNestedInput
+}
+
+export type ReviewUncheckedUpdateManyWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  jobTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  jobDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  overallScore?: Prisma.IntFieldUpdateOperationsInput | number
+  verdict?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  coverLetter?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type ReviewCountOutputType
+ */
+
+export type ReviewCountOutputType = {
+  iterations: number
+}
+
+export type ReviewCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  iterations?: boolean | ReviewCountOutputTypeCountIterationsArgs
+}
+
+/**
+ * ReviewCountOutputType without action
+ */
+export type ReviewCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReviewCountOutputType
+   */
+  select?: Prisma.ReviewCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ReviewCountOutputType without action
+ */
+export type ReviewCountOutputTypeCountIterationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReviewWhereInput
+}
 
 
 export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -753,8 +1140,13 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   deep?: boolean
   model?: boolean
   promptVersion?: boolean
+  parentReviewId?: boolean
+  coverLetter?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Review$parentArgs<ExtArgs>
+  iterations?: boolean | Prisma.Review$iterationsArgs<ExtArgs>
+  _count?: boolean | Prisma.ReviewCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -771,8 +1163,11 @@ export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   deep?: boolean
   model?: boolean
   promptVersion?: boolean
+  parentReviewId?: boolean
+  coverLetter?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Review$parentArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -789,8 +1184,11 @@ export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   deep?: boolean
   model?: boolean
   promptVersion?: boolean
+  parentReviewId?: boolean
+  coverLetter?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Review$parentArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectScalar = {
@@ -807,24 +1205,33 @@ export type ReviewSelectScalar = {
   deep?: boolean
   model?: boolean
   promptVersion?: boolean
+  parentReviewId?: boolean
+  coverLetter?: boolean
   createdAt?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "jobTitle" | "company" | "resumeFilename" | "resumeText" | "jobDescription" | "overallScore" | "verdict" | "result" | "deep" | "model" | "promptVersion" | "createdAt", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "jobTitle" | "company" | "resumeFilename" | "resumeText" | "jobDescription" | "overallScore" | "verdict" | "result" | "deep" | "model" | "promptVersion" | "parentReviewId" | "coverLetter" | "createdAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Review$parentArgs<ExtArgs>
+  iterations?: boolean | Prisma.Review$iterationsArgs<ExtArgs>
+  _count?: boolean | Prisma.ReviewCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReviewIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Review$parentArgs<ExtArgs>
 }
 export type ReviewIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Review$parentArgs<ExtArgs>
 }
 
 export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Review"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    parent: Prisma.$ReviewPayload<ExtArgs> | null
+    iterations: Prisma.$ReviewPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -846,6 +1253,18 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
      * this. Rows written before the field existed are "legacy".
      */
     promptVersion: string
+    /**
+     * The review this one iterates on. A re-score is a child of the review it
+     * was launched from, so a resume's improvement over a single job is a chain
+     * you can walk. Null for a first-pass review. Self-relation.
+     */
+    parentReviewId: string | null
+    /**
+     * A tailored cover letter generated from this resume + job (Pro). Grounded
+     * and number-guarded like the rewrites; null until generated. Shape is
+     * CoverLetter from src/lib/ai.ts.
+     */
+    coverLetter: runtime.JsonValue | null
     createdAt: Date
   }, ExtArgs["result"]["review"]>
   composites: {}
@@ -1242,6 +1661,8 @@ readonly fields: ReviewFieldRefs;
 export interface Prisma__ReviewClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  parent<T extends Prisma.Review$parentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$parentArgs<ExtArgs>>): Prisma.Prisma__ReviewClient<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  iterations<T extends Prisma.Review$iterationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$iterationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1284,6 +1705,8 @@ export interface ReviewFieldRefs {
   readonly deep: Prisma.FieldRef<"Review", 'Boolean'>
   readonly model: Prisma.FieldRef<"Review", 'String'>
   readonly promptVersion: Prisma.FieldRef<"Review", 'String'>
+  readonly parentReviewId: Prisma.FieldRef<"Review", 'String'>
+  readonly coverLetter: Prisma.FieldRef<"Review", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Review", 'DateTime'>
 }
     
@@ -1683,6 +2106,49 @@ export type ReviewDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Reviews to delete.
    */
   limit?: number
+}
+
+/**
+ * Review.parent
+ */
+export type Review$parentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Review
+   */
+  select?: Prisma.ReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Review
+   */
+  omit?: Prisma.ReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReviewInclude<ExtArgs> | null
+  where?: Prisma.ReviewWhereInput
+}
+
+/**
+ * Review.iterations
+ */
+export type Review$iterationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Review
+   */
+  select?: Prisma.ReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Review
+   */
+  omit?: Prisma.ReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReviewInclude<ExtArgs> | null
+  where?: Prisma.ReviewWhereInput
+  orderBy?: Prisma.ReviewOrderByWithRelationInput | Prisma.ReviewOrderByWithRelationInput[]
+  cursor?: Prisma.ReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[]
 }
 
 /**

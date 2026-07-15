@@ -93,6 +93,7 @@ export type InterviewCountAggregateOutputType = {
   report: number
   overallScore: number
   verdict: number
+  panel: number
   deep: number
   model: number
   createdAt: number
@@ -167,6 +168,7 @@ export type InterviewCountAggregateInputType = {
   report?: true
   overallScore?: true
   verdict?: true
+  panel?: true
   deep?: true
   model?: true
   createdAt?: true
@@ -276,6 +278,7 @@ export type InterviewGroupByOutputType = {
   report: runtime.JsonValue | null
   overallScore: number | null
   verdict: string | null
+  panel: runtime.JsonValue | null
   deep: boolean
   model: string
   createdAt: Date
@@ -321,6 +324,7 @@ export type InterviewWhereInput = {
   report?: Prisma.JsonNullableFilter<"Interview">
   overallScore?: Prisma.IntNullableFilter<"Interview"> | number | null
   verdict?: Prisma.StringNullableFilter<"Interview"> | string | null
+  panel?: Prisma.JsonNullableFilter<"Interview">
   deep?: Prisma.BoolFilter<"Interview"> | boolean
   model?: Prisma.StringFilter<"Interview"> | string
   createdAt?: Prisma.DateTimeFilter<"Interview"> | Date | string
@@ -344,6 +348,7 @@ export type InterviewOrderByWithRelationInput = {
   report?: Prisma.SortOrderInput | Prisma.SortOrder
   overallScore?: Prisma.SortOrderInput | Prisma.SortOrder
   verdict?: Prisma.SortOrderInput | Prisma.SortOrder
+  panel?: Prisma.SortOrderInput | Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -370,6 +375,7 @@ export type InterviewWhereUniqueInput = Prisma.AtLeast<{
   report?: Prisma.JsonNullableFilter<"Interview">
   overallScore?: Prisma.IntNullableFilter<"Interview"> | number | null
   verdict?: Prisma.StringNullableFilter<"Interview"> | string | null
+  panel?: Prisma.JsonNullableFilter<"Interview">
   deep?: Prisma.BoolFilter<"Interview"> | boolean
   model?: Prisma.StringFilter<"Interview"> | string
   createdAt?: Prisma.DateTimeFilter<"Interview"> | Date | string
@@ -393,6 +399,7 @@ export type InterviewOrderByWithAggregationInput = {
   report?: Prisma.SortOrderInput | Prisma.SortOrder
   overallScore?: Prisma.SortOrderInput | Prisma.SortOrder
   verdict?: Prisma.SortOrderInput | Prisma.SortOrder
+  panel?: Prisma.SortOrderInput | Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -423,6 +430,7 @@ export type InterviewScalarWhereWithAggregatesInput = {
   report?: Prisma.JsonNullableWithAggregatesFilter<"Interview">
   overallScore?: Prisma.IntNullableWithAggregatesFilter<"Interview"> | number | null
   verdict?: Prisma.StringNullableWithAggregatesFilter<"Interview"> | string | null
+  panel?: Prisma.JsonNullableWithAggregatesFilter<"Interview">
   deep?: Prisma.BoolWithAggregatesFilter<"Interview"> | boolean
   model?: Prisma.StringWithAggregatesFilter<"Interview"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Interview"> | Date | string
@@ -444,6 +452,7 @@ export type InterviewCreateInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: number | null
   verdict?: string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
   createdAt?: Date | string
@@ -467,6 +476,7 @@ export type InterviewUncheckedCreateInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: number | null
   verdict?: string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
   createdAt?: Date | string
@@ -488,6 +498,7 @@ export type InterviewUpdateInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -511,6 +522,7 @@ export type InterviewUncheckedUpdateInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -533,6 +545,7 @@ export type InterviewCreateManyInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: number | null
   verdict?: string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
   createdAt?: Date | string
@@ -554,6 +567,7 @@ export type InterviewUpdateManyMutationInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -576,6 +590,7 @@ export type InterviewUncheckedUpdateManyInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -608,6 +623,7 @@ export type InterviewCountOrderByAggregateInput = {
   report?: Prisma.SortOrder
   overallScore?: Prisma.SortOrder
   verdict?: Prisma.SortOrder
+  panel?: Prisma.SortOrder
   deep?: Prisma.SortOrder
   model?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -733,6 +749,7 @@ export type InterviewCreateWithoutUserInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: number | null
   verdict?: string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
   createdAt?: Date | string
@@ -754,6 +771,7 @@ export type InterviewUncheckedCreateWithoutUserInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: number | null
   verdict?: string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
   createdAt?: Date | string
@@ -805,6 +823,7 @@ export type InterviewScalarWhereInput = {
   report?: Prisma.JsonNullableFilter<"Interview">
   overallScore?: Prisma.IntNullableFilter<"Interview"> | number | null
   verdict?: Prisma.StringNullableFilter<"Interview"> | string | null
+  panel?: Prisma.JsonNullableFilter<"Interview">
   deep?: Prisma.BoolFilter<"Interview"> | boolean
   model?: Prisma.StringFilter<"Interview"> | string
   createdAt?: Prisma.DateTimeFilter<"Interview"> | Date | string
@@ -826,6 +845,7 @@ export type InterviewCreateManyUserInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: number | null
   verdict?: string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: boolean
   model: string
   createdAt?: Date | string
@@ -847,6 +867,7 @@ export type InterviewUpdateWithoutUserInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -868,6 +889,7 @@ export type InterviewUncheckedUpdateWithoutUserInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -889,6 +911,7 @@ export type InterviewUncheckedUpdateManyWithoutUserInput = {
   report?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   overallScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   verdict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  panel?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deep?: Prisma.BoolFieldUpdateOperationsInput | boolean
   model?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -913,6 +936,7 @@ export type InterviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   report?: boolean
   overallScore?: boolean
   verdict?: boolean
+  panel?: boolean
   deep?: boolean
   model?: boolean
   createdAt?: boolean
@@ -936,6 +960,7 @@ export type InterviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   report?: boolean
   overallScore?: boolean
   verdict?: boolean
+  panel?: boolean
   deep?: boolean
   model?: boolean
   createdAt?: boolean
@@ -959,6 +984,7 @@ export type InterviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   report?: boolean
   overallScore?: boolean
   verdict?: boolean
+  panel?: boolean
   deep?: boolean
   model?: boolean
   createdAt?: boolean
@@ -982,13 +1008,14 @@ export type InterviewSelectScalar = {
   report?: boolean
   overallScore?: boolean
   verdict?: boolean
+  panel?: boolean
   deep?: boolean
   model?: boolean
   createdAt?: boolean
   completedAt?: boolean
 }
 
-export type InterviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "reviewId" | "jobTitle" | "company" | "resumeText" | "jobDescription" | "status" | "transcript" | "claims" | "totalQuestions" | "answered" | "report" | "overallScore" | "verdict" | "deep" | "model" | "createdAt" | "completedAt", ExtArgs["result"]["interview"]>
+export type InterviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "reviewId" | "jobTitle" | "company" | "resumeText" | "jobDescription" | "status" | "transcript" | "claims" | "totalQuestions" | "answered" | "report" | "overallScore" | "verdict" | "panel" | "deep" | "model" | "createdAt" | "completedAt", ExtArgs["result"]["interview"]>
 export type InterviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -1044,6 +1071,13 @@ export type $InterviewPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     report: runtime.JsonValue | null
     overallScore: number | null
     verdict: string | null
+    /**
+     * A convened panel: several role-differentiated interviewers each score the
+     * finished transcript from their own lens, then reach a verdict (Pro,
+     * on-demand). Null until convened. Shape is PanelReport from
+     * src/lib/interview.ts. Run once and cached — the deliberation is expensive.
+     */
+    panel: runtime.JsonValue | null
     deep: boolean
     model: string
     createdAt: Date
@@ -1487,6 +1521,7 @@ export interface InterviewFieldRefs {
   readonly report: Prisma.FieldRef<"Interview", 'Json'>
   readonly overallScore: Prisma.FieldRef<"Interview", 'Int'>
   readonly verdict: Prisma.FieldRef<"Interview", 'String'>
+  readonly panel: Prisma.FieldRef<"Interview", 'Json'>
   readonly deep: Prisma.FieldRef<"Interview", 'Boolean'>
   readonly model: Prisma.FieldRef<"Interview", 'String'>
   readonly createdAt: Prisma.FieldRef<"Interview", 'DateTime'>

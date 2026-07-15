@@ -4,9 +4,10 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { InterviewReport } from "@/components/interview/InterviewReport";
+import { PanelCard } from "@/components/interview/PanelCard";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { reportSchema, turnSchema } from "@/lib/interview";
+import { panelReportSchema, reportSchema, turnSchema } from "@/lib/interview";
 
 export const metadata: Metadata = { title: "Interview report" };
 
@@ -32,6 +33,8 @@ export default async function ReportPage({
   const transcript = z.array(turnSchema).safeParse(interview.transcript);
   if (!report.success || !transcript.success) notFound();
 
+  const panel = panelReportSchema.safeParse(interview.panel);
+
   return (
     <div className="space-y-6">
       <Link
@@ -52,6 +55,12 @@ export default async function ReportPage({
           day: "numeric",
           year: "numeric",
         })}
+      />
+
+      <PanelCard
+        interviewId={interview.id}
+        isPro={user.plan === "PRO"}
+        initial={panel.success ? panel.data : null}
       />
     </div>
   );

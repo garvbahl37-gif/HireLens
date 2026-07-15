@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { chat } from "@/lib/ai";
+import { AnalysisError, chat } from "@/lib/ai";
 import type { Claim } from "@/lib/ai";
 import {
   aggregate,
@@ -178,6 +178,59 @@ export const reportSchema = z.object({
   drillQuestions: z.array(z.string()).optional(),
 });
 export type InterviewReport = z.infer<typeof reportSchema>;
+
+/* ------------------------------------------------------------------ */
+/* The panel (Pro, on-demand)                                          */
+/* ------------------------------------------------------------------ */
+
+const HIRE_VERDICTS = [
+  "Strong hire",
+  "Hire",
+  "Lean hire",
+  "Lean no hire",
+  "No hire",
+] as const;
+
+export const PANELIST_ROLES = ["recruiter", "hiring_manager", "bar_raiser"] as const;
+export type PanelistRole = (typeof PANELIST_ROLES)[number];
+
+export const PANELIST_META: Record<
+  PanelistRole,
+  { name: string; lens: string }
+> = {
+  recruiter: {
+    name: "Recruiter",
+    lens: "the first screen: communication, motivation, red flags, whether this is worth the hiring manager's time",
+  },
+  hiring_manager: {
+    name: "Hiring Manager",
+    lens: "can this specific person do THIS specific job — depth on the role's core requirements, ownership, and delivery",
+  },
+  bar_raiser: {
+    name: "Bar Raiser",
+    lens: "does this candidate raise the bar — long-term ceiling, standards, and whether the team is better with them on it; willing to say no",
+  },
+};
+
+const panelistSchema = z.object({
+  score: z.number().min(0).max(100),
+  verdict: z.enum(HIRE_VERDICTS),
+  /** 2-3 sentences of reasoning from this role's lens, quoting the candidate. */
+  take: z.string(),
+  /** The single thing that most worries this panelist. */
+  concern: z.string(),
+});
+
+export const panelReportSchema = z.object({
+  panelists: z.array(
+    panelistSchema.extend({ role: z.enum(PANELIST_ROLES) })
+  ),
+  /** The room's collective call after they argue it out. */
+  verdict: z.enum(HIRE_VERDICTS),
+  /** How the disagreement resolved — the debate, in a few sentences. */
+  synthesis: z.string(),
+});
+export type PanelReport = z.infer<typeof panelReportSchema>;
 
 /* ------------------------------------------------------------------ */
 /* Context                                                             */
@@ -610,6 +663,173 @@ function clampReport(
         modelAnswer: deep ? a.modelAnswer : undefined,
       };
     }),
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Convene the panel                                                   */
+/* ------------------------------------------------------------------ */
+
+function panelistSystem(role: PanelistRole): string {
+  const m = PANELIST_META[role];
+  return `You are the ${m.name} on a hiring panel, reviewing a candidate's screening interview for a specific role. Your lens is ${m.lens}.
+
+You have your OWN priorities and you do not defer to the other panelists. Score the candidate as YOU see them, from your seat. A recruiter and a bar raiser will not agree, and that is the point.
+
+Rules:
+- Ground everything in what the candidate ACTUALLY said in the transcript. Quote them.
+- Be honest and specific. Most real candidates land between 45 and 75. Be willing to say No hire.
+- "take": 2-3 sentences in your voice, from your lens.
+- "concern": the single thing that most worries YOU about this candidate.
+
+Respond with ONLY a valid JSON object, no markdown fences:
+{
+  "score": 0-100,
+  "verdict": "Strong hire|Hire|Lean hire|Lean no hire|No hire",
+  "take": "2-3 sentences, your lens, quoting them",
+  "concern": "the one thing that worries you most"
+}`;
+}
+
+async function scorePanelist(
+  role: PanelistRole,
+  ctx: InterviewContext,
+  transcript: Turn[]
+): Promise<PanelReport["panelists"][number]> {
+  const user = `${contextBlock(ctx)}
+
+=== THE INTERVIEW ===
+${transcriptBlock(transcript, true)}
+
+Score this candidate from your seat as the ${PANELIST_META[role].name}.`;
+
+  const { result } = await chat({
+    system: panelistSystem(role),
+    user,
+    schema: z.object({
+      score: z.number().min(0).max(100),
+      verdict: z.enum(HIRE_VERDICTS),
+      take: z.string(),
+      concern: z.string(),
+    }),
+    maxTokens: 600,
+    temperature: 0.4,
+    mock: () => mockPanelist(role),
+  });
+
+  return {
+    role,
+    score: Math.max(0, Math.min(100, Math.round(result.score))),
+    verdict: result.verdict,
+    take: result.take,
+    concern: result.concern,
+  };
+}
+
+/**
+ * Convene a panel over a finished interview.
+ *
+ * Three role-differentiated interviewers score the transcript IN PARALLEL from
+ * their own lens — they are meant to disagree — and then a chair writes up how
+ * the room resolved it. Parallel so the whole thing is two latency rounds, not
+ * four, which keeps it inside the route's 60s budget; each call goes through the
+ * same chat() funnel with its retry and model fallback, so one slow panelist
+ * doesn't sink the panel.
+ *
+ * Pro-gated at the route. Run once and cached on the interview row.
+ */
+export async function convenePanel(
+  ctx: InterviewContext,
+  transcript: Turn[]
+): Promise<{ result: PanelReport; model: string }> {
+  const settled = await Promise.allSettled(
+    PANELIST_ROLES.map((role) => scorePanelist(role, ctx, transcript))
+  );
+  const panelists = settled
+    .filter(
+      (s): s is PromiseFulfilledResult<PanelReport["panelists"][number]> =>
+        s.status === "fulfilled"
+    )
+    .map((s) => s.value);
+
+  // A panel of one is not a panel. If two or more seats failed, surface it.
+  if (panelists.length < 2) {
+    throw new AnalysisError(
+      "The panel couldn't reach a quorum right now. Try convening it again."
+    );
+  }
+
+  const roster = panelists
+    .map(
+      (p) =>
+        `${PANELIST_META[p.role].name} — ${p.verdict} (${p.score}). ${p.take} Concern: ${p.concern}`
+    )
+    .join("\n\n");
+
+  const { result: synth, model } = await chat({
+    system: `You are the chair of a hiring panel. Three interviewers have each given their independent read. Your job is to write up the room's collective decision AFTER they argue it out — not to average the scores, but to weigh the arguments. A single serious, well-argued concern can sink a candidate; a bar raiser's enthusiasm can rescue a soft recruiter screen. Be decisive.
+
+Respond with ONLY a valid JSON object, no markdown fences:
+{
+  "verdict": "Strong hire|Hire|Lean hire|Lean no hire|No hire",
+  "synthesis": "3-4 sentences: where the panel agreed, where they split, and how the disagreement resolved into the verdict"
+}`,
+    user: `ROLE: ${ctx.jobTitle}\n\n=== THE PANEL'S INDEPENDENT READS ===\n${roster}\n\nWrite the room's decision.`,
+    schema: z.object({
+      verdict: z.enum(HIRE_VERDICTS),
+      synthesis: z.string(),
+    }),
+    maxTokens: 500,
+    temperature: 0.3,
+    mock: () => mockSynthesis(panelists),
+  });
+
+  return {
+    result: {
+      panelists,
+      verdict: synth.verdict,
+      synthesis: synth.synthesis,
+    },
+    model,
+  };
+}
+
+function mockPanelist(role: PanelistRole): {
+  score: number;
+  verdict: (typeof HIRE_VERDICTS)[number];
+  take: string;
+  concern: string;
+} {
+  const bank: Record<PanelistRole, ReturnType<typeof mockPanelist>> = {
+    recruiter: {
+      score: 68,
+      verdict: "Lean hire",
+      take: "Communicates cleanly and answered what was asked — I'd pass them on. But when I pushed on the checkout number they hedged, and recruiters notice a story that softens under one follow-up.",
+      concern: "Every strong claim needed a second push before any specifics came out.",
+    },
+    hiring_manager: {
+      score: 54,
+      verdict: "Lean no hire",
+      take: "I need someone who can own the migration, and I didn't hear ownership — I heard proximity to it. 'We improved performance' isn't 'I decided X and measured Y'.",
+      concern: "No evidence they've personally owned a hard call end-to-end for this role.",
+    },
+    bar_raiser: {
+      score: 62,
+      verdict: "Lean hire",
+      take: "The ceiling is real — they reason well and they're honest when they don't know something, which is rarer than competence. But they undersell themselves, and I can't tell if that's modesty or a thin track record.",
+      concern: "Can't distinguish genuine potential from a well-told story on this evidence.",
+    },
+  };
+  return bank[role];
+}
+
+function mockSynthesis(panelists: PanelReport["panelists"]): {
+  verdict: (typeof HIRE_VERDICTS)[number];
+  synthesis: string;
+} {
+  return {
+    verdict: "Lean no hire",
+    synthesis: `The room liked the candidate as a person and split on the substance. The recruiter and bar raiser would take the bet on ceiling and honesty; the hiring manager wouldn't, and their objection is the specific one that matters for this role — no demonstrated end-to-end ownership. With ${panelists.length} reads on the table, the unquantified answers tipped it: a strong candidate who can't yet prove it in the room.`,
   };
 }
 
