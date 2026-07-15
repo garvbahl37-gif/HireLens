@@ -34,18 +34,25 @@ export function Loader({
       className={
         fullscreen
           ? "grain fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-bg"
-          : "grain relative flex min-h-[60vh] flex-1 flex-col items-center justify-center overflow-hidden"
+          : // Embedded (section-switch) loader: no grain, no bg fill. A bounded
+            // region must stay transparent so it blends into the page instead of
+            // painting a rectangle.
+            "relative flex min-h-[60vh] flex-1 flex-col items-center justify-center"
       }
     >
-      {/* warm ambient wash */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 48% at 50% 42%, rgba(242,98,46,0.13), transparent 72%), radial-gradient(40% 30% at 50% 42%, rgba(255,154,79,0.08), transparent 70%)",
-        }}
-      />
+      {/* warm ambient wash — fullscreen only. In a bounded region this radial
+          fills the loader's rectangle and reads as a brown box rather than
+          blending into an infinite dark field. */}
+      {fullscreen && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(60% 48% at 50% 42%, rgba(242,98,46,0.13), transparent 72%), radial-gradient(40% 30% at 50% 42%, rgba(255,154,79,0.08), transparent 70%)",
+          }}
+        />
+      )}
       {/* filmic vignette to pull the eye to centre — tinted to the app
           background (not pure black) so it blends seamlessly and never reads as
           a foreign dark box, and only when we own the full screen. */}
