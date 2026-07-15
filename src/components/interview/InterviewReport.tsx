@@ -95,14 +95,6 @@ export function InterviewReport({
     <Stagger className="space-y-6">
       {/* ---------- verdict ---------- */}
       <div className="card relative overflow-hidden p-6 sm:p-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full opacity-20 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--color-accent), transparent)",
-          }}
-        />
         <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center">
           <AnimatedScoreRing score={report.overallScore} size={124} stroke={11} />
 
@@ -441,14 +433,6 @@ export function InterviewReport({
       {/* ---------- Pro upsell ---------- */}
       {!deep && (
         <div className="card relative overflow-hidden border-accent/40 p-8 text-center">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 h-40 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-25 blur-3xl"
-            style={{
-              background:
-                "radial-gradient(closest-side, var(--color-accent), transparent)",
-            }}
-          />
           <Lock className="relative mx-auto h-6 w-6 text-accent" />
           <h2 className="relative mt-4 text-lg font-bold">
             Pro interviews go further

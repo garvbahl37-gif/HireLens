@@ -232,23 +232,12 @@ export function Navbar({ authed }: { authed: boolean }) {
   );
 }
 
-/** Ember CTA: outer glow on hover, sheen sweep, arrow that leads. */
+/** Ember CTA: flat, with an arrow that leads on hover. */
 function CtaButton({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="group relative">
-      {/* glow bloom sitting behind the button */}
-      <span
-        aria-hidden
-        className="absolute -inset-1 rounded-xl opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-60"
-        style={{
-          background:
-            "linear-gradient(120deg, var(--color-accent), var(--color-accent2))",
-        }}
-      />
-      <span className="btn btn-primary btn-sheen relative">
-        {label}
-        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-      </span>
+    <Link href={href} className="group btn btn-primary">
+      {label}
+      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
     </Link>
   );
 }

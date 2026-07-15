@@ -32,23 +32,6 @@ export function Faq({ items }: { items: FaqItem[] }) {
                   : "border-edge bg-card/60 hover:border-edge2"
               }`}
             >
-              {/* ember wash behind the open item */}
-              <AnimatePresence>
-                {isOpen && (
-                  <motion.div
-                    aria-hidden
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.16 }}
-                    exit={{ opacity: 0 }}
-                    className="pointer-events-none absolute -left-10 -top-16 h-40 w-64 rounded-full blur-3xl"
-                    style={{
-                      background:
-                        "radial-gradient(closest-side, var(--color-accent), transparent)",
-                    }}
-                  />
-                )}
-              </AnimatePresence>
-
               <button
                 onClick={() => setOpen(isOpen ? null : i)}
                 aria-expanded={isOpen}

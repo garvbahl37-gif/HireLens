@@ -54,7 +54,6 @@ export default async function LandingPage() {
 
       {/* ---------------- Proof: the real 62 → 92 result ---------------- */}
       <section className="relative scroll-mt-28 px-5 py-16">
-        <div className="section-glow" />
         <div className="relative">
           <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
@@ -70,7 +69,6 @@ export default async function LandingPage() {
 
       {/* ---------------- Mock interview showcase ---------------- */}
       <section id="interview" className="relative scroll-mt-28 px-5 py-24">
-        <div className="section-glow" />
         <div className="relative">
           <Reveal className="mx-auto mb-14 max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
@@ -89,7 +87,6 @@ export default async function LandingPage() {
 
       {/* ---------------- Features ---------------- */}
       <section id="features" className="relative scroll-mt-28 px-5 py-24">
-        <div className="section-glow" />
         <div className="relative mx-auto max-w-6xl">
           <Reveal className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
@@ -140,7 +137,6 @@ export default async function LandingPage() {
 
       {/* ---------------- Pricing ---------------- */}
       <section id="pricing" className="relative scroll-mt-28 px-5 py-24">
-        <div className="section-glow" />
         <div className="relative">
           <Reveal className="mx-auto max-w-xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
@@ -162,7 +158,6 @@ export default async function LandingPage() {
 
       {/* ---------------- FAQ ---------------- */}
       <section id="faq" className="relative scroll-mt-28 px-5 py-24">
-        <div className="section-glow" />
         <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* sticky editorial column */}
           <Reveal>
@@ -205,14 +200,6 @@ export default async function LandingPage() {
       <section className="relative px-5 pb-24">
         <Reveal>
           <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-edge bg-card/60 px-6 py-20 text-center backdrop-blur">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-0 h-[320px] w-[640px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-30 blur-3xl"
-              style={{
-                background:
-                  "radial-gradient(closest-side, var(--color-accent), transparent)",
-              }}
-            />
             <h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">
               Your next application deserves{" "}
               <span className="text-gradient-animate">

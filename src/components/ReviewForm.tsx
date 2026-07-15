@@ -426,17 +426,6 @@ function ModeToggle({
 function DropGlyph({ active }: { active: boolean }) {
   return (
     <div className="relative grid h-24 w-24 place-items-center">
-      <div
-        aria-hidden
-        className={cn(
-          "absolute inset-2 rounded-2xl blur-xl transition-opacity duration-300",
-          active ? "opacity-90" : "opacity-40"
-        )}
-        style={{
-          background:
-            "radial-gradient(closest-side, rgba(242,98,46,0.55), transparent 70%)",
-        }}
-      />
       <motion.div
         aria-hidden
         className="absolute inset-0 rounded-[1.35rem] border border-accent/25"

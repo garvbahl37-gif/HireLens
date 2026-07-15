@@ -15,16 +15,6 @@ export default async function NewReviewPage() {
 
   return (
     <div className="relative mx-auto max-w-3xl">
-      {/* ambient wash behind the header */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-28 left-1/2 h-72 w-[680px] max-w-[120vw] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(closest-side, var(--color-accent), transparent)",
-        }}
-      />
-
       <header className="fade-up relative mb-9">
         <span className="chip gap-1.5 border-accent/40 text-accent">
           <Sparkles className="h-3.5 w-3.5" /> New review

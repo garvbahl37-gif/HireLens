@@ -14,15 +14,6 @@ export function EmptyState() {
       transition={{ duration: 0.6, ease: EASE }}
       className="card relative flex flex-col items-center overflow-hidden px-6 py-20 text-center"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 h-72 w-[520px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-25 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(closest-side, var(--color-accent), transparent)",
-        }}
-      />
-
       <motion.span
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

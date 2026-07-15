@@ -191,16 +191,6 @@ export function InterviewRoom({
 
   return (
     <div className="relative flex h-[calc(100vh-9rem)] flex-col md:h-[calc(100vh-7rem)]">
-      {/* ambient depth behind the whole room */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-10 left-1/2 -z-10 h-64 w-[min(680px,90%)] -translate-x-1/2 rounded-full opacity-[0.12] blur-3xl"
-        style={{
-          background:
-            "radial-gradient(closest-side, var(--color-accent), transparent)",
-        }}
-      />
-
       {/* ---------- header: the session bar ---------- */}
       <div className="card mb-4 flex flex-wrap items-center justify-between gap-4 p-4">
         <div className="flex min-w-0 items-center gap-3.5">

@@ -78,15 +78,6 @@ export function InterviewShowcase() {
         transition={{ duration: 0.8, ease: EASE }}
         className="relative"
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -inset-6 rounded-[2rem] opacity-40 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(55% 55% at 50% 30%, var(--color-accent), transparent)",
-          }}
-        />
-
         <div className="card relative overflow-hidden p-5 shadow-2xl sm:p-6">
           {/* session bar */}
           <div className="flex items-center gap-3 border-b border-edge pb-4">

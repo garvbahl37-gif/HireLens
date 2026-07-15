@@ -63,15 +63,6 @@ export function ClaimsCard({
 
   return (
     <div className="card relative overflow-hidden border-accent/40 p-6 sm:p-8">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-20 -top-24 h-64 w-64 rounded-full opacity-[0.15] blur-3xl"
-        style={{
-          background:
-            "radial-gradient(closest-side, var(--color-accent), transparent)",
-        }}
-      />
-
       <div className="relative">
         <div className="flex items-start justify-between gap-4">
           <div>

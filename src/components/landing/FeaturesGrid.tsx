@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
-import { motion, useMotionValue } from "motion/react";
+import { type ReactNode } from "react";
+import { motion } from "motion/react";
 import {
   FileSearch,
   Gauge,
@@ -91,21 +91,8 @@ function Card({
   visual,
   index,
 }: (typeof FEATURES)[number] & { index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-
-  function onMove(e: React.MouseEvent<HTMLDivElement>) {
-    const r = ref.current?.getBoundingClientRect();
-    if (!r) return;
-    mx.set(e.clientX - r.left);
-    my.set(e.clientY - r.top);
-  }
-
   return (
     <motion.div
-      ref={ref}
-      onMouseMove={onMove}
       initial={{ opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px 140px 0px" }}
@@ -115,20 +102,6 @@ function Card({
         span
       )}
     >
-      {/* glow that follows the cursor */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute h-56 w-56 rounded-full opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          left: mx,
-          top: my,
-          x: "-50%",
-          y: "-50%",
-          background:
-            "radial-gradient(closest-side, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent)",
-        }}
-      />
-
       <div className="relative flex items-start justify-between">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-edge bg-card2 text-accent transition-colors group-hover:border-accent/40">
           <Icon className="h-4.5 w-4.5" strokeWidth={2} />

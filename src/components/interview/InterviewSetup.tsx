@@ -103,14 +103,6 @@ export function InterviewSetup({
   if (limitHit) {
     return (
       <div className="card relative overflow-hidden border-accent/40 p-8 text-center">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 h-40 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-25 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--color-accent), transparent)",
-          }}
-        />
         <Lock className="relative mx-auto h-6 w-6 text-accent" />
         <h2 className="relative mt-4 text-lg font-bold">
           You&apos;ve used your free interview this month

@@ -44,15 +44,6 @@ export function AnalyzingOverlay({ deep }: { deep: boolean }) {
         transition={{ duration: 0.5, ease: EASE }}
         className="card relative w-full max-w-md overflow-hidden p-8"
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-56 w-72 -translate-x-1/2 rounded-full opacity-25 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--color-accent), transparent)",
-          }}
-        />
-
         {/* the lens sweeping a document */}
         <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
           <ScanningLens />

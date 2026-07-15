@@ -313,14 +313,6 @@ function PlanBlock({ user }: { user: SidebarUser }) {
   if (user.plan === "PRO") {
     return (
       <div className="relative mb-3 overflow-hidden rounded-2xl border border-accent/30 bg-card p-4">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-6 -top-10 h-28 w-28 rounded-full opacity-30 blur-2xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--color-accent), transparent)",
-          }}
-        />
         <p className="relative flex items-center gap-1.5 whitespace-nowrap text-sm font-bold text-accent">
           <Sparkles className="h-4 w-4" /> Pro plan
         </p>

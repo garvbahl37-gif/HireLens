@@ -72,14 +72,6 @@ export default async function InterviewsPage() {
 
       {interviews.length === 0 ? (
         <div className="card relative flex flex-col items-center overflow-hidden px-6 py-20 text-center">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 h-72 w-[520px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-25 blur-3xl"
-            style={{
-              background:
-                "radial-gradient(closest-side, var(--color-accent), transparent)",
-            }}
-          />
           <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-edge2 bg-card2 shadow-[0_0_40px_-8px_var(--color-accent)]">
             <MessagesSquare className="h-7 w-7 text-accent" />
           </span>

@@ -52,14 +52,6 @@ export function ReviewResult({
     <Stagger className="space-y-6">
       {/* ---------- header ---------- */}
       <div className="card relative overflow-hidden p-6 sm:p-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-20 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--color-accent), transparent)",
-          }}
-        />
         <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center">
           <AnimatedScoreRing score={analysis.overallScore} size={124} stroke={11} />
           <div className="min-w-0 flex-1">
@@ -307,13 +299,6 @@ export function ReviewResult({
         </>
       ) : (
         <div className="card relative overflow-hidden border-accent/40 p-8 text-center">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-20"
-            style={{
-              background:
-                "radial-gradient(60% 120% at 50% 0%, var(--color-accent), transparent)",
-            }}
-          />
           <Lock className="mx-auto h-7 w-7 text-accent" />
           <h2 className="mt-4 text-lg font-bold">
             The deep analysis is waiting

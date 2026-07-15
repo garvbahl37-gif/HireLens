@@ -62,15 +62,6 @@ export default async function AccountPage() {
     <Stagger className="space-y-6">
       {/* ---------- identity header ---------- */}
       <div className="card relative overflow-hidden p-6 sm:p-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full opacity-20 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--color-accent), transparent)",
-          }}
-        />
-
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
           {/* avatar with a conic ring */}
           <div className="relative shrink-0">

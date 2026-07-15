@@ -27,16 +27,6 @@ export function Spotlight({ data }: { data: SpotlightData }) {
       transition={{ duration: 0.6, ease: EASE }}
       className="card relative overflow-hidden p-6 lg:p-7"
     >
-      {/* ambient wash */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full opacity-20 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(closest-side, var(--color-accent), transparent)",
-        }}
-      />
-
       <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
         <AnimatedScoreRing score={data.overallScore} />
 
