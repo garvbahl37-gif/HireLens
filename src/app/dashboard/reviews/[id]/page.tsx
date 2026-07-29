@@ -6,6 +6,7 @@ import { ReviewResult } from "@/components/ReviewResult";
 import { RescorePanel } from "@/components/RescorePanel";
 import { RescoreBanner } from "@/components/RescoreBanner";
 import { CoverLetterPanel } from "@/components/CoverLetterPanel";
+import { TrackJobButton } from "@/components/TrackJobButton";
 import { analysisSchema, coverLetterSchema } from "@/lib/ai";
 import { rescoreDelta } from "@/lib/rescore";
 import { requireUser } from "@/lib/auth";
@@ -58,12 +59,19 @@ export default async function ReviewPage({
         >
           <ArrowLeft className="h-4 w-4" /> All reviews
         </Link>
-        <a
-          href={`/api/reviews/${review.id}/pdf`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
-        >
-          <Download className="h-4 w-4" /> Export PDF
-        </a>
+        <div className="flex items-center gap-5">
+          <TrackJobButton
+            reviewId={review.id}
+            company={review.company}
+            jobTitle={review.jobTitle}
+          />
+          <a
+            href={`/api/reviews/${review.id}/pdf`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
+          >
+            <Download className="h-4 w-4" /> Export PDF
+          </a>
+        </div>
       </div>
 
       {delta && review.parentReviewId && (

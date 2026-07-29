@@ -33,8 +33,52 @@ model User {
   reviews                Review[]
   interviews             Interview[]
   tokens                 VerificationToken[]
+  applications           Application[]
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+}
+
+/// The stages a job moves through on the tracker board. Order matters — the
+/// board renders columns in this declaration order.
+enum ApplicationStatus {
+  WISHLIST
+  APPLIED
+  SCREEN
+  ONSITE
+  OFFER
+  REJECTED
+}
+
+/// One job the user is chasing. The tracker turns HireLens from a one-shot tool
+/// into a workspace they return to through a whole search: every card can link
+/// to the review that scored its resume and the mock interview they ran for it.
+model Application {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  company        String
+  role           String
+  status         ApplicationStatus @default(WISHLIST)
+
+  jobDescription String?
+  sourceUrl      String?
+  notes          String?
+
+  /// Optional links to the work done for this job. Not FKs to keep a deleted
+  /// review/interview from cascading a card off the board; validated on read.
+  reviewId       String?
+  interviewId    String?
+
+  /// Position within its column. Kept as a sparse integer so a reorder only
+  /// rewrites the moved card, not the whole column.
+  sortOrder      Int               @default(0)
+
+  appliedAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([userId, status, sortOrder])
 }
 
 enum TokenType {

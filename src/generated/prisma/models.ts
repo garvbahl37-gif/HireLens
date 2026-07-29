@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
+export type * from './models/Application'
 export type * from './models/VerificationToken'
 export type * from './models/RateLimit'
 export type * from './models/Review'

@@ -17,6 +17,18 @@ export const Plan = {
 export type Plan = (typeof Plan)[keyof typeof Plan]
 
 
+export const ApplicationStatus = {
+  WISHLIST: 'WISHLIST',
+  APPLIED: 'APPLIED',
+  SCREEN: 'SCREEN',
+  ONSITE: 'ONSITE',
+  OFFER: 'OFFER',
+  REJECTED: 'REJECTED'
+} as const
+
+export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
+
+
 export const TokenType = {
   RESET: 'RESET'
 } as const

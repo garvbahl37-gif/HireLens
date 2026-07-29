@@ -23,6 +23,13 @@ export * from './enums';
  */
 export type User = Prisma.UserModel
 /**
+ * Model Application
+ * One job the user is chasing. The tracker turns HireLens from a one-shot tool
+ * into a workspace they return to through a whole search: every card can link
+ * to the review that scored its resume and the mock interview they ran for it.
+ */
+export type Application = Prisma.ApplicationModel
+/**
  * Model VerificationToken
  * A single-use, short-lived token for out-of-band account actions.
  * Only the SHA-256 of the token is stored: a database leak must not hand the
