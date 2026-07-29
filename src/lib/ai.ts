@@ -502,6 +502,66 @@ function extractJson(raw: string): unknown {
 }
 
 /* ------------------------------------------------------------------ */
+/* Quick fit (Chrome extension — one-click job check)                  */
+/* ------------------------------------------------------------------ */
+
+export const quickFitSchema = z.object({
+  score: z.number().min(0).max(100),
+  verdict: z.string(),
+  matched: z.array(z.string()).max(12),
+  missing: z.array(z.string()).max(12),
+});
+export type QuickFit = z.infer<typeof quickFitSchema>;
+
+/**
+ * A fast, cheap fit check for the browser extension: score + the keywords the
+ * resume has and lacks against one job. No section grades, no rewrites — just
+ * enough to tell someone "worth tailoring for" or "big gaps" on the job page,
+ * with a link into the full review. Lower token budget than a real analysis.
+ */
+export async function quickFit(opts: {
+  resumeText: string;
+  jobDescription: string;
+  jobTitle?: string;
+  company?: string | null;
+}): Promise<{ result: QuickFit; model: string }> {
+  const target = [opts.jobTitle, opts.company].filter(Boolean).join(" at ");
+  const system = `You are a technical recruiter doing a FAST fit check between a resume and one job. Be honest and calibrated — most real resumes land 45-80 against a specific job.
+
+Respond with ONLY a valid JSON object, no markdown fences:
+{
+  "score": 0-100,
+  "verdict": "one blunt sentence, max 12 words",
+  "matched": ["hard skills/keywords from the JD that ARE in the resume, max 10"],
+  "missing": ["important hard skills/keywords from the JD that are NOT in the resume, max 10"]
+}`;
+  const user = `${target ? `TARGET: ${target}\n\n` : ""}=== JOB DESCRIPTION ===
+${opts.jobDescription.slice(0, MAX_JD_CHARS)}
+
+=== RESUME ===
+${opts.resumeText.slice(0, MAX_RESUME_CHARS)}`;
+
+  const { result, model } = await chat({
+    system,
+    user,
+    schema: quickFitSchema,
+    maxTokens: 700,
+    temperature: 0.2,
+    mock: () => ({
+      score: 68,
+      verdict: "Strong core match; a few hard requirements are missing.",
+      matched: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+      missing: ["Kubernetes", "CI/CD", "Terraform"],
+    }),
+  });
+
+  return {
+    result: { ...result, score: Math.max(0, Math.min(100, Math.round(result.score))) },
+    model,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* Cover letter (Pro)                                                  */
 /* ------------------------------------------------------------------ */
 

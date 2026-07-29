@@ -36,6 +36,31 @@ export async function PATCH(
   }
 
   const b = parsed.data;
+
+  // A card may only ever link to the caller's OWN review/interview. The POST
+  // route checks this; PATCH must too, or a user could point a card at another
+  // user's row. (The board and the review/interview pages already re-filter by
+  // userId, so this is defence in depth — but the asymmetry is exactly the kind
+  // of gap that becomes a leak the day a new reader forgets that filter.)
+  if (b.reviewId) {
+    const owned = await db.review.findFirst({
+      where: { id: b.reviewId, userId: user.id },
+      select: { id: true },
+    });
+    if (!owned) {
+      return NextResponse.json({ error: "Review not found" }, { status: 404 });
+    }
+  }
+  if (b.interviewId) {
+    const owned = await db.interview.findFirst({
+      where: { id: b.interviewId, userId: user.id },
+      select: { id: true },
+    });
+    if (!owned) {
+      return NextResponse.json({ error: "Interview not found" }, { status: 404 });
+    }
+  }
+
   const data: Record<string, unknown> = {};
   if (b.company !== undefined) data.company = b.company;
   if (b.role !== undefined) data.role = b.role;

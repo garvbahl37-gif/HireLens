@@ -41,12 +41,24 @@ export type ApplicationCard = {
   appliedAt: string | null;
 };
 
+/**
+ * A job-posting link. `z.string().url()` alone accepts `javascript:...` and
+ * `data:...`, which then render into an <a href> on the card — a clickable XSS.
+ * Restrict the scheme to http/https so a card link can only ever navigate.
+ */
+const sourceUrl = z
+  .string()
+  .trim()
+  .max(2000)
+  .url("Enter a valid URL")
+  .refine((u) => /^https?:\/\//i.test(u), "Link must start with http:// or https://");
+
 export const createApplicationSchema = z.object({
   company: z.string().trim().min(1, "Company is required").max(120),
   role: z.string().trim().min(1, "Role is required").max(160),
   status: z.enum(APPLICATION_STATUSES).optional(),
   jobDescription: z.string().trim().max(20_000).optional(),
-  sourceUrl: z.string().trim().url("Enter a valid URL").max(2000).optional().or(z.literal("")),
+  sourceUrl: sourceUrl.optional().or(z.literal("")),
   notes: z.string().trim().max(4000).optional(),
   reviewId: z.string().optional(),
   interviewId: z.string().optional(),
@@ -57,7 +69,7 @@ export const updateApplicationSchema = z.object({
   role: z.string().trim().min(1).max(160).optional(),
   status: z.enum(APPLICATION_STATUSES).optional(),
   sortOrder: z.number().int().min(0).max(1_000_000).optional(),
-  sourceUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
+  sourceUrl: sourceUrl.optional().or(z.literal("")),
   notes: z.string().trim().max(4000).optional(),
   reviewId: z.string().nullable().optional(),
   interviewId: z.string().nullable().optional(),

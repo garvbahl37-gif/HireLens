@@ -41,6 +41,8 @@ export type UserMinAggregateOutputType = {
   name: string | null
   plan: $Enums.Plan | null
   tokenVersion: number | null
+  primaryResumeText: string | null
+  primaryResumeName: string | null
   stripeCustomerId: string | null
   stripeSubscriptionId: string | null
   stripePriceId: string | null
@@ -57,6 +59,8 @@ export type UserMaxAggregateOutputType = {
   name: string | null
   plan: $Enums.Plan | null
   tokenVersion: number | null
+  primaryResumeText: string | null
+  primaryResumeName: string | null
   stripeCustomerId: string | null
   stripeSubscriptionId: string | null
   stripePriceId: string | null
@@ -73,6 +77,8 @@ export type UserCountAggregateOutputType = {
   name: number
   plan: number
   tokenVersion: number
+  primaryResumeText: number
+  primaryResumeName: number
   stripeCustomerId: number
   stripeSubscriptionId: number
   stripePriceId: number
@@ -99,6 +105,8 @@ export type UserMinAggregateInputType = {
   name?: true
   plan?: true
   tokenVersion?: true
+  primaryResumeText?: true
+  primaryResumeName?: true
   stripeCustomerId?: true
   stripeSubscriptionId?: true
   stripePriceId?: true
@@ -115,6 +123,8 @@ export type UserMaxAggregateInputType = {
   name?: true
   plan?: true
   tokenVersion?: true
+  primaryResumeText?: true
+  primaryResumeName?: true
   stripeCustomerId?: true
   stripeSubscriptionId?: true
   stripePriceId?: true
@@ -131,6 +141,8 @@ export type UserCountAggregateInputType = {
   name?: true
   plan?: true
   tokenVersion?: true
+  primaryResumeText?: true
+  primaryResumeName?: true
   stripeCustomerId?: true
   stripeSubscriptionId?: true
   stripePriceId?: true
@@ -234,6 +246,8 @@ export type UserGroupByOutputType = {
   name: string
   plan: $Enums.Plan
   tokenVersion: number
+  primaryResumeText: string | null
+  primaryResumeName: string | null
   stripeCustomerId: string | null
   stripeSubscriptionId: string | null
   stripePriceId: string | null
@@ -273,6 +287,8 @@ export type UserWhereInput = {
   name?: Prisma.StringFilter<"User"> | string
   plan?: Prisma.EnumPlanFilter<"User"> | $Enums.Plan
   tokenVersion?: Prisma.IntFilter<"User"> | number
+  primaryResumeText?: Prisma.StringNullableFilter<"User"> | string | null
+  primaryResumeName?: Prisma.StringNullableFilter<"User"> | string | null
   stripeCustomerId?: Prisma.StringNullableFilter<"User"> | string | null
   stripeSubscriptionId?: Prisma.StringNullableFilter<"User"> | string | null
   stripePriceId?: Prisma.StringNullableFilter<"User"> | string | null
@@ -293,6 +309,8 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  primaryResumeText?: Prisma.SortOrderInput | Prisma.SortOrder
+  primaryResumeName?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeSubscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripePriceId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -317,6 +335,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"User"> | string
   plan?: Prisma.EnumPlanFilter<"User"> | $Enums.Plan
   tokenVersion?: Prisma.IntFilter<"User"> | number
+  primaryResumeText?: Prisma.StringNullableFilter<"User"> | string | null
+  primaryResumeName?: Prisma.StringNullableFilter<"User"> | string | null
   stripeSubscriptionId?: Prisma.StringNullableFilter<"User"> | string | null
   stripePriceId?: Prisma.StringNullableFilter<"User"> | string | null
   stripeCurrentPeriodEnd?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -336,6 +356,8 @@ export type UserOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  primaryResumeText?: Prisma.SortOrderInput | Prisma.SortOrder
+  primaryResumeName?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeSubscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripePriceId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -360,6 +382,8 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   plan?: Prisma.EnumPlanWithAggregatesFilter<"User"> | $Enums.Plan
   tokenVersion?: Prisma.IntWithAggregatesFilter<"User"> | number
+  primaryResumeText?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  primaryResumeName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   stripeSubscriptionId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   stripePriceId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -376,6 +400,8 @@ export type UserCreateInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -396,6 +422,8 @@ export type UserUncheckedCreateInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -416,6 +444,8 @@ export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -436,6 +466,8 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -456,6 +488,8 @@ export type UserCreateManyInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -472,6 +506,8 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -488,6 +524,8 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -504,6 +542,8 @@ export type UserCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  primaryResumeText?: Prisma.SortOrder
+  primaryResumeName?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripeSubscriptionId?: Prisma.SortOrder
   stripePriceId?: Prisma.SortOrder
@@ -524,6 +564,8 @@ export type UserMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  primaryResumeText?: Prisma.SortOrder
+  primaryResumeName?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripeSubscriptionId?: Prisma.SortOrder
   stripePriceId?: Prisma.SortOrder
@@ -540,6 +582,8 @@ export type UserMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  primaryResumeText?: Prisma.SortOrder
+  primaryResumeName?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripeSubscriptionId?: Prisma.SortOrder
   stripePriceId?: Prisma.SortOrder
@@ -653,6 +697,8 @@ export type UserCreateWithoutApplicationsInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -672,6 +718,8 @@ export type UserUncheckedCreateWithoutApplicationsInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -707,6 +755,8 @@ export type UserUpdateWithoutApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -726,6 +776,8 @@ export type UserUncheckedUpdateWithoutApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -745,6 +797,8 @@ export type UserCreateWithoutTokensInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -764,6 +818,8 @@ export type UserUncheckedCreateWithoutTokensInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -799,6 +855,8 @@ export type UserUpdateWithoutTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -818,6 +876,8 @@ export type UserUncheckedUpdateWithoutTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -837,6 +897,8 @@ export type UserCreateWithoutReviewsInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -856,6 +918,8 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -891,6 +955,8 @@ export type UserUpdateWithoutReviewsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -910,6 +976,8 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -929,6 +997,8 @@ export type UserCreateWithoutInterviewsInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -948,6 +1018,8 @@ export type UserUncheckedCreateWithoutInterviewsInput = {
   name: string
   plan?: $Enums.Plan
   tokenVersion?: number
+  primaryResumeText?: string | null
+  primaryResumeName?: string | null
   stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   stripePriceId?: string | null
@@ -983,6 +1055,8 @@ export type UserUpdateWithoutInterviewsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1002,6 +1076,8 @@ export type UserUncheckedUpdateWithoutInterviewsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   plan?: Prisma.EnumPlanFieldUpdateOperationsInput | $Enums.Plan
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryResumeText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryResumeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1079,6 +1155,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   plan?: boolean
   tokenVersion?: boolean
+  primaryResumeText?: boolean
+  primaryResumeName?: boolean
   stripeCustomerId?: boolean
   stripeSubscriptionId?: boolean
   stripePriceId?: boolean
@@ -1100,6 +1178,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   plan?: boolean
   tokenVersion?: boolean
+  primaryResumeText?: boolean
+  primaryResumeName?: boolean
   stripeCustomerId?: boolean
   stripeSubscriptionId?: boolean
   stripePriceId?: boolean
@@ -1116,6 +1196,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   plan?: boolean
   tokenVersion?: boolean
+  primaryResumeText?: boolean
+  primaryResumeName?: boolean
   stripeCustomerId?: boolean
   stripeSubscriptionId?: boolean
   stripePriceId?: boolean
@@ -1132,6 +1214,8 @@ export type UserSelectScalar = {
   name?: boolean
   plan?: boolean
   tokenVersion?: boolean
+  primaryResumeText?: boolean
+  primaryResumeName?: boolean
   stripeCustomerId?: boolean
   stripeSubscriptionId?: boolean
   stripePriceId?: boolean
@@ -1141,7 +1225,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "plan" | "tokenVersion" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "stripeCurrentPeriodEnd" | "cancelAtPeriodEnd" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "plan" | "tokenVersion" | "primaryResumeText" | "primaryResumeName" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "stripeCurrentPeriodEnd" | "cancelAtPeriodEnd" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
   interviews?: boolean | Prisma.User$interviewsArgs<ExtArgs>
@@ -1173,6 +1257,13 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      * stolen 30-day session, and what "log out everywhere" would be built on.
      */
     tokenVersion: number
+    /**
+     * The resume the Chrome extension scores a job against with one click. Set
+     * explicitly on the account page; the extension endpoint falls back to the
+     * most recent review's resume when this is empty.
+     */
+    primaryResumeText: string | null
+    primaryResumeName: string | null
     stripeCustomerId: string | null
     stripeSubscriptionId: string | null
     stripePriceId: string | null
@@ -1613,6 +1704,8 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly plan: Prisma.FieldRef<"User", 'Plan'>
   readonly tokenVersion: Prisma.FieldRef<"User", 'Int'>
+  readonly primaryResumeText: Prisma.FieldRef<"User", 'String'>
+  readonly primaryResumeName: Prisma.FieldRef<"User", 'String'>
   readonly stripeCustomerId: Prisma.FieldRef<"User", 'String'>
   readonly stripeSubscriptionId: Prisma.FieldRef<"User", 'String'>
   readonly stripePriceId: Prisma.FieldRef<"User", 'String'>

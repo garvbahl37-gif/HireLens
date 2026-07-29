@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Check, Loader2, Pencil } from "lucide-react";
+import { AlertTriangle, Check, Loader2, Pencil, Puzzle, Trash2 } from "lucide-react";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -107,6 +107,137 @@ export function NameForm({ initialName }: { initialName: string }) {
         )}
       </div>
       {error && <p className="mt-2 text-sm text-bad">{error}</p>}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * The resume the Chrome extension scores jobs against. Paste it once; the
+ * extension then works on every job page with no upload. If it's empty, the
+ * extension falls back to the most recent review's resume server-side.
+ */
+export function PrimaryResumeForm({
+  initialName,
+  hasResume,
+}: {
+  initialName: string | null;
+  hasResume: boolean;
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [pending, setPending] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(initialName);
+  const [present, setPresent] = useState(hasResume);
+
+  async function save() {
+    if (text.trim().length < 100 || pending) {
+      setError("Paste the full resume — that's too short.");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/account/resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeText: text }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? "Couldn't save. Try again.");
+        setPending(false);
+        return;
+      }
+      setPresent(true);
+      setName("Pasted resume");
+      setOpen(false);
+      setText("");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      setPending(false);
+      router.refresh();
+    } catch {
+      setError("Network error. Try again.");
+      setPending(false);
+    }
+  }
+
+  async function clear() {
+    setPending(true);
+    await fetch("/api/account/resume", { method: "DELETE" }).catch(() => {});
+    setPresent(false);
+    setName(null);
+    setPending(false);
+    router.refresh();
+  }
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <Puzzle className="h-4 w-4 text-accent" /> Primary resume
+            <Saved show={saved} />
+          </p>
+          <p className="mt-1 max-w-md text-sm text-muted">
+            {present ? (
+              <>On file{name ? ` — ${name}` : ""}. The browser extension scores jobs against this.</>
+            ) : (
+              <>Set the resume the browser extension scores jobs against. Until you do, it uses your most recent review.</>
+            )}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {present && (
+            <button
+              onClick={clear}
+              disabled={pending}
+              className="btn btn-ghost px-3"
+              title="Remove primary resume"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+          <button onClick={() => setOpen((o) => !o)} className="btn btn-ghost">
+            {present ? "Replace" : "Set resume"}
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: EASE }}
+            className="overflow-hidden"
+          >
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={10}
+              placeholder="Paste your resume text here…"
+              className="input mt-4 font-mono text-xs leading-relaxed"
+            />
+            {error && <p className="mt-2 text-sm text-bad">{error}</p>}
+            <div className="mt-3 flex justify-end gap-2">
+              <button onClick={() => { setOpen(false); setText(""); setError(null); }} className="btn btn-ghost" disabled={pending}>
+                Cancel
+              </button>
+              <button onClick={save} className="btn btn-primary" disabled={pending}>
+                {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                Save resume
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

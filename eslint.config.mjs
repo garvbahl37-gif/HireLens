@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Chrome extension is a separate build target with its own (chrome.*)
+    // globals and cross-file script vars; the app's lint rules don't apply.
+    "extension/**",
   ]),
 ]);
 

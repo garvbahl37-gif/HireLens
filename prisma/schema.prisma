@@ -25,6 +25,12 @@ model User {
   /// stolen 30-day session, and what "log out everywhere" would be built on.
   tokenVersion           Int       @default(0)
 
+  /// The resume the Chrome extension scores a job against with one click. Set
+  /// explicitly on the account page; the extension endpoint falls back to the
+  /// most recent review's resume when this is empty.
+  primaryResumeText      String?
+  primaryResumeName      String?
+
   stripeCustomerId       String?   @unique
   stripeSubscriptionId   String?
   stripePriceId          String?

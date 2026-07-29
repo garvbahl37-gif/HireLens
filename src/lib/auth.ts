@@ -62,6 +62,28 @@ export async function requireUser() {
   return user;
 }
 
+/**
+ * The user behind a `Authorization: Bearer <session-token>` header, or null.
+ *
+ * The Chrome extension can't rely on the session cookie: it calls the API
+ * cross-origin, and a SameSite=Lax cookie isn't sent on a cross-site fetch. So
+ * the extension reads the session token via chrome.cookies and presents it as a
+ * bearer token, which this verifies with the exact same discipline as the
+ * cookie path — signature, then the tokenVersion revocation check.
+ */
+export async function getUserFromBearer(req: Request) {
+  const header = req.headers.get("authorization");
+  const token = header?.startsWith("Bearer ") ? header.slice(7).trim() : null;
+  if (!token) return null;
+
+  const claims = await verifySessionToken(token);
+  if (!claims) return null;
+
+  const user = await db.user.findUnique({ where: { id: claims.userId } });
+  if (!user || user.tokenVersion !== claims.tokenVersion) return null;
+  return user;
+}
+
 export async function startSession(userId: string, tokenVersion: number) {
   const store = await cookies();
   store.set(

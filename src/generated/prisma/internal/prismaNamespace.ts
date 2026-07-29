@@ -974,6 +974,8 @@ export const UserScalarFieldEnum = {
   name: 'name',
   plan: 'plan',
   tokenVersion: 'tokenVersion',
+  primaryResumeText: 'primaryResumeText',
+  primaryResumeName: 'primaryResumeName',
   stripeCustomerId: 'stripeCustomerId',
   stripeSubscriptionId: 'stripeSubscriptionId',
   stripePriceId: 'stripePriceId',

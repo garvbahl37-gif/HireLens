@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "HireLens — Score any job",
+  "version": "0.1.0",
+  "description": "One click on any job page: see how your resume scores against it, and the keywords you're missing.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Score this job with HireLens",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "permissions": ["cookies", "scripting", "activeTab", "storage"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://hirelens.app/*",
+    "https://*.linkedin.com/*",
+    "https://*.indeed.com/*",
+    "https://*.greenhouse.io/*",
+    "https://boards.greenhouse.io/*",
+    "https://job-boards.greenhouse.io/*",
+    "https://*.lever.co/*",
+    "https://*.ashbyhq.com/*"
+  ]
+}

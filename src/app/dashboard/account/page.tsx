@@ -13,6 +13,7 @@ import {
   DeleteAccount,
   NameForm,
   PasswordForm,
+  PrimaryResumeForm,
 } from "@/components/dashboard/AccountForms";
 import { Stagger } from "@/components/dashboard/Stagger";
 import { requireUser } from "@/lib/auth";
@@ -164,6 +165,11 @@ export default async function AccountPage() {
       <div className="card space-y-7 p-6 sm:p-8">
         <h2 className="font-bold">Profile</h2>
         <NameForm initialName={user.name} />
+        <div className="h-px bg-edge" />
+        <PrimaryResumeForm
+          initialName={user.primaryResumeName}
+          hasResume={!!user.primaryResumeText}
+        />
         <div className="h-px bg-edge" />
         <PasswordForm />
       </div>

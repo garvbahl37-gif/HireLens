@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>HireLens</title>
+  </head>
+  <body>
+    <header class="hdr">
+      <span class="logo">
+        <svg viewBox="0 0 40 40" width="20" height="20" aria-hidden="true">
+          <circle cx="17" cy="17" r="11.5" fill="#1e1714" />
+          <path d="M26.5 26.5 L35 35" stroke="#f2622e" stroke-width="3.4" stroke-linecap="round" />
+          <rect x="12" y="18" width="2.4" height="5" rx="1.2" fill="#f2622e" />
+          <rect x="15.6" y="14.5" width="2.4" height="8.5" rx="1.2" fill="#f2622e" />
+          <rect x="19.2" y="11" width="2.4" height="12" rx="1.2" fill="#ff9a4f" />
+          <circle cx="17" cy="17" r="11.5" fill="none" stroke="#f2622e" stroke-width="2.8" />
+        </svg>
+        <b>Hire<span class="accent">Lens</span></b>
+      </span>
+      <span id="site" class="site"></span>
+    </header>
+
+    <main id="body">
+      <!-- states are swapped in by popup.js -->
+      <div id="loading" class="state">
+        <div class="spinner"></div>
+        <p class="muted">Reading this job…</p>
+      </div>
+    </main>
+
+    <footer class="ftr">
+      <a id="open-app" href="#" target="_blank" rel="noopener">Open HireLens ↗</a>
+    </footer>
+
+    <script src="../config.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
