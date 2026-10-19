@@ -14,6 +14,15 @@ const bodySchema = z.object({
 // Sarah — "mature, reassuring, confident". A believable interviewer.
 const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL";
 
+// v4 Turbo: ElevenLabs' current generation, with natural breath, pacing and
+// intonation, at conversational speed. Rendering the same question it took
+// ~1.1s, against 3.0s for v4 and 4.1s for multilingual v2 — and in a live
+// interview a pause that long before every question reads as the app hanging.
+// (All transcribed back word-perfect, so clarity didn't separate them.) The
+// app previously ran on Flash v2.5, which is fast but noticeably flatter.
+// Override with ELEVENLABS_MODEL_ID.
+const DEFAULT_MODEL = "eleven_v4_turbo";
+
 /**
  * Speak an interviewer question with ElevenLabs, returning MP3 audio.
  *
@@ -57,9 +66,16 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           text: parsed.data.text,
-          // Flash: lowest latency, right for a back-and-forth interview.
-          model_id: "eleven_flash_v2_5",
-          voice_settings: { stability: 0.4, similarity_boost: 0.75 },
+          model_id: process.env.ELEVENLABS_MODEL_ID || DEFAULT_MODEL,
+          voice_settings: {
+            // Mid stability keeps a natural, varied delivery without the
+            // voice wandering between takes; a little style adds warmth.
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.15,
+            // Sharpens presence and clarity — the "crisp" in a studio voice.
+            use_speaker_boost: true,
+          },
         }),
       }
     );

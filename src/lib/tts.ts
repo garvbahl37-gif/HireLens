@@ -56,18 +56,47 @@ export function primeSpeech() {
 /* Browser speech (fallback)                                          */
 /* ------------------------------------------------------------------ */
 
+export type VoiceLike = { name: string; lang: string };
+
+// Novelty voices, and the old formant voices that sound like a 90s robot.
+// Never acceptable for an interviewer, whatever else is installed.
+const ROBOTIC =
+  /^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|pipe organ|superstar|trinoids|whisper|wobble|zarvox|deranged|hysterical|junior|ralph|fred|kathy|princess|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
+
+/** How human a device voice sounds, from what its name gives away. */
+function voiceScore(v: VoiceLike): number {
+  const n = v.name;
+  let score = 20;
+  if (/natural|online/i.test(n)) score = 100; // Edge/Windows neural voices
+  else if (/premium/i.test(n)) score = 80; // Apple's best downloadable voices
+  else if (/enhanced/i.test(n)) score = 70;
+  else if (/google/i.test(n)) score = 60; // Chrome's network voices
+  else if (/samantha|alex|aria|jenny|guy|ava|zoe|allison|evan|nathan|susan|tom/i.test(n))
+    score = 40;
+  return score + (/en-US/i.test(v.lang) ? 5 : 0);
+}
+
+/**
+ * The most human English voice on the device, or null if it has none. Ranked
+ * rather than first-match: device voice lists are in arbitrary order, and the
+ * first passable match was usually a dated compact voice.
+ */
+export function rankVoices<V extends VoiceLike>(voices: V[]): V | null {
+  let best: V | null = null;
+  let bestScore = -1;
+  for (const v of voices) {
+    if (!/^en/i.test(v.lang) || ROBOTIC.test(v.name)) continue;
+    const s = voiceScore(v);
+    if (s > bestScore) {
+      best = v;
+      bestScore = s;
+    }
+  }
+  return best;
+}
+
 function pickVoice(): SpeechSynthesisVoice | null {
-  const voices = window.speechSynthesis.getVoices();
-  return (
-    voices.find(
-      (v) =>
-        /en-US/i.test(v.lang) &&
-        /natural|premium|samantha|google|aria|jenny/i.test(v.name)
-    ) ??
-    voices.find((v) => /en-US/i.test(v.lang)) ??
-    voices.find((v) => /^en/i.test(v.lang)) ??
-    null
-  );
+  return rankVoices(window.speechSynthesis.getVoices());
 }
 
 export type SpeakHandlers = {
@@ -91,7 +120,10 @@ function browserSpeak(text: string, mine: number, handlers: SpeakHandlers) {
       return;
     }
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.02;
+    // Conversational pace: device voices sound most natural at their native
+    // rate; speeding them up is what makes them sound clipped and synthetic.
+    u.rate = 1;
+    u.pitch = 1;
     const v = pickVoice();
     if (v) u.voice = v;
     u.onstart = () => handlers.onStart?.();
