@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { InterviewReport } from "@/components/interview/InterviewReport";
 import { PanelCard } from "@/components/interview/PanelCard";
@@ -35,33 +33,28 @@ export default async function ReportPage({
 
   const panel = panelReportSchema.safeParse(interview.panel);
 
+  // The way back lives in the canopy header's back arrow (and the report's own
+  // "All interviews" button), so the page opens straight onto the report.
   return (
-    <div className="space-y-6">
-      <Link
-        href="/dashboard/interview"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
-      >
-        <ArrowLeft className="h-4 w-4" /> All interviews
-      </Link>
-
-      <InterviewReport
-        report={report.data}
-        transcript={transcript.data}
-        jobTitle={interview.jobTitle}
-        company={interview.company}
-        deep={interview.deep}
-        askedAt={interview.createdAt.toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })}
-      />
-
-      <PanelCard
-        interviewId={interview.id}
-        isPro={user.plan === "PRO"}
-        initial={panel.success ? panel.data : null}
-      />
-    </div>
+    <InterviewReport
+      report={report.data}
+      transcript={transcript.data}
+      jobTitle={interview.jobTitle}
+      company={interview.company}
+      deep={interview.deep}
+      askedAt={interview.createdAt.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })}
+      panel={
+        <PanelCard
+          key="panel"
+          interviewId={interview.id}
+          isPro={user.plan === "PRO"}
+          initial={panel.success ? panel.data : null}
+        />
+      }
+    />
   );
 }

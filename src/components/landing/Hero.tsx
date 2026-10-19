@@ -1,369 +1,118 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  animate,
-  motion,
-  useMotionValue,
-  useSpring,
-  useScroll,
-  useTransform,
-} from "motion/react";
-import { ArrowRight, Star } from "lucide-react";
-import { scoreColor } from "@/components/ScoreRing";
+import { motion, useReducedMotion } from "motion/react";
+import { CreditCard, Gauge, Gift } from "lucide-react";
+import { GlossyIcon, type GlossyKind } from "./GlossyIcon";
+import { BlurWords, EASE } from "./motion";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+const CARDS: { title: [string, string]; icon: GlossyKind; href: string; cta: string }[] = [
+  { title: ["Resume", "Score"], icon: "score", href: "/dashboard/new", cta: "Score it" },
+  { title: ["Keyword", "Gaps"], icon: "lens", href: "/dashboard/new", cta: "Find them" },
+  { title: ["Mock", "Interview"], icon: "mic", href: "/dashboard/interview/new", cta: "Rehearse" },
+  { title: ["Job", "Tracker"], icon: "case", href: "/dashboard/tracker", cta: "Track jobs" },
+];
 
+/**
+ * The reference's hero: a tall glass panel, a centred two-line headline that
+ * rises word by word out of a blur, two 3D pills, then four glass cards that
+ * cascade up — each one starting lower and later than the last — and settle
+ * into a row.
+ */
 export function Hero({
   authed,
   freeLimit,
+  dimensions,
 }: {
   authed: boolean;
   freeLimit: number;
+  dimensions: number;
 }) {
-  const ctaHref = authed ? "/dashboard/new" : "/signup";
+  const reduce = useReducedMotion();
+  const go = (href: string) => (authed ? href : "/signup");
 
   return (
-    <section className="relative overflow-hidden pt-36 pb-24 sm:pt-40">
-      {/* A single, quiet warm wash and a faint grid — no drifting colour blobs,
-          no floating product collage. The one hero card carries the demo. */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="aurora" />
-        <div className="absolute inset-0 hero-grid" />
-      </div>
+    <section className="px-3 pt-3 sm:px-4 sm:pt-4">
+      <div className="panel overflow-hidden px-5 pb-10 pt-32 sm:pt-40">
+        <div className="light-streaks" />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-[1.12fr_0.88fr]">
-        {/* ---- copy ---- */}
-        <div>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: EASE }}
-          >
-            <span className="chip gap-2 border-edge2 text-muted">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-good" />
-              </span>
-              Recruiter-calibrated review
-            </span>
-          </motion.div>
-
-          <h1 className="mt-6 text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.05rem]">
-            <MaskLine delay={0.05}>Know exactly why your</MaskLine>
-
-            <MaskLine delay={0.17}>
-              resume gets{" "}
-              <span className="relative inline-block">
-                rejected
-                {/* the strike is the point: the headline performs the problem */}
-                <motion.span
-                  aria-hidden
-                  className="absolute left-0 top-1/2 h-[0.09em] w-full origin-left rounded-full bg-bad"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.5, delay: 1.05, ease: EASE }}
-                />
-              </span>{" "}
-              —
-            </MaskLine>
-
-            <MaskLine delay={0.29}>
-              <span className="relative inline-block">
-                <span className="text-gradient-animate">and fix it.</span>
-                {/* …and then performs the fix */}
-                <motion.span
-                  aria-hidden
-                  className="absolute -bottom-1 left-0 h-[0.07em] w-full origin-left rounded-full"
-                  style={{
-                    background:
-                      "linear-gradient(to right, var(--color-accent), var(--color-accent2))",
-                  }}
-                  initial={{ scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: 0.7, delay: 1.5, ease: EASE }}
-                />
-              </span>
-            </MaskLine>
+        <div className="relative mx-auto max-w-5xl text-center">
+          <h1 className="font-display text-[2.35rem] font-medium leading-[1.06] text-ink sm:text-[3.4rem] sm:[&_.block]:whitespace-nowrap lg:text-[4.2rem]">
+            <BlurWords lines={["Know exactly why your", "resume gets rejected"]} delay={0.35} />
           </h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
-            className="mt-6 max-w-xl text-lg leading-relaxed text-muted"
+            initial={reduce ? false : { opacity: 0, y: 10, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, delay: 1.1, ease: EASE }}
+            className="mx-auto mt-6 max-w-xl text-base text-muted sm:text-lg"
           >
-            Upload your resume, paste the job description, and get a scored,
-            section-by-section review in seconds. Then defend every claim on it
-            in a mock interview that quotes your résumé back at you — and rewrite
-            the lines you couldn&rsquo;t.
+            Score it against the job. Fix what&apos;s weak. Rehearse the interview.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
+            initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.78, ease: EASE }}
-            className="mt-9 flex flex-wrap items-center gap-4"
+            transition={{ duration: 0.8, delay: 1.25, ease: EASE }}
+            className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
-            <Link
-              href={ctaHref}
-              className="btn btn-primary px-6 py-3 text-base"
-            >
-              Review my resume free <ArrowRight className="h-4 w-4" />
+            <Link href={go("/dashboard/new")} className="btn-neon">
+              Review my resume
             </Link>
-            <a href="#how" className="btn btn-ghost px-6 py-3 text-base">
+            <a href="#how" className="btn-stone">
               See how it works
             </a>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.95 }}
-            className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-faint"
-          >
-            <span className="flex items-center gap-1.5">
-              <span className="flex">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-warn text-warn" />
-                ))}
-              </span>
-              Loved by job-seekers
-            </span>
-            <span className="h-4 w-px bg-edge" />
-            <span>Free plan · {freeLimit} reviews a month · no card required</span>
-          </motion.div>
         </div>
 
-        {/* ---- floating tilt card ---- */}
-        <TiltCard />
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
-/**
- * A line of the headline, revealed from behind a mask.
- *
- * The line rises out of an overflow-hidden band rather than fading in — the
- * type reads as being uncovered rather than materialising, which is the
- * difference between "considered" and "a stock fade". The band needs vertical
- * padding or it clips descenders (the 'y' in "why"), and that padding has to
- * be negated by an equal margin so it doesn't open a gap between the lines.
- */
-function MaskLine({
-  children,
-  delay,
-}: {
-  children: ReactNode;
-  delay: number;
-}) {
-  return (
-    <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
-      <motion.span
-        className="block"
-        initial={{ y: "115%" }}
-        animate={{ y: "0%" }}
-        transition={{ duration: 0.95, delay, ease: EASE }}
-      >
-        {children}
-      </motion.span>
-    </span>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
-/** Counts from 0 to `to`, starting after `delay`. */
-function Counter({ to, delay = 0 }: { to: number; delay?: number }) {
-  const [n, setN] = useState(0);
-
-  useEffect(() => {
-    const controls = animate(0, to, {
-      duration: 1.1,
-      delay,
-      ease: EASE,
-      onUpdate: (v) => setN(Math.round(v)),
-    });
-    return () => controls.stop();
-  }, [to, delay]);
-
-  return <>{n}</>;
-}
-
-/** The overall score ring: sweeps round while the number spins up to meet it. */
-function HeroRing({ score }: { score: number }) {
-  const size = 64;
-  const stroke = 6;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const color = scoreColor(score);
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="relative">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke="var(--color-edge)"
-          strokeWidth={stroke}
-        />
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={c}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          initial={{ strokeDashoffset: c }}
-          animate={{ strokeDashoffset: c * (1 - score / 100) }}
-          transition={{ duration: 1.2, delay: 0.7, ease: EASE }}
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-lg font-extrabold tabular-nums">
-        <Counter to={score} delay={0.7} />
-      </span>
-    </div>
-  );
-}
-
-/** A dimension bar that fills while its number counts up. */
-function HeroBar({
-  label,
-  score,
-  delay,
-}: {
-  label: string;
-  score: number;
-  delay: number;
-}) {
-  const color = scoreColor(score);
-  return (
-    <div>
-      <div className="mb-1.5 flex items-baseline justify-between">
-        <span className="text-sm font-semibold">{label}</span>
-        <span className="text-sm font-bold tabular-nums" style={{ color }}>
-          <Counter to={score} delay={delay} />
-        </span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-edge">
-        <motion.div
-          className="h-full rounded-full"
-          style={{ background: color }}
-          initial={{ width: 0 }}
-          animate={{ width: `${score}%` }}
-          transition={{ duration: 1.1, delay, ease: EASE }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function TiltCard() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
-  const parallax = useTransform(scrollY, [0, 500], [0, -40]);
-
-  const rx = useSpring(useMotionValue(0), { stiffness: 150, damping: 18 });
-  const ry = useSpring(useMotionValue(0), { stiffness: 150, damping: 18 });
-
-  function onMove(e: React.MouseEvent<HTMLDivElement>) {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;
-    const py = (e.clientY - r.top) / r.height - 0.5;
-    ry.set(px * 12);
-    rx.set(-py * 12);
-  }
-  function onLeave() {
-    rx.set(0);
-    ry.set(0);
-  }
-
-  return (
-    <motion.div
-      style={{ y: parallax }}
-      initial={{ opacity: 0, y: 40, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
-      className="relative [perspective:1400px]"
-    >
-      <motion.div
-        ref={ref}
-        onMouseMove={onMove}
-        onMouseLeave={onLeave}
-        style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d" }}
-        className="relative card p-6 lg:p-7"
-      >
-        <div className="relative flex items-center justify-between border-b border-edge pb-4">
-          <div>
-            <p className="text-sm font-bold">Senior Frontend Engineer · Stripe</p>
-            <p className="mt-0.5 text-xs text-muted">
-              resume_v4_final.pdf · reviewed just now
-            </p>
-          </div>
-          <HeroRing score={68} />
-        </div>
-
-        <div className="relative mt-5 space-y-4">
-          {[
-            { label: "Job match", score: 71 },
-            { label: "Recruiter skim", score: 62 },
-            { label: "Impact & results", score: 55 },
-          ].map((b, i) => (
-            <HeroBar
-              key={b.label}
-              label={b.label}
-              score={b.score}
-              delay={0.9 + i * 0.16}
-            />
+        {/* the cascade */}
+        <div className="relative mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-3 sm:mt-20 sm:gap-4 lg:grid-cols-4">
+          {CARDS.map((c, i) => (
+            <motion.div
+              key={c.icon}
+              initial={reduce ? false : { opacity: 0, y: 140 + i * 70 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.25, delay: 1.3 + i * 0.14, ease: EASE }}
+            >
+              <Link
+                href={go(c.href)}
+                className="glass group flex h-full flex-col items-center rounded-[1.6rem] px-4 pb-5 pt-6 text-center transition-transform duration-300 hover:-translate-y-1 sm:pt-8"
+              >
+                <span className="font-display text-lg font-medium leading-tight text-ink sm:text-[1.35rem]">
+                  {c.title[0]}
+                  <br />
+                  {c.title[1]}
+                </span>
+                <GlossyIcon
+                  kind={c.icon}
+                  className="my-6 h-16 w-16 transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-4deg] sm:my-9 sm:h-20 sm:w-20"
+                />
+                <span className={i === 2 ? "btn-neon px-3.5 py-1.5 text-xs" : "btn-stone px-3.5 py-1.5 text-xs"}>
+                  {c.cta}
+                </span>
+              </Link>
+            </motion.div>
           ))}
         </div>
 
-        <div className="relative mt-5 border-t border-edge pt-4">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
-            Missing keywords
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {["Kubernetes", "CI/CD", "GraphQL", "Terraform"].map((k, i) => (
-              <motion.span
-                key={k}
-                initial={{ opacity: 0, scale: 0.6, y: 6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{
-                  delay: 1.6 + i * 0.09,
-                  type: "spring",
-                  stiffness: 420,
-                  damping: 20,
-                }}
-                className="chip border-bad/30 text-bad"
-              >
-                {k}
-              </motion.span>
-            ))}
-          </div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.1, duration: 0.6, ease: EASE }}
-          className="relative mt-4 rounded-xl border border-edge bg-card2 p-3.5 text-xs leading-relaxed text-muted"
+        {/* the fact row under the cards */}
+        <motion.ul
+          initial={reduce ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 2.2 }}
+          className="relative mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted"
         >
-          <span className="font-semibold text-warn">Fix first:</span> Only 2 of
-          11 bullets contain numbers. Rewrite &ldquo;worked on checkout
-          flow&rdquo; → &ldquo;cut checkout abandonment 18% by rebuilding the
-          payment flow in React&rdquo;.
-        </motion.div>
-      </motion.div>
-    </motion.div>
+          <li className="flex items-center gap-2">
+            <Gift className="h-4 w-4" /> {freeLimit} free reviews a month
+          </li>
+          <li className="flex items-center gap-2">
+            <Gauge className="h-4 w-4" /> {dimensions} dimensions scored
+          </li>
+          <li className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" /> No card required
+          </li>
+        </motion.ul>
+      </div>
+    </section>
   );
 }

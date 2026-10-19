@@ -48,15 +48,17 @@ export function DemoCheckout({ interval }: { interval: "monthly" | "yearly" }) {
       className="mx-auto max-w-md"
     >
       {/* honesty banner — this is a simulation, say so plainly */}
-      <div className="mb-5 flex gap-3 rounded-xl border border-warn/30 bg-warn/5 p-4">
-        <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-warn" />
+      <div className="card mb-4 flex gap-3.5 p-5">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/70">
+          <ShieldAlert className="h-4 w-4 text-warn" />
+        </span>
         <div className="text-sm">
-          <p className="font-bold text-warn">Simulated checkout</p>
+          <p className="font-semibold text-ink">Simulated checkout</p>
           <p className="mt-1 leading-relaxed text-muted">
             No Stripe account is connected to this deployment, so this page
             stands in for Stripe Checkout. Nothing is charged and no card
             details are collected or sent anywhere. Completing it emits a{" "}
-            <code className="rounded bg-card2 px-1 py-0.5 text-xs">
+            <code className="rounded-md border border-white/80 bg-white/70 px-1.5 py-0.5 text-xs text-ink">
               checkout.session.completed
             </code>{" "}
             event through the same webhook handler the live Stripe integration
@@ -66,35 +68,31 @@ export function DemoCheckout({ interval }: { interval: "monthly" | "yearly" }) {
       </div>
 
       <div className="card overflow-hidden">
-        {/* order summary */}
-        <div className="border-b border-edge bg-card2 p-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Subscribing to
-          </p>
-          <div className="mt-2 flex items-baseline justify-between">
-            <p className="text-lg font-bold">HireLens Pro</p>
-            <p className="text-2xl font-extrabold">
+        {/* order summary — the forest strip, as on the plan cards */}
+        <div className="card-forest m-2 p-5">
+          <p className="text-sm text-white/70">Subscribing to</p>
+          <div className="mt-1 flex items-baseline justify-between gap-3">
+            <p className="text-lg font-medium tracking-tight">HireLens Pro</p>
+            <p className="text-3xl font-light tabular-nums">
               ${price.amount}
-              <span className="text-sm font-medium text-muted">
+              <span className="text-sm font-normal text-white/70">
                 /{price.per}
               </span>
             </p>
           </div>
-          <p className="mt-2 text-sm text-muted">
+          <p className="mt-2 text-sm text-white/75">
             Unlimited reviews, line-by-line rewrites, ATS checklist, and
             interview prep.
           </p>
         </div>
 
         {/* inert card form — decorative, nothing is read from it */}
-        <div className="space-y-4 p-6">
+        <div className="space-y-4 p-6 pt-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-muted">
-              Card number
-            </label>
-            <div className="flex items-center gap-2 rounded-xl border border-edge bg-card2 px-3 py-2.5">
+            <p className="label">Card number</p>
+            <div className="flex items-center gap-2 rounded-xl border border-white/80 bg-white/60 px-3 py-2.5">
               <CreditCard className="h-4 w-4 text-faint" />
-              <span className="font-mono text-sm tracking-wider text-muted">
+              <span className="text-sm tabular-nums tracking-wider text-muted">
                 4242 4242 4242 4242
               </span>
             </div>
@@ -102,25 +100,21 @@ export function DemoCheckout({ interval }: { interval: "monthly" | "yearly" }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-muted">
-                Expiry
-              </label>
-              <div className="rounded-xl border border-edge bg-card2 px-3 py-2.5 font-mono text-sm text-muted">
+              <p className="label">Expiry</p>
+              <div className="rounded-xl border border-white/80 bg-white/60 px-3 py-2.5 text-sm tabular-nums text-muted">
                 12 / 34
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-muted">
-                CVC
-              </label>
-              <div className="rounded-xl border border-edge bg-card2 px-3 py-2.5 font-mono text-sm text-muted">
+              <p className="label">CVC</p>
+              <div className="rounded-xl border border-white/80 bg-white/60 px-3 py-2.5 text-sm tabular-nums text-muted">
                 123
               </div>
             </div>
           </div>
 
           {error && (
-            <p className="rounded-lg border border-bad/30 bg-bad/5 px-3 py-2 text-sm text-bad">
+            <p role="alert" className="rounded-xl border border-bad/30 bg-white/60 px-3 py-2 text-sm text-bad">
               {error}
             </p>
           )}
@@ -128,7 +122,7 @@ export function DemoCheckout({ interval }: { interval: "monthly" | "yearly" }) {
           <button
             onClick={pay}
             disabled={pending}
-            className="btn btn-primary btn-sheen w-full py-3 text-base disabled:opacity-60"
+            className="btn btn-primary w-full py-3.5 text-base disabled:opacity-60"
           >
             {pending ? (
               <>

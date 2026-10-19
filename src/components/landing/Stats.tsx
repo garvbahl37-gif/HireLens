@@ -1,66 +1,36 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { animate, motion, useInView } from "motion/react";
+import { AudioLines, Gauge, TrendingUp } from "lucide-react";
+import { CountUp, Rise } from "./motion";
 
-const STATS = [
-  { value: 6, suffix: "s", label: "Average time to a full review", decimals: 0 },
-  { value: 5, suffix: "", label: "Scored dimensions per resume", decimals: 0 },
-  { value: 75, suffix: "%", label: "Of resumes rejected by ATS filters", decimals: 0 },
-  { value: 12, suffix: "", label: "Keyword gaps surfaced per scan", decimals: 0 },
-];
-
-function Counter({
-  to,
-  suffix,
-  decimals,
+/** The reference's three-up figures row: a small icon, a number that counts
+ *  up as it arrives, and a plain label. Every figure here is a product fact. */
+export function Stats({
+  dimensions,
+  proQuestions,
 }: {
-  to: number;
-  suffix: string;
-  decimals: number;
+  dimensions: number;
+  proQuestions: number;
 }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  const [val, setVal] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-    const controls = animate(0, to, {
-      duration: 1.4,
-      ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => setVal(v),
-    });
-    return () => controls.stop();
-  }, [inView, to]);
+  const stats = [
+    { icon: Gauge, value: dimensions, prefix: "", suffix: " dimensions", label: "scored on every review" },
+    { icon: TrendingUp, value: 30, prefix: "+", suffix: " points", label: "on our own resume, after one pass" },
+    { icon: AudioLines, value: proQuestions, prefix: "", suffix: " questions", label: "per Pro mock interview" },
+  ];
 
   return (
-    <span ref={ref}>
-      {val.toFixed(decimals)}
-      {suffix}
-    </span>
-  );
-}
-
-export function Stats() {
-  return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      {STATS.map((s, i) => (
-        <motion.div
-          key={s.label}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px 200px 0px" }}
-          transition={{ duration: 0.6, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-          className="card p-6 text-center"
-        >
-          <p className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            <span className="text-gradient">
-              <Counter to={s.value} suffix={s.suffix} decimals={s.decimals} />
-            </span>
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted">{s.label}</p>
-        </motion.div>
-      ))}
-    </div>
+    <section className="px-4 pt-32 sm:pt-40">
+      <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-3">
+        {stats.map((s, i) => (
+          <Rise key={s.label} y={24} delay={i * 0.08}>
+            <s.icon className="h-5 w-5 text-ink/70" strokeWidth={1.75} />
+            <p className="mt-4 text-xl font-medium text-ink">
+              <CountUp to={s.value} prefix={s.prefix} suffix={s.suffix} />
+            </p>
+            <p className="mt-1 text-sm text-muted">{s.label}</p>
+          </Rise>
+        ))}
+      </div>
+    </section>
   );
 }

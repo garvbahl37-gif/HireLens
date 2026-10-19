@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, FileText, Loader2, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, AudioLines, FileText, Loader2, Lock, Sparkles } from "lucide-react";
+import { ProgressRing } from "@/components/dashboard/ProgressRing";
+import { Monogram } from "@/components/dashboard/RecentReviews";
 import { primeSpeech } from "@/lib/tts";
 import { cn } from "@/lib/cn";
 
@@ -102,19 +104,18 @@ export function InterviewSetup({
 
   if (limitHit) {
     return (
-      <div className="card relative overflow-hidden border-accent/40 p-8 text-center">
-        <Lock className="relative mx-auto h-6 w-6 text-accent" />
-        <h2 className="relative mt-4 text-lg font-bold">
+      <div className="card p-8 text-center sm:p-10">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-white/60">
+          <Lock className="h-5 w-5 text-accent" />
+        </span>
+        <h2 className="mt-4 text-lg font-medium tracking-tight">
           You&apos;ve used your free interview this month
         </h2>
-        <p className="relative mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
           Pro gives you unlimited interviews, nine questions instead of five,
           harder follow-ups, and a model answer for every question.
         </p>
-        <Link
-          href="/dashboard/billing?intent=pro"
-          className="btn btn-primary btn-sheen relative mt-6"
-        >
+        <Link href="/dashboard/billing?intent=pro" className="btn btn-primary mt-6">
           <Sparkles className="h-4 w-4" /> Upgrade to Pro
         </Link>
       </div>
@@ -122,18 +123,18 @@ export function InterviewSetup({
   }
 
   return (
-    <div className="space-y-6">
-      {/* what they're about to walk into */}
-      <div className="card flex flex-wrap items-center justify-between gap-4 border-accent/30 p-5">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/40 bg-accent/10 text-accent">
-            <Sparkles className="h-4.5 w-4.5" />
+    <div className="space-y-4">
+      {/* what they're about to walk into — the one forest strip on the page */}
+      <div className="card-forest flex flex-wrap items-center justify-between gap-4 p-5 sm:px-6">
+        <div className="flex items-center gap-3.5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+            <AudioLines className="h-5 w-5 text-neon" />
           </span>
           <div>
-            <p className="text-sm font-bold">
+            <p className="text-lg font-medium tracking-tight">
               {questions} questions · {isPro ? "Full loop" : "Screen"}
             </p>
-            <p className="text-xs text-muted">
+            <p className="text-sm text-white/70">
               Adaptive — it follows up when an answer is thin.
             </p>
           </div>
@@ -141,175 +142,172 @@ export function InterviewSetup({
         {!isPro && (
           <Link
             href="/dashboard/billing?intent=pro"
-            className="text-xs font-semibold text-accent hover:underline"
+            className="rounded-full bg-white/10 px-3.5 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition-colors hover:bg-white/20"
           >
             Pro gets 9 questions + model answers
           </Link>
         )}
       </div>
 
-      {/* source */}
-      {reviews.length > 0 && (
-        <div className="flex gap-2">
-          {(["review", "manual"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={cn(
-                "flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors",
-                mode === m
-                  ? "border-accent/50 bg-accent/10 text-accent"
-                  : "border-edge text-muted hover:border-edge2 hover:text-ink"
-              )}
-            >
-              {m === "review" ? "From a past review" : "Paste something new"}
-            </button>
-          ))}
-        </div>
-      )}
+      <section className="card p-5 sm:p-6">
+        <h2 className="text-lg font-medium tracking-tight">What the interviewer reads</h2>
 
-      <AnimatePresence mode="wait">
-        {mode === "review" ? (
-          <motion.div
-            key="review"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: EASE }}
-            className="space-y-3"
+        {/* source — segmented like the reference's tab strip */}
+        {reviews.length > 0 && (
+          <div
+            role="group"
+            aria-label="Interview source"
+            className="mt-4 grid grid-cols-2 gap-1 rounded-2xl border border-white/80 bg-white/35 p-1"
           >
-            <p className="text-sm text-muted">
-              The interviewer will use the resume and job description from that
-              review, and probe the gaps it found.
-            </p>
-            {reviews.map((r) => (
+            {(["review", "manual"] as const).map((m) => (
               <button
-                key={r.id}
-                onClick={() => setReviewId(r.id)}
+                key={m}
+                onClick={() => setMode(m)}
+                aria-pressed={mode === m}
                 className={cn(
-                  "card flex w-full items-center gap-4 p-4 text-left transition-colors",
-                  reviewId === r.id
-                    ? "border-accent/50 bg-accent/[0.04]"
-                    : "hover:border-edge2"
+                  "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  mode === m
+                    ? "bg-white/85 text-ink shadow-[0_1px_2px_rgba(18,36,26,0.08)]"
+                    : "text-muted hover:bg-white/40 hover:text-ink"
                 )}
               >
-                <span
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-sm font-bold"
-                  style={{
-                    borderColor:
-                      r.overallScore >= 75
-                        ? "color-mix(in srgb, var(--color-good) 40%, transparent)"
-                        : r.overallScore >= 55
-                          ? "color-mix(in srgb, var(--color-warn) 40%, transparent)"
-                          : "color-mix(in srgb, var(--color-bad) 40%, transparent)",
-                    color:
-                      r.overallScore >= 75
-                        ? "var(--color-good)"
-                        : r.overallScore >= 55
-                          ? "var(--color-warn)"
-                          : "var(--color-bad)",
-                  }}
-                >
-                  {r.overallScore}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
-                    {r.jobTitle}
-                    {r.company && (
-                      <span className="font-normal text-muted">
-                        {" "}
-                        · {r.company}
-                      </span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 text-xs text-faint">{r.date}</p>
-                </div>
-                <span
-                  className={cn(
-                    "h-4 w-4 shrink-0 rounded-full border-2 transition-colors",
-                    reviewId === r.id
-                      ? "border-accent bg-accent"
-                      : "border-edge2"
-                  )}
-                />
+                {m === "review" ? "From a past review" : "Paste something new"}
               </button>
             ))}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="manual"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: EASE }}
-            className="card space-y-5 p-6"
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="label" htmlFor="jt">
-                  Job title
-                </label>
-                <input
-                  id="jt"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="Senior Frontend Engineer"
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="co">
-                  Company <span className="text-faint">(optional)</span>
-                </label>
-                <input
-                  id="co"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="Stripe"
-                  className="input"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="label" htmlFor="jd">
-                Job description
-              </label>
-              <textarea
-                id="jd"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                rows={5}
-                placeholder="Paste the posting…"
-                className="input resize-y"
-              />
-            </div>
-
-            <div>
-              <label className="label" htmlFor="cv">
-                Your resume
-              </label>
-              <textarea
-                id="cv"
-                value={resumeText}
-                onChange={(e) => setResumeText(e.target.value)}
-                rows={7}
-                placeholder="Paste your resume text…"
-                className="input resize-y"
-              />
-              <p className="mt-1.5 text-xs text-faint">
-                The interviewer quotes your resume back at you, so paste the real
-                thing.
-              </p>
-            </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+
+        <AnimatePresence mode="wait">
+          {mode === "review" ? (
+            <motion.div
+              key="review"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: EASE }}
+              className="mt-4"
+            >
+              <p className="text-sm text-muted">
+                The interviewer will use the resume and job description from that
+                review, and probe the gaps it found.
+              </p>
+              <ul className="mt-2 divide-y divide-ink/10">
+                {reviews.map((r) => {
+                  const picked = reviewId === r.id;
+                  return (
+                    <li key={r.id} className="py-1">
+                      <button
+                        onClick={() => setReviewId(r.id)}
+                        aria-pressed={picked}
+                        className={cn(
+                          "-mx-2 flex w-[calc(100%+1rem)] items-center gap-3.5 rounded-xl px-2 py-2.5 text-left transition-colors",
+                          picked
+                            ? "bg-white/70 shadow-[0_1px_2px_rgba(18,36,26,0.06)]"
+                            : "hover:bg-white/45"
+                        )}
+                      >
+                        <Monogram name={r.company || r.jobTitle} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold">
+                            {r.company || r.jobTitle}
+                          </span>
+                          <span className="block truncate text-sm text-muted">
+                            {r.company ? `${r.jobTitle}, ` : ""}
+                            {r.date}
+                          </span>
+                        </span>
+                        <ProgressRing score={r.overallScore} />
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                            picked ? "border-pill bg-pill" : "border-ink/20 bg-white/50"
+                          )}
+                        >
+                          {picked && <span className="h-1.5 w-1.5 rounded-full bg-neon" />}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="manual"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: EASE }}
+              className="mt-5 space-y-5"
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="label" htmlFor="jt">
+                    Job title
+                  </label>
+                  <input
+                    id="jt"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="Senior Frontend Engineer"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="co">
+                    Company <span className="font-normal text-faint">(optional)</span>
+                  </label>
+                  <input
+                    id="co"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="Stripe"
+                    className="input"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="label" htmlFor="jd">
+                  Job description
+                </label>
+                <textarea
+                  id="jd"
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  rows={5}
+                  placeholder="Paste the posting…"
+                  className="input resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="label" htmlFor="cv">
+                  Your resume
+                </label>
+                <textarea
+                  id="cv"
+                  value={resumeText}
+                  onChange={(e) => setResumeText(e.target.value)}
+                  rows={7}
+                  placeholder="Paste your resume text…"
+                  className="input resize-y"
+                />
+                <p className="mt-1.5 text-xs text-faint">
+                  The interviewer quotes your resume back at you, so paste the real
+                  thing.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
 
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-bad/30 bg-bad/5 px-3 py-2 text-sm text-bad"
+          className="rounded-xl border border-bad/30 bg-white/60 px-3 py-2 text-sm text-bad"
         >
           {error}
         </p>
@@ -318,7 +316,7 @@ export function InterviewSetup({
       <button
         onClick={start}
         disabled={!ready || pending}
-        className="btn btn-primary btn-sheen w-full py-3 text-base"
+        className="btn btn-primary w-full py-3.5 text-base"
       >
         {pending ? (
           <>

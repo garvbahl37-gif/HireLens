@@ -60,122 +60,148 @@ export default async function AccountPage() {
   });
 
   return (
-    <Stagger className="space-y-6">
-      {/* ---------- identity header ---------- */}
-      <div className="card relative overflow-hidden p-6 sm:p-8">
-        <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
-          {/* avatar with a conic ring */}
-          <div className="relative shrink-0">
-            <div
-              aria-hidden
-              className="absolute -inset-1 rounded-full opacity-70 blur-md"
-              style={{
-                background:
-                  "conic-gradient(from 180deg, var(--color-accent), var(--color-accent2), var(--color-accent))",
-              }}
-            />
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent2 text-2xl font-extrabold text-[#180f0a]">
-              {initials(user.name)}
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-start gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
+      {/* ---------- identity: the reference's profile column ---------- */}
+      <aside className="card fade-up flex flex-col p-6 lg:sticky lg:top-4">
+        <div className="flex items-center gap-4">
+          <span
+            aria-hidden
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-canopy2 to-canopy text-xl font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_0_0_4px_rgba(255,255,255,0.7)]"
+          >
+            {initials(user.name)}
+          </span>
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-medium tracking-tight">{user.name}</h2>
+            <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-muted">
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{user.email}</span>
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-6 text-sm text-muted">Plan</p>
+        <div className="mt-2">
+          {isPro ? (
+            <span className="chip gap-1.5 border-accent/30 px-3 py-1 text-sm text-accent">
+              <Sparkles className="h-3.5 w-3.5" /> Pro plan
+            </span>
+          ) : (
+            <span className="chip px-3 py-1 text-sm">Free plan</span>
+          )}
+        </div>
+
+        <p className="mt-5 text-sm text-muted">Member since</p>
+        <p className="mt-1 flex items-center gap-1.5 font-semibold">
+          <CalendarDays className="h-4 w-4 text-muted" /> {joined}
+        </p>
+
+        {/* ---------- lifetime stats ---------- */}
+        <div className="mt-6 grid grid-cols-3 divide-x divide-ink/10 border-t border-ink/10 pt-5">
+          {[
+            { icon: FileText, label: "Reviews", value: count },
+            { icon: TrendingUp, label: "Average", value: avg ?? "—" },
+            { icon: Trophy, label: "Best", value: best ?? "—" },
+          ].map((s) => (
+            <div key={s.label} className="px-3 first:pl-0 last:pr-0">
+              <p className="flex items-center gap-1 text-sm text-muted">
+                <s.icon className="h-3.5 w-3.5" /> {s.label}
+              </p>
+              <p className="mt-1 text-3xl font-light tabular-nums">{s.value}</p>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <Stagger className="flex min-w-0 flex-col gap-4">
+        {/* ---------- plan + usage ---------- */}
+        {isPro ? (
+          <div className="card-forest p-6 sm:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="flex items-center gap-2 text-sm text-white/70">
+                  <span className="h-2 w-2 rounded-full bg-neon shadow-[0_0_8px_rgba(69,230,36,0.8)]" />
+                  Plan &amp; usage
+                </p>
+                <h2 className="mt-1 text-xl font-medium tracking-tight">Pro</h2>
+                <p className="mt-1 text-sm text-white/75">
+                  Unlimited reviews, with the full deep analysis on every one.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/billing"
+                className="btn bg-white text-ink shadow-[0_8px_20px_-10px_rgba(0,0,0,0.35)] hover:bg-white/90"
+              >
+                Manage billing <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="mt-6">
+              <div className="mb-2 flex items-baseline justify-between text-sm">
+                <span className="text-white/70">Reviews this month</span>
+                <span className="tabular-nums text-white/85">{used} · unlimited</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+                <div
+                  className="h-full rounded-full bg-neon shadow-[0_0_10px_rgba(69,230,36,0.6)]"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             </div>
           </div>
-
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-2xl font-bold tracking-tight">
-              {user.name}
-            </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted">
-              <span className="flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5" /> {user.email}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CalendarDays className="h-3.5 w-3.5" /> Joined {joined}
-              </span>
+        ) : (
+          <div className="card p-6 sm:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-muted">Plan &amp; usage</p>
+                <h2 className="mt-1 text-xl font-medium tracking-tight">Starter (Free)</h2>
+                <p className="mt-1 text-sm text-muted">
+                  {remaining} of {FREE_MONTHLY_LIMIT} reviews left this month.
+                </p>
+              </div>
+              <Link href="/dashboard/billing" className="btn btn-primary">
+                Manage billing <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-            <div className="mt-3">
-              {isPro ? (
-                <span className="chip gap-1.5 border-accent/40 text-accent">
-                  <Sparkles className="h-3.5 w-3.5" /> Pro plan
+
+            <div className="mt-6">
+              <div className="mb-2 flex items-baseline justify-between text-sm">
+                <span className="text-muted">Monthly quota</span>
+                <span className="tabular-nums text-muted">
+                  {Math.min(used, FREE_MONTHLY_LIMIT)}/{FREE_MONTHLY_LIMIT}
                 </span>
-              ) : (
-                <span className="chip">Free plan</span>
-              )}
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-ink/10">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    background:
+                      remaining === 0
+                        ? "var(--color-bad)"
+                        : "linear-gradient(to right, var(--color-accent), var(--color-accent2))",
+                  }}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* ---------- lifetime stats ---------- */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { icon: FileText, label: "reviews run", value: count },
-          { icon: TrendingUp, label: "average score", value: avg ?? "—" },
-          { icon: Trophy, label: "best score", value: best ?? "—" },
-        ].map((s) => (
-          <div key={s.label} className="card p-5">
-            <s.icon className="h-4 w-4 text-accent" />
-            <p className="mt-3 text-2xl font-extrabold tabular-nums">
-              {s.value}
-            </p>
-            <p className="mt-0.5 text-xs text-muted">{s.label}</p>
-          </div>
-        ))}
-      </div>
+        {/* ---------- profile settings ---------- */}
+        <section className="card space-y-7 p-6 sm:p-7">
+          <h2 className="text-lg font-medium tracking-tight">Profile</h2>
+          <NameForm initialName={user.name} />
+          <div className="h-px bg-ink/10" />
+          <PrimaryResumeForm
+            initialName={user.primaryResumeName}
+            hasResume={!!user.primaryResumeText}
+          />
+          <div className="h-px bg-ink/10" />
+          <PasswordForm />
+        </section>
 
-      {/* ---------- plan + usage ---------- */}
-      <div className="card p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="font-bold">Plan &amp; usage</h2>
-            <p className="mt-1 text-sm text-muted">
-              {isPro
-                ? "Unlimited reviews, with the full deep analysis on every one."
-                : `${remaining} of ${FREE_MONTHLY_LIMIT} reviews left this month.`}
-            </p>
-          </div>
-          <Link href="/dashboard/billing" className="btn btn-ghost">
-            Manage billing <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="mt-5">
-          <div className="mb-2 flex items-baseline justify-between text-xs">
-            <span className="font-semibold text-muted">
-              {isPro ? "Reviews this month" : "Monthly quota"}
-            </span>
-            <span className="font-mono text-faint">
-              {isPro ? `${used} · unlimited` : `${Math.min(used, FREE_MONTHLY_LIMIT)}/${FREE_MONTHLY_LIMIT}`}
-            </span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-edge">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${pct}%`,
-                background:
-                  !isPro && remaining === 0
-                    ? "var(--color-bad)"
-                    : "linear-gradient(to right, var(--color-accent), var(--color-accent2))",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ---------- profile settings ---------- */}
-      <div className="card space-y-7 p-6 sm:p-8">
-        <h2 className="font-bold">Profile</h2>
-        <NameForm initialName={user.name} />
-        <div className="h-px bg-edge" />
-        <PrimaryResumeForm
-          initialName={user.primaryResumeName}
-          hasResume={!!user.primaryResumeText}
-        />
-        <div className="h-px bg-edge" />
-        <PasswordForm />
-      </div>
-
-      {/* ---------- danger zone ---------- */}
-      <DeleteAccount reviewCount={count} />
-    </Stagger>
+        {/* ---------- danger zone ---------- */}
+        <DeleteAccount reviewCount={count} />
+      </Stagger>
+    </div>
   );
 }

@@ -2,10 +2,97 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
-import { ArrowRight, Quote } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { scoreColor } from "@/components/ScoreRing";
+import { EASE, Rise, ScrollWords } from "./motion";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+/**
+ * Where the reference shows customer testimonials, HireLens shows its one
+ * real result: the same resume, scored before and after its own fix list.
+ * Same layout — a glass panel greening toward the bottom, one large card on
+ * the left and two quote cards on the right.
+ */
+export function Proof() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
+
+  return (
+    <section className="px-4 pt-32 sm:pt-40">
+      <div className="mx-auto max-w-5xl">
+        <h2 className="text-center font-display text-4xl font-medium leading-[1.1] text-ink sm:text-5xl">
+          <ScrollWords lines={["We took our", "own advice"]} />
+        </h2>
+
+        <Rise y={70} className="mt-14">
+          <div
+            ref={ref}
+            className="panel grid gap-3 p-3 sm:gap-4 sm:p-4 md:grid-cols-[1.1fr_1fr]"
+          >
+            <div className="glass flex flex-col rounded-[1.5rem] p-6 sm:p-8">
+              <p className="text-sm text-muted">Senior Frontend Engineer posting</p>
+              <div className="my-8 flex items-center justify-center gap-4 sm:gap-8">
+                <Ring score={62} label="Before" delay={0.1} inView={inView} />
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={inView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ delay: 0.9, type: "spring", stiffness: 260, damping: 18 }}
+                  className="flex flex-col items-center gap-1.5"
+                >
+                  <ArrowRight className="h-5 w-5 text-accent" />
+                  <span className="btn-neon px-2.5 py-0.5 text-xs">+30</span>
+                </motion.span>
+                <Ring score={92} label="After" delay={0.55} inView={inView} />
+              </div>
+              <p className="mt-auto leading-relaxed text-ink/80">
+                Not a mockup. A real resume against a real posting scored 62.
+                We applied HireLens&apos;s own fix list, changed nothing else, and
+                ran it again.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:gap-4">
+              <Quote
+                label="Before, scored 62"
+                text="“Worked on the checkout flow.”"
+                note="A duty, not a result"
+              />
+              <Quote
+                label="After, scored 92"
+                text="“Rebuilt the checkout flow in React and TypeScript, cutting cart abandonment 18% and lifting conversion 12% across 2M monthly sessions.”"
+                note="Both reviews are in the demo account"
+                green
+              />
+            </div>
+          </div>
+        </Rise>
+      </div>
+    </section>
+  );
+}
+
+function Quote({
+  label,
+  text,
+  note,
+  green = false,
+}: {
+  label: string;
+  text: string;
+  note: string;
+  green?: boolean;
+}) {
+  return (
+    <div className={`${green ? "glass-green" : "glass"} flex flex-col rounded-[1.5rem] p-6`}>
+      <p className="leading-relaxed text-ink">{text}</p>
+      <div className="mt-auto flex items-end justify-between gap-4 pt-6">
+        <span>
+          <span className="block text-sm font-semibold text-ink">{label}</span>
+          <span className="block text-xs text-muted">{note}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
 
 /** A score ring that draws itself once scrolled into view. */
 function Ring({
@@ -19,33 +106,23 @@ function Ring({
   delay: number;
   inView: boolean;
 }) {
-  // The ring is sized in CSS, not in SVG attributes: at a fixed 132px the two
-  // rings plus the arrow overflowed a 390px card and overflow-hidden silently
-  // chopped the "After" score off. viewBox lets it scale down on small screens.
+  // Sized in CSS via the viewBox so the pair plus the arrow fit a 390px card.
   const size = 132;
   const stroke = 9;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const color = scoreColor(score);
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative h-24 w-24 sm:h-[132px] sm:w-[132px]">
-        <svg viewBox={`0 0 ${size} ${size}`} className="relative h-full w-full">
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke="var(--color-edge)"
-            strokeWidth={stroke}
-          />
+      <div className="relative h-24 w-24 sm:h-[124px] sm:w-[124px]">
+        <svg viewBox={`0 0 ${size} ${size}`} className="h-full w-full">
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-ink)" strokeOpacity={0.08} strokeWidth={stroke} />
           <motion.circle
             cx={size / 2}
             cy={size / 2}
             r={r}
             fill="none"
-            stroke={color}
+            stroke={scoreColor(score)}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={c}
@@ -55,97 +132,11 @@ function Ring({
             transition={{ duration: 1.3, delay, ease: EASE }}
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <motion.span
-            className="text-3xl font-extrabold tabular-nums sm:text-4xl"
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ delay: delay + 0.15, ease: EASE }}
-          >
-            {score}
-          </motion.span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-faint">
-            / 100
-          </span>
-        </div>
+        <span className="absolute inset-0 flex items-center justify-center text-3xl font-light tabular-nums text-ink sm:text-4xl">
+          {score}
+        </span>
       </div>
-      <p className="text-sm font-semibold text-muted">{label}</p>
-    </div>
-  );
-}
-
-export function Proof() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
-
-  return (
-    <div ref={ref} className="mx-auto max-w-5xl">
-      <div className="card relative overflow-hidden p-6 sm:p-12">
-        <div className="relative grid items-center gap-10 lg:grid-cols-[auto_1fr] lg:gap-14">
-          {/* the two scores */}
-          <div className="flex items-center justify-center gap-3 sm:gap-8">
-            <Ring score={62} label="Before" delay={0.1} inView={inView} />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ delay: 0.9, type: "spring", stiffness: 260, damping: 18 }}
-              className="flex flex-col items-center gap-1"
-            >
-              <ArrowRight className="h-5 w-5 text-accent" />
-              <span className="chip border-good/30 text-good">+30</span>
-            </motion.div>
-
-            <Ring score={92} label="After" delay={0.55} inView={inView} />
-          </div>
-
-          {/* the story */}
-          <div>
-            <h3 className="text-2xl font-extrabold tracking-tight">
-              The same resume.{" "}
-              <span className="text-gradient">One round of feedback.</span>
-            </h3>
-            <p className="mt-4 leading-relaxed text-muted">
-              This isn&apos;t a mockup. We ran a real resume against a real
-              Senior Frontend Engineer posting — it scored{" "}
-              <strong className="text-ink">62</strong>. We applied HireLens&apos;s
-              own fix list, changed nothing else, and ran it again:{" "}
-              <strong className="text-ink">92</strong>.
-            </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 1.1, duration: 0.6, ease: EASE }}
-              className="mt-6 space-y-3"
-            >
-              <div className="rounded-xl border border-bad/25 bg-bad/[0.04] p-4">
-                <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-bad">
-                  <Quote className="h-3 w-3" /> Before
-                </p>
-                <p className="text-sm text-muted">
-                  &ldquo;Worked on the checkout flow&rdquo;
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-good/25 bg-good/[0.04] p-4">
-                <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-good">
-                  <Quote className="h-3 w-3" /> After
-                </p>
-                <p className="text-sm text-ink">
-                  &ldquo;Rebuilt the checkout flow in React + TypeScript, cutting
-                  cart abandonment 18% and lifting conversion 12% across 2M
-                  monthly sessions&rdquo;
-                </p>
-              </div>
-            </motion.div>
-
-            <p className="mt-5 text-xs text-faint">
-              Both reviews are in the demo account — log in and see them.
-            </p>
-          </div>
-        </div>
-      </div>
+      <p className="text-sm text-muted">{label}</p>
     </div>
   );
 }

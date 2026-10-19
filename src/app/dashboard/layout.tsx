@@ -1,15 +1,23 @@
-import { cookies } from "next/headers";
-import Link from "next/link";
-import { Sparkles } from "lucide-react";
-import { Logo } from "@/components/Logo";
-import { LogoutButton } from "@/components/LogoutButton";
 import { PageTransition } from "@/components/PageTransition";
 import { MobileNav } from "@/components/dashboard/MobileNav";
 import { SidebarShell } from "@/components/dashboard/SidebarShell";
+import {
+  DashboardHeader,
+  type SearchEntry,
+} from "@/components/dashboard/DashboardHeader";
 import { requireUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
 import { monthlyReviewCount } from "@/lib/usage";
-import { SIDEBAR_COOKIE } from "@/lib/ui";
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 export default async function DashboardLayout({
   children,
@@ -17,17 +25,44 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const used = user.plan === "FREE" ? await monthlyReviewCount(user.id) : 0;
+  const [used, reviews, interviews] = await Promise.all([
+    user.plan === "FREE" ? monthlyReviewCount(user.id) : Promise.resolve(0),
+    db.review.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 25,
+      select: { id: true, jobTitle: true, company: true, overallScore: true },
+    }),
+    db.interview.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+      select: { id: true, jobTitle: true, company: true, overallScore: true },
+    }),
+  ]);
 
-  // Read the collapse preference server-side so the rail paints at the right
-  // width immediately — no flash of an expanded sidebar snapping shut.
-  const collapsed = (await cookies()).get(SIDEBAR_COOKIE)?.value === "1";
+  const entries: SearchEntry[] = [
+    ...reviews.map((r) => ({
+      kind: "review" as const,
+      id: r.id,
+      title: r.jobTitle,
+      company: r.company,
+      score: r.overallScore,
+    })),
+    ...interviews.map((i) => ({
+      kind: "interview" as const,
+      id: i.id,
+      title: i.jobTitle,
+      company: i.company,
+      score: i.overallScore,
+    })),
+  ];
 
   return (
-    <div className="flex flex-1">
-      {/* ---------- sidebar (desktop, collapsible) ---------- */}
+    // The forest frame. The rail and the canopy panel sit inside it; the page
+    // scrolls as a whole so sticky elements and scroll restoration behave.
+    <div className="flex flex-1 bg-forest md:gap-3 md:p-3">
       <SidebarShell
-        defaultCollapsed={collapsed}
         user={{
           name: user.name,
           email: user.email,
@@ -37,34 +72,25 @@ export default async function DashboardLayout({
         }}
       />
 
-      {/* ---------- mobile: top bar + bottom tabs ---------- */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-edge bg-bg/85 px-4 py-3 backdrop-blur-xl md:hidden">
-          <Logo href="/dashboard" />
-          <div className="flex items-center gap-2">
-            {user.plan === "PRO" ? (
-              <span className="chip gap-1 border-accent/30 px-3 py-2 text-accent">
-                <Sparkles className="h-3 w-3" /> Pro
-              </span>
-            ) : (
-              <Link
-                href="/dashboard/billing?intent=pro"
-                className="chip gap-1 border-edge2 px-3 py-2 text-muted"
-              >
-                {Math.max(0, FREE_MONTHLY_LIMIT - used)}/{FREE_MONTHLY_LIMIT} left
-              </Link>
-            )}
-            <LogoutButton compact />
-          </div>
-        </div>
+      {/* overflow-clip (not hidden) rounds the panel without becoming a scroll
+          container, so position:sticky inside pages still tracks the window */}
+      <div className="canopy flex min-h-dvh min-w-0 flex-1 flex-col overflow-clip md:min-h-[calc(100dvh-1.5rem)] md:rounded-[26px]">
+        <DashboardHeader
+          firstName={user.name.split(" ")[0] || user.name}
+          initials={initials(user.name)}
+          plan={user.plan}
+          remaining={Math.max(0, FREE_MONTHLY_LIMIT - used)}
+          limit={FREE_MONTHLY_LIMIT}
+          entries={entries}
+        />
 
-        {/* pb-24 on mobile so the bottom tab bar never covers page content */}
-        <main className="mx-auto w-full max-w-5xl flex-1 px-5 pb-24 pt-6 md:pb-8 md:pt-8 lg:px-8">
+        {/* pb-28 on mobile so the floating tab bar never covers page content */}
+        <main className="flex w-full flex-1 flex-col px-4 pb-28 md:px-6 md:pb-6">
           <PageTransition>{children}</PageTransition>
         </main>
-
-        <MobileNav />
       </div>
+
+      <MobileNav />
     </div>
   );
 }

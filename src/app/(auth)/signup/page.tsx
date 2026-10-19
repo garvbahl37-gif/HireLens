@@ -18,9 +18,9 @@ export default async function SignupPage({
       : (safeNext(params.next) ?? "/dashboard");
 
   return (
-    <div className="card fade-up p-8">
-      <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
-      <p className="mt-1 mb-7 text-sm text-muted">
+    <div className="card fade-up flex h-full flex-col justify-center p-6 sm:p-9">
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Create your account</h1>
+      <p className="mt-2 mb-7 text-sm leading-relaxed text-muted">
         3 free reviews a month. No card required.
       </p>
       <AuthForm mode="signup" nextUrl={nextUrl} />

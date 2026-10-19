@@ -42,7 +42,7 @@ export function ScoreRing({
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="var(--color-edge)"
+        stroke="rgb(18 33 26 / 0.09)"
         strokeWidth={stroke}
       />
       <circle
@@ -66,7 +66,7 @@ export function ScoreRing({
           textAnchor="middle"
           fill="var(--color-ink)"
           fontSize={size * 0.28}
-          fontWeight={700}
+          fontWeight={500}
         >
           {clamped}
         </text>
@@ -89,12 +89,12 @@ export function ScoreBar({
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1.5">
-        <span className="text-sm font-semibold">{label}</span>
-        <span className="text-sm font-bold" style={{ color }}>
+        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-semibold tabular-nums" style={{ color }}>
           {clamped}
         </span>
       </div>
-      <div className="h-2 rounded-full bg-edge overflow-hidden">
+      <div className="h-2 rounded-full bg-ink/[0.08] overflow-hidden">
         <div
           className="h-full rounded-full"
           style={{

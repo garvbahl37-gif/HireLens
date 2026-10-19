@@ -25,16 +25,14 @@ export function Spotlight({ data }: { data: SpotlightData }) {
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: EASE }}
-      className="card relative overflow-hidden p-6 lg:p-7"
+      className="card relative w-full min-w-0 overflow-hidden p-6 lg:p-7"
     >
       <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
         <AnimatedScoreRing score={data.overallScore} />
 
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
-            Latest review
-          </p>
-          <h2 className="mt-2 truncate text-xl font-bold tracking-tight">
+          <p className="text-sm text-muted">Latest review</p>
+          <h2 className="mt-1 truncate text-xl font-semibold tracking-tight">
             {data.jobTitle}
             {data.company && (
               <span className="font-normal text-muted"> · {data.company}</span>
@@ -72,9 +70,9 @@ export function Spotlight({ data }: { data: SpotlightData }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.65, ease: EASE }}
-          className="relative mt-6 rounded-xl border border-edge bg-card2 p-4"
+          className="relative mt-6 rounded-2xl border border-white/80 bg-white/50 p-4"
         >
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-warn">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-warn">
             <Target className="h-3.5 w-3.5" /> Fix this first
           </p>
           <p className="mt-2 text-sm font-semibold">{data.topFix.issue}</p>

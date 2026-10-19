@@ -30,7 +30,7 @@ export function PricingCards({
     <div className="mx-auto max-w-4xl">
       {/* interval toggle */}
       <div className="flex justify-center mb-10">
-        <div className="inline-flex rounded-full border border-edge bg-card p-1">
+        <div className="glass inline-flex rounded-full p-1">
           {(["monthly", "yearly"] as const).map((i) => (
             <button
               key={i}
@@ -38,7 +38,7 @@ export function PricingCards({
               className={cn(
                 "rounded-full px-5 py-2.5 text-sm font-semibold transition-all sm:py-1.5",
                 interval === i
-                  ? "bg-gradient-to-r from-accent to-accent2 text-[#180f0a] shadow"
+                  ? "btn-neon px-5 py-2.5 sm:py-1.5"
                   : "text-muted hover:text-ink"
               )}
             >
@@ -47,7 +47,7 @@ export function PricingCards({
                 <span
                   className={cn(
                     "ml-1.5 text-xs",
-                    interval === "yearly" ? "text-[#180f0a]/70" : "text-good"
+                    interval === "yearly" ? "text-[#0b2a0e]/70" : "text-good"
                   )}
                 >
                   −17%
@@ -58,15 +58,15 @@ export function PricingCards({
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Free */}
-        <div className="card flex flex-col p-6 sm:p-8">
-          <h3 className="text-lg font-bold">Starter</h3>
+        <div className="glass flex flex-col rounded-[1.8rem] p-6 sm:p-8">
+          <h3 className="font-display text-xl font-medium">Starter</h3>
           <p className="mt-1 text-sm text-muted">
             Kick the tires on a real review.
           </p>
           <div className="mt-5 flex items-baseline gap-1">
-            <span className="text-4xl font-extrabold">$0</span>
+            <span className="text-5xl font-light tracking-tight">$0</span>
             <span className="text-muted text-sm">forever</span>
           </div>
           <ul className="mt-6 space-y-3 text-sm flex-1">
@@ -77,25 +77,25 @@ export function PricingCards({
               </li>
             ))}
           </ul>
-          <Link href={freeHref} className="btn btn-ghost mt-8 w-full">
+          <Link href={freeHref} className="btn-stone mt-8 w-full">
             {authed ? "Go to dashboard" : "Start free"}
           </Link>
         </div>
 
-        {/* Pro */}
-        <div className="card relative flex flex-col border-accent/60 p-6 shadow-[0_0_60px_-18px_var(--color-accent)] sm:p-8">
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent to-accent2 px-3 py-0.5 text-xs font-bold text-[#180f0a]">
-            MOST POPULAR
+        {/* Pro — the one forest card on the page */}
+        <div className="card-forest relative flex flex-col rounded-[1.8rem] p-6 sm:p-8">
+          <span className="absolute right-6 top-6 rounded-full border border-neon/40 bg-neon/15 px-3 py-1 text-xs font-semibold text-[#b9f7a6]">
+            Most popular
           </span>
-          <h3 className="text-lg font-bold">Pro</h3>
-          <p className="mt-1 text-sm text-muted">
+          <h3 className="font-display text-xl font-medium">Pro</h3>
+          <p className="mt-1 text-sm text-white/70">
             Every application, fully optimized.
           </p>
           <div className="mt-5 flex items-baseline gap-1">
-            <span className="text-4xl font-extrabold">${price.amount}</span>
-            <span className="text-muted text-sm">/{price.per}</span>
+            <span className="text-5xl font-light tracking-tight">${price.amount}</span>
+            <span className="text-sm text-white/70">/{price.per}</span>
             {price.savings && (
-              <span className="ml-2 chip text-good border-good/30">
+              <span className="ml-2 rounded-full border border-neon/40 px-2.5 py-0.5 text-xs text-[#b9f7a6]">
                 {price.savings}
               </span>
             )}
@@ -103,18 +103,18 @@ export function PricingCards({
           <ul className="mt-6 space-y-3 text-sm flex-1">
             {PRO_FEATURES.map((f) => (
               <li key={f} className="flex gap-2.5">
-                <Check className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
-                <span>{f}</span>
+                <Check className="h-4 w-4 shrink-0 mt-0.5 text-neon" />
+                <span className="text-white/90">{f}</span>
               </li>
             ))}
           </ul>
-          <Link href={proHref} className="btn btn-primary mt-8 w-full">
+          <Link href={proHref} className="btn-neon mt-8 w-full">
             {plan === "PRO" ? "Manage subscription" : "Upgrade to Pro"}
           </Link>
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-faint">
+      <p className="mt-6 text-center text-xs text-muted">
         {demo ? (
           <>
             Demo deployment — checkout is simulated and nothing is ever charged.

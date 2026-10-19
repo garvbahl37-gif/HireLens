@@ -4,13 +4,33 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-export function LogoutButton({ compact = false }: { compact?: boolean }) {
+export function LogoutButton({
+  compact = false,
+  variant = "default",
+}: {
+  compact?: boolean;
+  /** "rail" renders a round button for the dark sidebar rail. */
+  variant?: "default" | "rail";
+}) {
   const router = useRouter();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/");
     router.refresh();
+  }
+
+  if (variant === "rail") {
+    return (
+      <button
+        onClick={logout}
+        title="Log out"
+        aria-label="Log out"
+        className="rail-btn hover:!text-[#ffb3bf]"
+      >
+        <LogOut className="h-[18px] w-[18px]" strokeWidth={1.75} />
+      </button>
+    );
   }
 
   return (

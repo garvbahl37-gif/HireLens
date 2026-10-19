@@ -7,10 +7,12 @@ export type OrbState = "idle" | "thinking" | "speaking";
 /**
  * The interviewer's presence.
  *
- * A calm ember orb that reads its own state without a word: it breathes when
- * idle, ripples concentric rings while speaking, and pulses a tight core while
- * thinking. Giving the AI a body on screen is what turns a chat log into an
- * interview — you feel someone is across the table.
+ * The same pearl as the assistant orb (globals.css `.orb`): a bead of white
+ * light with a green swirl turning inside it. It reads its own state without a
+ * word: it breathes slowly when idle, the swirl quickens and a tight glow pulses
+ * while thinking, and while speaking it ripples rings outward and a little
+ * white equaliser moves inside it. Giving the AI a body on screen is what turns
+ * a chat log into an interview — you feel someone is across the table.
  */
 export function InterviewerOrb({
   state = "idle",
@@ -21,6 +23,9 @@ export function InterviewerOrb({
 }) {
   const speaking = state === "speaking";
   const thinking = state === "thinking";
+  // The swirl's softness scales with the orb so a 30px chip and a 96px hero
+  // read as the same object.
+  const blur = Math.max(1.5, size * 0.07);
 
   return (
     <div
@@ -28,13 +33,17 @@ export function InterviewerOrb({
       style={{ width: size, height: size }}
       aria-hidden
     >
-      {/* soft ember glow — brightens while active */}
+      {/* halo — white light with a neon edge, brightens while active */}
       <motion.div
-        className="absolute inset-0 rounded-full blur-md"
-        style={{ background: "var(--color-accent)" }}
+        className="absolute inset-0 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgb(255 255 255 / 0.9) 0%, rgb(186 245 166 / 0.55) 45%, rgb(69 230 36 / 0) 72%)",
+          filter: `blur(${Math.max(4, size * 0.16)}px)`,
+        }}
         animate={{
-          opacity: speaking ? [0.35, 0.6, 0.35] : thinking ? [0.3, 0.45, 0.3] : [0.18, 0.3, 0.18],
-          scale: speaking ? [1, 1.18, 1] : [1, 1.06, 1],
+          opacity: speaking ? [0.55, 0.95, 0.55] : thinking ? [0.45, 0.7, 0.45] : [0.35, 0.5, 0.35],
+          scale: speaking ? [1.1, 1.32, 1.1] : [1.05, 1.14, 1.05],
         }}
         transition={{
           duration: speaking ? 1.1 : thinking ? 1.4 : 3.4,
@@ -48,8 +57,8 @@ export function InterviewerOrb({
         [0, 1, 2].map((i) => (
           <motion.span
             key={i}
-            className="absolute inset-0 rounded-full border border-accent/50"
-            initial={{ scale: 1, opacity: 0.5 }}
+            className="absolute inset-0 rounded-full border border-accent2/60"
+            initial={{ scale: 1, opacity: 0.55 }}
             animate={{ scale: 1.9, opacity: 0 }}
             transition={{
               duration: 1.8,
@@ -60,60 +69,85 @@ export function InterviewerOrb({
           />
         ))}
 
-      {/* rotating conic rim */}
+      {/* the pearl */}
       <motion.div
-        className="absolute inset-0 rounded-full"
+        className="absolute inset-0 overflow-hidden rounded-full"
         style={{
-          background:
-            "conic-gradient(from 0deg, var(--color-accent), var(--color-accent2), var(--color-accent))",
-          padding: 1.5,
-          WebkitMask:
-            "radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px))",
-          mask: "radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px))",
+          isolation: "isolate",
+          // the same white bloom + faint neon as `.orb`, scaled to the size
+          boxShadow: `0 0 0 1px rgb(255 255 255 / 0.55), 0 0 ${Math.round(size * 0.36)}px ${Math.round(size * 0.08)}px rgb(255 255 255 / 0.55), 0 0 ${Math.round(size * 0.7)}px ${Math.round(size * 0.06)}px rgb(69 230 36 / 0.22)`,
         }}
-        animate={{ rotate: 360 }}
+        animate={{ scale: speaking ? [1, 1.05, 1] : [1, 1.03, 1] }}
         transition={{
-          duration: speaking ? 4 : thinking ? 6 : 14,
+          duration: speaking ? 0.9 : 5,
           repeat: Infinity,
-          ease: "linear",
-        }}
-      />
-
-      {/* glass core */}
-      <div
-        className="absolute inset-[3px] flex items-center justify-center rounded-full border border-accent/20"
-        style={{
-          background:
-            "radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--color-accent) 30%, transparent), color-mix(in srgb, var(--color-bg) 92%, transparent))",
+          ease: "easeInOut",
         }}
       >
-        {/* the voice: a little equaliser that only moves while speaking */}
+        {/* green swirl — turns faster the busier the interviewer is */}
+        <motion.div
+          className="absolute inset-[6%] rounded-full"
+          style={{
+            background:
+              "conic-gradient(from 0deg, #0b5e14, #45e624, #0e4a12, #7bea5c, #12801c, #b9f5a6, #0b5e14)",
+            filter: `blur(${blur}px)`,
+          }}
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: speaking ? 4 : thinking ? 6 : 12,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+
+        {/* white pearl rim */}
         <div
-          className="flex items-center gap-[2px]"
-          style={{ height: size * 0.32 }}
-        >
-          {[0.5, 0.85, 1, 0.7, 0.45].map((base, i) => (
-            <motion.span
-              key={i}
-              className="w-[2px] rounded-full bg-accent"
-              style={{ height: "100%" }}
-              animate={
-                speaking
-                  ? { scaleY: [base * 0.3, base, base * 0.4, base * 0.9, base * 0.3] }
-                  : thinking
-                    ? { scaleY: [0.25, 0.25, 0.25] }
-                    : { scaleY: [0.28, 0.42, 0.28] }
-              }
-              transition={{
-                duration: speaking ? 0.7 : 2.6,
-                repeat: Infinity,
-                delay: i * (speaking ? 0.08 : 0.12),
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0) 50%, rgb(255 255 255 / 0.8) 70%, rgb(255 255 255 / 0.95) 100%)",
+          }}
+        />
+
+        {/* specular highlight */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 36% 28%, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 30%)",
+          }}
+        />
+
+        {/* the voice: a little equaliser, shown while speaking (and faintly
+            while thinking); at rest the orb is just the pearl */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="flex items-center gap-[2px]"
+            style={{ height: size * 0.3, opacity: speaking ? 0.95 : thinking ? 0.5 : 0 }}
+          >
+            {[0.5, 0.85, 1, 0.7, 0.45].map((base, i) => (
+              <motion.span
+                key={i}
+                className="w-[2px] rounded-full bg-white shadow-[0_0_3px_rgba(11,94,20,0.6)]"
+                style={{ height: "100%" }}
+                animate={
+                  speaking
+                    ? { scaleY: [base * 0.3, base, base * 0.4, base * 0.9, base * 0.3] }
+                    : thinking
+                      ? { scaleY: [0.25, 0.25, 0.25] }
+                      : { scaleY: [0.28, 0.42, 0.28] }
+                }
+                transition={{
+                  duration: speaking ? 0.7 : 2.6,
+                  repeat: Infinity,
+                  delay: i * (speaking ? 0.08 : 0.12),
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

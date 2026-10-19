@@ -8,6 +8,7 @@ import {
   type PanelReport,
   type PanelistRole,
 } from "@/lib/interview";
+import { scoreColor } from "@/components/ScoreRing";
 import { cn } from "@/lib/cn";
 
 /**
@@ -18,16 +19,12 @@ import { cn } from "@/lib/cn";
  */
 
 const VERDICT_STYLE: Record<string, string> = {
-  "Strong hire": "border-good/50 text-good bg-good/10",
-  Hire: "border-good/40 text-good bg-good/5",
-  "Lean hire": "border-warn/40 text-warn bg-warn/5",
-  "Lean no hire": "border-warn/50 text-warn bg-warn/10",
-  "No hire": "border-bad/50 text-bad bg-bad/10",
+  "Strong hire": "border-good/40 text-good bg-white/60",
+  Hire: "border-good/35 text-good bg-white/60",
+  "Lean hire": "border-warn/35 text-warn bg-white/60",
+  "Lean no hire": "border-warn/40 text-warn bg-white/60",
+  "No hire": "border-bad/40 text-bad bg-white/60",
 };
-
-function scoreColor(n: number) {
-  return n >= 75 ? "var(--color-good)" : n >= 55 ? "var(--color-warn)" : "var(--color-bad)";
-}
 
 export function PanelCard({
   interviewId,
@@ -67,8 +64,8 @@ export function PanelCard({
   /* ---- free: locked value ---- */
   if (!isPro && !panel) {
     return (
-      <div className="card p-6 sm:p-8">
-        <h2 className="flex items-center gap-2 font-bold">
+      <section className="card p-6 sm:p-7">
+        <h2 className="flex items-center gap-2 text-lg font-medium tracking-tight">
           <Users className="h-4 w-4 text-accent" /> The panel
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
@@ -80,27 +77,39 @@ export function PanelCard({
         <Link href="/dashboard/billing?intent=pro" className="btn btn-primary mt-5">
           <Lock className="h-4 w-4" /> Unlock with Pro
         </Link>
-      </div>
+      </section>
     );
   }
 
   /* ---- pro: not yet convened ---- */
   if (!panel) {
     return (
-      <div className="card flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-        <div>
-          <h2 className="flex items-center gap-2 font-bold">
-            <Users className="h-4 w-4 text-accent" /> Convene the panel
-          </h2>
-          <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">
-            A recruiter, a hiring manager, and a bar raiser each score this
-            interview from their own lens — then reach a verdict.
-          </p>
-          {error && (
-            <p role="alert" className="mt-2 text-sm text-bad">
-              {error}
+      <section className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+        <div className="flex items-start gap-3.5">
+          {/* three seats at the table */}
+          <span className="mt-0.5 flex shrink-0 -space-x-2" aria-hidden>
+            {["R", "H", "B"].map((l, i) => (
+              <span
+                key={l}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-ink/80 shadow-[inset_0_0_0_2px_rgba(255,255,255,0.75)]"
+                style={{ background: ["#9fd8cb", "#f5d98b", "#cfd6f5"][i] }}
+              >
+                {l}
+              </span>
+            ))}
+          </span>
+          <div>
+            <h2 className="text-lg font-medium tracking-tight">Convene the panel</h2>
+            <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">
+              A recruiter, a hiring manager, and a bar raiser each score this
+              interview from their own lens — then reach a verdict.
             </p>
-          )}
+            {error && (
+              <p role="alert" className="mt-2 text-sm text-bad">
+                {error}
+              </p>
+            )}
+          </div>
         </div>
         <button onClick={convene} className="btn btn-primary shrink-0" disabled={pending}>
           {pending ? (
@@ -113,41 +122,44 @@ export function PanelCard({
             </>
           )}
         </button>
-      </div>
+      </section>
     );
   }
 
   /* ---- the panel's decision ---- */
   return (
-    <div className="card overflow-hidden p-0">
-      <div className="flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
-        <div>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
-            <Scale className="h-3.5 w-3.5" /> The panel&rsquo;s decision
+    <section className="card p-6 sm:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1.5 text-sm text-muted">
+            <Scale className="h-3.5 w-3.5 text-accent" /> The panel&rsquo;s decision
           </p>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink/85">
             {panel.synthesis}
           </p>
         </div>
         <span
           className={cn(
-            "shrink-0 rounded-xl border px-3 py-1.5 text-lg font-extrabold",
-            VERDICT_STYLE[panel.verdict] ?? "border-edge text-ink"
+            "shrink-0 rounded-xl border px-3 py-1.5 text-base font-semibold",
+            VERDICT_STYLE[panel.verdict] ?? "border-white/80 bg-white/60 text-ink"
           )}
         >
           {panel.verdict}
         </span>
       </div>
 
-      <div className="grid divide-y divide-edge border-t border-edge sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
         {panel.panelists.map((p) => {
           const meta = PANELIST_META[p.role as PanelistRole];
           return (
-            <div key={p.role} className="p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-bold">{meta.name}</p>
+            <div
+              key={p.role}
+              className="flex flex-col rounded-2xl border border-white/80 bg-white/50 p-4"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold">{meta.name}</p>
                 <span
-                  className="text-lg font-extrabold tabular-nums"
+                  className="text-2xl font-light leading-none tabular-nums"
                   style={{ color: scoreColor(p.score) }}
                 >
                   {p.score}
@@ -155,14 +167,14 @@ export function PanelCard({
               </div>
               <span
                 className={cn(
-                  "chip mt-2 px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                  VERDICT_STYLE[p.verdict] ?? "border-edge text-muted"
+                  "chip mt-2 w-fit px-2.5 py-0.5 text-xs",
+                  VERDICT_STYLE[p.verdict] ?? "text-muted"
                 )}
               >
                 {p.verdict}
               </span>
-              <p className="mt-3 text-sm leading-relaxed text-muted">{p.take}</p>
-              <p className="mt-3 border-t border-edge pt-3 text-xs leading-relaxed text-faint">
+              <p className="mb-3 mt-3 flex-1 text-sm leading-relaxed text-ink/80">{p.take}</p>
+              <p className="border-t border-ink/10 pt-3 text-xs leading-relaxed text-muted">
                 <span className="font-semibold text-warn">Worries me:</span>{" "}
                 {p.concern}
               </p>
@@ -170,6 +182,6 @@ export function PanelCard({
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

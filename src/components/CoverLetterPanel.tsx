@@ -70,11 +70,11 @@ export function CoverLetterPanel({
   /* ---- free: locked value ---- */
   if (!isPro) {
     return (
-      <div className="card p-6 sm:p-8">
-        <h2 className="flex items-center gap-2 font-bold">
-          <FileText className="h-4 w-4 text-accent" /> Cover letter
+      <div className="card p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 text-lg font-medium tracking-tight">
+          <TitleIcon /> Cover letter
         </h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+        <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-muted">
           Pro writes a cover letter grounded in your actual resume and tuned to
           this job — no invented experience, no fabricated numbers — and exports
           it as a clean PDF you can send.
@@ -89,12 +89,12 @@ export function CoverLetterPanel({
   /* ---- pro: empty state ---- */
   if (!letter) {
     return (
-      <div className="card flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div className="card flex flex-col gap-4 p-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-6">
         <div>
-          <h2 className="flex items-center gap-2 font-bold">
-            <FileText className="h-4 w-4 text-accent" /> Cover letter
+          <h2 className="flex items-center gap-2.5 text-lg font-medium tracking-tight">
+            <TitleIcon /> Cover letter
           </h2>
-          <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
             Drafted from your resume and this job — grounded, never invented.
           </p>
         </div>
@@ -120,10 +120,10 @@ export function CoverLetterPanel({
 
   /* ---- pro: the letter ---- */
   return (
-    <div className="card p-6 sm:p-8">
+    <div className="card p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-bold">
-          <FileText className="h-4 w-4 text-accent" /> Cover letter
+        <h2 className="flex items-center gap-2.5 text-lg font-medium tracking-tight">
+          <TitleIcon /> Cover letter
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={copy} className="btn btn-ghost">
@@ -154,7 +154,7 @@ export function CoverLetterPanel({
         </div>
       </div>
 
-      <div className="mt-5 space-y-4 rounded-xl border border-edge bg-surface p-5 text-sm leading-relaxed sm:p-6">
+      <div className="mt-5 space-y-4 rounded-2xl [&>p]:max-w-[72ch] border border-white/80 bg-white/60 p-5 text-sm leading-relaxed sm:p-7">
         <p>{letter.hook}</p>
         {letter.paragraphs.map((p, i) => (
           <p key={i} className="text-muted">
@@ -164,10 +164,19 @@ export function CoverLetterPanel({
         <p className="text-muted">{letter.closing}</p>
       </div>
 
-      <p className="mt-3 text-xs text-faint">
+      <p className="mt-3 text-xs text-muted">
         Anything in <span className="font-mono">[ ]</span> is a number to fill
         in — we never invent one for you.
       </p>
     </div>
+  );
+}
+
+/** The heading icon, in a small glass disc like the other review cards. */
+function TitleIcon() {
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/70 text-accent">
+      <FileText className="h-4 w-4" />
+    </span>
   );
 }

@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  MessagesSquare,
-  PlayCircle,
-  Plus,
-  Sparkles,
-} from "lucide-react";
-import { ScoreRing } from "@/components/ScoreRing";
+import { ArrowRight, AudioLines, Play, Plus, Sparkles } from "lucide-react";
+import { ProgressRing } from "@/components/dashboard/ProgressRing";
+import { Monogram } from "@/components/dashboard/RecentReviews";
 import { Stagger } from "@/components/dashboard/Stagger";
 import { requireUser } from "@/lib/auth";
+import { cn } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { FREE_INTERVIEWS_PER_MONTH } from "@/lib/plans";
 import { monthlyInterviewCount } from "@/lib/usage";
@@ -50,120 +46,174 @@ export default async function InterviewsPage() {
 
   const remaining = Math.max(0, FREE_INTERVIEWS_PER_MONTH - used);
 
-  return (
-    <Stagger className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Mock interviews
-          </h1>
-          <p className="mt-1.5 text-sm text-muted">
-            {interviews.length === 0
-              ? "Practise against a hiring manager who has actually read your resume."
-              : isPro
-                ? `${interviews.length} interview${interviews.length === 1 ? "" : "s"} · unlimited on Pro.`
-                : `${remaining} of ${FREE_INTERVIEWS_PER_MONTH} free interview${FREE_INTERVIEWS_PER_MONTH === 1 ? "" : "s"} left this month.`}
-          </p>
-        </div>
-        <Link href="/dashboard/interview/new" className="btn btn-primary btn-sheen">
-          <Plus className="h-4 w-4" /> New interview
-        </Link>
-      </header>
+  const scored = interviews
+    .map((iv) => iv.overallScore)
+    .filter((s): s is number => s !== null);
+  const average =
+    scored.length > 0
+      ? Math.round(scored.reduce((a, b) => a + b, 0) / scored.length)
+      : null;
+  const best = scored.length > 0 ? Math.max(...scored) : null;
 
-      {interviews.length === 0 ? (
-        <div className="card relative flex flex-col items-center overflow-hidden px-6 py-20 text-center">
-          <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-edge2 bg-card2 shadow-[0_0_40px_-8px_var(--color-accent)]">
-            <MessagesSquare className="h-7 w-7 text-accent" />
-          </span>
-          <h2 className="relative mt-6 text-xl font-bold tracking-tight">
+  const allowance = isPro
+    ? "Unlimited on Pro."
+    : `${remaining} of ${FREE_INTERVIEWS_PER_MONTH} free interview${FREE_INTERVIEWS_PER_MONTH === 1 ? "" : "s"} left this month.`;
+
+  if (interviews.length === 0) {
+    return (
+      <Stagger>
+        <div className="card mx-auto flex w-full max-w-2xl flex-col items-center px-6 py-16 text-center">
+          <div className="orb h-[84px] w-[84px]" aria-hidden />
+          <h2 className="mt-8 text-[1.4rem] font-medium tracking-tight">
             The interview you&apos;re about to fail
           </h2>
-          <p className="relative mt-2 max-w-md text-sm leading-relaxed text-muted">
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
             It reads your resume, reads the job, and asks the questions your gaps
             invite — quoting your own bullets back at you. Then it scores you and
             makes the call a real panel would.
           </p>
-          <Link
-            href="/dashboard/interview/new"
-            className="btn btn-primary btn-sheen relative mt-7"
-          >
+          <Link href="/dashboard/interview/new" className="btn btn-primary mt-7">
             Start my first interview <ArrowRight className="h-4 w-4" />
           </Link>
+          <p className="mt-4 text-xs text-faint">
+            Practise against a hiring manager who has actually read your resume.{" "}
+            {allowance}
+          </p>
         </div>
-      ) : (
-        <ul className="space-y-3">
+      </Stagger>
+    );
+  }
+
+  return (
+    <Stagger className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      {/* ---------- every session, in the reference's request-list style ---------- */}
+      <section className="card p-5 md:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <div>
+            <h2 className="text-lg font-medium tracking-tight">Your sessions</h2>
+            <p className="mt-0.5 text-sm text-muted">
+              {interviews.length} interview{interviews.length === 1 ? "" : "s"}.{" "}
+              {allowance}
+            </p>
+          </div>
+          <Link
+            href="/dashboard/interview/new"
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            New interview
+          </Link>
+        </div>
+
+        <ul className="mt-3 divide-y divide-ink/10">
           {interviews.map((iv) => {
             const inProgress = iv.status === "IN_PROGRESS";
             const href = inProgress
               ? `/dashboard/interview/${iv.id}`
               : `/dashboard/interview/${iv.id}/report`;
+            const date = iv.createdAt.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+            const status = inProgress
+              ? `In progress, ${iv.answered}/${iv.totalQuestions} answered`
+              : iv.verdict;
+            const statusColor = inProgress
+              ? "text-accent"
+              : (VERDICT_COLOR[iv.verdict ?? ""] ?? "text-muted");
 
             return (
               <li key={iv.id}>
                 <Link
                   href={href}
-                  className="card group flex items-center gap-5 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-edge2"
+                  className="group -mx-2 flex items-center gap-3.5 rounded-xl px-2 py-3.5 transition-colors hover:bg-white/45"
                 >
-                  {inProgress ? (
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-accent">
-                      <PlayCircle className="h-6 w-6" />
-                    </span>
-                  ) : (
-                    <ScoreRing score={iv.overallScore ?? 0} size={56} stroke={5} />
-                  )}
+                  <Monogram name={iv.company || iv.jobTitle} />
 
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 truncate font-semibold">
-                      <span className="truncate">
-                        {iv.jobTitle}
-                        {iv.company && (
-                          <span className="font-normal text-muted">
-                            {" "}
-                            · {iv.company}
-                          </span>
-                        )}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate font-semibold">
+                        {iv.company || iv.jobTitle}
                       </span>
                       {iv.deep && (
-                        <span className="chip shrink-0 gap-1 border-accent/30 text-accent">
+                        <span className="chip shrink-0 gap-1 px-2 py-0.5 text-[11px] text-accent">
                           <Sparkles className="h-3 w-3" /> Pro
                         </span>
                       )}
-                    </p>
-                    <p className="mt-1 truncate text-sm">
-                      {inProgress ? (
-                        <span className="text-accent">
-                          In progress — {iv.answered}/{iv.totalQuestions}{" "}
-                          answered. Resume it.
-                        </span>
-                      ) : (
-                        <span
-                          className={
-                            VERDICT_COLOR[iv.verdict ?? ""] ?? "text-muted"
-                          }
-                        >
-                          {iv.verdict}
-                        </span>
+                    </span>
+                    <span className="block truncate text-sm text-muted">
+                      {iv.company ? `${iv.jobTitle}, ` : ""}
+                      {date}
+                    </span>
+                    {status && (
+                      <span className={cn("mt-0.5 block truncate text-sm md:hidden", statusColor)}>
+                        {status}
+                      </span>
+                    )}
+                  </span>
+
+                  {status && (
+                    <span
+                      className={cn(
+                        "hidden w-44 shrink-0 truncate text-right text-sm md:block",
+                        statusColor
                       )}
-                    </p>
-                  </div>
+                    >
+                      {status}
+                    </span>
+                  )}
 
-                  <div className="hidden shrink-0 text-right sm:block">
-                    <p className="text-xs text-faint">
-                      {iv.createdAt.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-
-                  <ArrowRight className="h-4 w-4 shrink-0 text-faint transition-all group-hover:translate-x-0.5 group-hover:text-accent" />
+                  <span className="flex w-16 shrink-0 justify-end">
+                    {inProgress ? (
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-accent">
+                        <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-pill text-white">
+                          <Play className="h-2.5 w-2.5 fill-current" />
+                        </span>
+                        Resume
+                      </span>
+                    ) : (
+                      <ProgressRing score={iv.overallScore ?? 0} />
+                    )}
+                  </span>
                 </Link>
               </li>
             );
           })}
         </ul>
-      )}
+      </section>
+
+      {/* ---------- the numbers + the next session ---------- */}
+      <aside className="flex flex-col gap-4">
+        <div className="card grid grid-cols-3 divide-x divide-ink/10 px-2 py-5">
+          {[
+            { label: "Sessions", value: interviews.length },
+            { label: "Average", value: average ?? "—" },
+            { label: "Best", value: best ?? "—" },
+          ].map((s) => (
+            <div key={s.label} className="px-3 text-center">
+              <p className="text-sm text-muted">{s.label}</p>
+              <p className="mt-1 text-3xl font-light tabular-nums">{s.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="card-forest p-6">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+            <AudioLines className="h-5 w-5 text-neon" />
+          </span>
+          <h2 className="mt-4 text-lg font-medium tracking-tight">Rehearse the next one</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-white/75">
+            A hiring manager who has read your resume, knows the job, and will
+            probe the gaps between them. Out loud, timed, then scored.
+          </p>
+          <Link
+            href="/dashboard/interview/new"
+            className="btn mt-5 bg-white text-ink shadow-[0_8px_20px_-10px_rgba(0,0,0,0.35)] hover:bg-white/90"
+          >
+            <Plus className="h-4 w-4" /> New interview
+          </Link>
+        </div>
+      </aside>
     </Stagger>
   );
 }

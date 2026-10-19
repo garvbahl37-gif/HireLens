@@ -63,17 +63,20 @@ export function NameForm({ initialName }: { initialName: string }) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <label className="label mb-0">Display name</label>
+        <label className="label mb-0" htmlFor="display-name">
+          Display name
+        </label>
         <Saved show={saved} />
       </div>
 
       <div className="mt-2 flex gap-2">
         <input
+          id="display-name"
           value={name}
           disabled={!editing || pending}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && save()}
-          className="input disabled:opacity-70"
+          className="input min-w-0 flex-1 disabled:opacity-80"
         />
         {editing ? (
           <>
@@ -178,10 +181,13 @@ export function PrimaryResumeForm({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold">
-            <Puzzle className="h-4 w-4 text-accent" /> Primary resume
+            <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/80 bg-white/60">
+              <Puzzle className="h-3.5 w-3.5 text-accent" />
+            </span>
+            Primary resume
             <Saved show={saved} />
           </p>
           <p className="mt-1 max-w-md text-sm text-muted">
@@ -199,6 +205,7 @@ export function PrimaryResumeForm({
               disabled={pending}
               className="btn btn-ghost px-3"
               title="Remove primary resume"
+              aria-label="Remove primary resume"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -223,7 +230,8 @@ export function PrimaryResumeForm({
               onChange={(e) => setText(e.target.value)}
               rows={10}
               placeholder="Paste your resume text here…"
-              className="input mt-4 font-mono text-xs leading-relaxed"
+              aria-label="Resume text"
+              className="input mt-4 text-sm leading-relaxed"
             />
             {error && <p className="mt-2 text-sm text-bad">{error}</p>}
             <div className="mt-3 flex justify-end gap-2">
@@ -275,7 +283,7 @@ export function PasswordForm() {
   return (
     <form onSubmit={submit}>
       <div className="flex items-center justify-between">
-        <label className="label mb-0">Change password</label>
+        <p className="label mb-0">Change password</p>
         <Saved show={saved} />
       </div>
 
@@ -285,6 +293,7 @@ export function PasswordForm() {
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
           placeholder="Current password"
+          aria-label="Current password"
           autoComplete="current-password"
           className="input"
         />
@@ -293,6 +302,7 @@ export function PasswordForm() {
           value={next}
           onChange={(e) => setNext(e.target.value)}
           placeholder="New password (min 8 characters)"
+          aria-label="New password, at least 8 characters"
           autoComplete="new-password"
           className="input"
         />
@@ -303,7 +313,7 @@ export function PasswordForm() {
       <button
         type="submit"
         disabled={pending || !current || next.length < 8}
-        className="btn btn-ghost mt-3"
+        className="btn btn-primary mt-3"
       >
         {pending && <Loader2 className="h-4 w-4 animate-spin" />}
         Update password
@@ -340,10 +350,10 @@ export function DeleteAccount({ reviewCount }: { reviewCount: number }) {
   }
 
   return (
-    <div className="rounded-2xl border border-bad/30 bg-bad/[0.04] p-6">
-      <p className="flex items-center gap-2 font-bold text-bad">
+    <section className="card border-bad/25 p-6 sm:p-7">
+      <h2 className="flex items-center gap-2 text-lg font-medium tracking-tight text-bad">
         <AlertTriangle className="h-4 w-4" /> Delete account
-      </p>
+      </h2>
       <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">
         Permanently deletes your account and all{" "}
         <strong className="text-ink">{reviewCount}</strong> of your saved
@@ -366,11 +376,12 @@ export function DeleteAccount({ reviewCount }: { reviewCount: number }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password to confirm"
+                aria-label="Your password, to confirm deletion"
                 autoComplete="current-password"
                 className="input max-w-sm"
               />
               {error && <p className="mt-2 text-sm text-bad">{error}</p>}
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   onClick={destroy}
                   disabled={pending || !password}
@@ -405,6 +416,6 @@ export function DeleteAccount({ reviewCount }: { reviewCount: number }) {
           </motion.button>
         )}
       </AnimatePresence>
-    </div>
+    </section>
   );
 }

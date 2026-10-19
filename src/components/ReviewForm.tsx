@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowRight,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { AnalyzingOverlay } from "@/components/AnalyzingOverlay";
 import { cn } from "@/lib/cn";
+import { JD_DRAFT_KEY } from "@/lib/drafts";
 
 type ResumeMode = "upload" | "paste";
 
@@ -37,6 +38,28 @@ export function ReviewForm({
   const [error, setError] = useState<string | null>(null);
   const [limitHit, setLimitHit] = useState(false);
   const [jdLen, setJdLen] = useState(0);
+  const jdRef = useRef<HTMLTextAreaElement>(null);
+
+  // The overview's assistant composer hands a pasted job description over
+  // through sessionStorage. Read it once, then clear it so a reload starts clean.
+  useEffect(() => {
+    let draft: string | null = null;
+    try {
+      draft = sessionStorage.getItem(JD_DRAFT_KEY);
+      sessionStorage.removeItem(JD_DRAFT_KEY);
+    } catch {
+      return;
+    }
+    const el = jdRef.current;
+    if (draft && el && !el.value) {
+      // Go through the native setter: assigning el.value directly updates
+      // React's value tracker too, and the input event would then be ignored.
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")
+        ?.set?.call(el, draft);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.focus();
+    }
+  }, []);
 
   function acceptFile(f: File | undefined | null) {
     if (!f) return;
@@ -126,12 +149,12 @@ export function ReviewForm({
               }
             }}
             className={cn(
-              "group relative flex min-h-[210px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-6 py-9 text-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
+              "group relative flex min-h-[210px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-5 py-9 text-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50",
               file
-                ? "border-solid border-accent/40 bg-accent/[0.04]"
+                ? "border-solid border-white/80 bg-white/55"
                 : dragOver
-                  ? "scale-[1.005] border-dashed border-accent bg-accent/[0.06]"
-                  : "border-dashed border-edge2 hover:border-accent/60 hover:bg-card2/40"
+                  ? "scale-[1.005] border-dashed border-accent2 bg-white/60"
+                  : "border-dashed border-ink/15 bg-white/30 hover:border-accent2/60 hover:bg-white/50"
             )}
           >
             <CornerTicks active={dragOver || !!file} />
@@ -146,7 +169,7 @@ export function ReviewForm({
 
             {file ? (
               <div className="flex w-full max-w-md items-center gap-4 text-left">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-pill text-white">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -157,11 +180,11 @@ export function ReviewForm({
                       : `${(file.size / 1024).toFixed(0)} KB`}{" "}
                     · ready to analyze
                   </p>
-                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-edge">
+                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-ink/10">
                     <span className="block h-full w-full bg-gradient-to-r from-accent to-accent2" />
                   </div>
                 </div>
-                <span className="hidden shrink-0 items-center gap-1 rounded-full border border-good/30 bg-good/10 px-2.5 py-1 text-xs font-semibold text-good sm:inline-flex">
+                <span className="hidden shrink-0 items-center gap-1 rounded-full border border-good/25 bg-white/70 px-2.5 py-1 text-xs font-semibold text-good sm:inline-flex">
                   <Check className="h-3.5 w-3.5" /> Ready
                 </span>
                 <button
@@ -171,7 +194,7 @@ export function ReviewForm({
                     setFile(null);
                     if (fileInput.current) fileInput.current.value = "";
                   }}
-                  className="shrink-0 rounded-full p-1.5 text-muted transition-colors hover:bg-card2 hover:text-bad"
+                  className="shrink-0 rounded-full p-1.5 text-muted transition-colors hover:bg-white/80 hover:text-bad"
                   aria-label="Remove file"
                 >
                   <X className="h-4 w-4" />
@@ -180,17 +203,19 @@ export function ReviewForm({
             ) : (
               <>
                 <DropGlyph active={dragOver} />
-                <p className="mt-5 text-base font-semibold">
+                <p className="mt-5 text-base font-medium">
                   {dragOver ? (
                     "Release to scan your resume"
                   ) : (
                     <>
                       Drop your resume here, or{" "}
-                      <span className="text-accent">browse</span>
+                      <span className="font-semibold text-accent underline decoration-accent/30 underline-offset-4">
+                        browse
+                      </span>
                     </>
                   )}
                 </p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-sm text-muted">
                   We read it exactly like an applicant tracking system would.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5">
@@ -210,7 +235,7 @@ export function ReviewForm({
               className="input min-h-[230px] font-mono text-sm leading-relaxed"
               placeholder="Paste the full text of your resume…"
             />
-            <p className="mt-2 text-xs text-faint">
+            <p className="mt-2 text-xs text-muted">
               Plain text is fine — we only need the words, not the formatting.
             </p>
           </div>
@@ -268,6 +293,7 @@ export function ReviewForm({
           <textarea
             id="jobDescription"
             name="jobDescription"
+            ref={jdRef}
             onChange={(e) => setJdLen(e.target.value.length)}
             className="input mt-1.5 min-h-[180px] text-sm leading-relaxed"
             placeholder="Paste the full job description — requirements, responsibilities, all of it. The more complete it is, the sharper the review."
@@ -280,16 +306,18 @@ export function ReviewForm({
       {error && (
         <p
           role="alert"
-          className="rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad"
+          className="rounded-2xl border border-bad/30 bg-bad/10 px-4 py-3 text-sm text-bad"
         >
           {error}
         </p>
       )}
 
       {limitHit && (
-        <div className="card border-accent/50 p-6 text-center">
-          <Lock className="mx-auto h-6 w-6 text-accent" />
-          <h3 className="mt-3 font-bold">
+        <div className="card flex flex-col items-center p-6 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-pill text-white">
+            <Lock className="h-5 w-5" />
+          </span>
+          <h3 className="mt-4 text-lg font-medium tracking-tight">
             You&apos;ve used your free reviews this month
           </h3>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted">
@@ -310,7 +338,7 @@ export function ReviewForm({
         <button
           type="submit"
           disabled={pending || limitHit || outOfQuota}
-          className="btn btn-primary btn-sheen w-full py-3.5 text-base"
+          className="btn btn-primary w-full py-3.5 text-base"
         >
           {pending ? (
             <>
@@ -324,7 +352,7 @@ export function ReviewForm({
             </>
           )}
         </button>
-        <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-faint">
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-muted">
           <ShieldCheck className="h-3.5 w-3.5" />
           Usually about ten seconds · your resume is never used to train models.
         </p>
@@ -358,22 +386,17 @@ function StepCard({
 }) {
   return (
     <section
-      className="fade-up card relative overflow-hidden"
+      className="fade-up card relative"
       style={{ animationDelay: `${delay}s` }}
     >
-      {/* accent hairline along the top edge */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent"
-      />
-      <header className="flex items-center justify-between gap-4 border-b border-edge px-5 py-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent2 text-sm font-bold text-[#180f0a] shadow-[0_0_20px_-4px_var(--color-accent)]">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 pt-5 sm:px-6 sm:pt-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pill text-sm font-semibold tabular-nums text-white">
             {n}
           </span>
-          <div>
-            <h2 className="font-bold leading-tight">{title}</h2>
-            {hint && <p className="text-xs text-muted">{hint}</p>}
+          <div className="min-w-0">
+            <h2 className="text-lg font-medium leading-tight tracking-tight">{title}</h2>
+            {hint && <p className="mt-0.5 text-sm text-muted">{hint}</p>}
           </div>
         </div>
         {action}
@@ -391,10 +414,10 @@ function ModeToggle({
   setMode: (m: ResumeMode) => void;
 }) {
   return (
-    <div className="relative grid grid-cols-2 rounded-lg border border-edge bg-surface p-0.5 text-sm">
+    <div className="relative grid grid-cols-2 rounded-full border border-white/80 bg-white/40 p-1 text-sm">
       <span
         aria-hidden
-        className="absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-card2 shadow-sm transition-transform duration-300 ease-out"
+        className="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-white shadow-[0_1px_2px_rgba(18,36,26,0.08),0_4px_12px_-6px_rgba(18,36,26,0.25)] transition-transform duration-300 ease-out"
         style={{
           transform: mode === "paste" ? "translateX(100%)" : "translateX(0)",
         }}
@@ -410,7 +433,7 @@ function ModeToggle({
           type="button"
           onClick={() => setMode(t.key)}
           className={cn(
-            "relative z-10 flex items-center justify-center gap-1.5 rounded-md px-4 py-1.5 font-medium transition-colors",
+            "relative z-10 flex items-center justify-center gap-1.5 rounded-full px-4 py-1.5 font-medium transition-colors",
             mode === t.key ? "text-ink" : "text-muted hover:text-ink"
           )}
         >
@@ -428,16 +451,16 @@ function DropGlyph({ active }: { active: boolean }) {
     <div className="relative grid h-24 w-24 place-items-center">
       <motion.div
         aria-hidden
-        className="absolute inset-0 rounded-[1.35rem] border border-accent/25"
+        className="absolute inset-0 rounded-full border border-white/80 bg-white/50 shadow-[0_10px_30px_-18px_rgba(18,36,26,0.4)]"
         animate={active ? { scale: [1, 1.06, 1] } : { scale: 1 }}
         transition={{ duration: 1.4, repeat: active ? Infinity : 0 }}
       />
       <svg viewBox="0 0 48 54" className="relative h-[4.4rem] w-[4.4rem]">
         <defs>
           <linearGradient id="dz-grad" x1="0" y1="0" x2="48" y2="54">
-            <stop offset="0%" stopColor="#ffb877" />
-            <stop offset="55%" stopColor="#f2622e" />
-            <stop offset="100%" stopColor="#ff9a4f" />
+            <stop offset="0%" stopColor="#7af55b" />
+            <stop offset="55%" stopColor="#2a9d36" />
+            <stop offset="100%" stopColor="#17891f" />
           </linearGradient>
           <clipPath id="dz-doc">
             <rect x="9" y="5" width="30" height="42" rx="4" />
@@ -449,7 +472,7 @@ function DropGlyph({ active }: { active: boolean }) {
           width="30"
           height="42"
           rx="4"
-          fill="var(--color-card2)"
+          fill="#ffffff"
           stroke="var(--color-edge2)"
           strokeWidth="1.4"
         />
@@ -479,7 +502,7 @@ function DropGlyph({ active }: { active: boolean }) {
         <circle cx="37" cy="41" r="9.5" fill="url(#dz-grad)" />
         <path
           d="M37 45.5 L37 37 M33 40.5 L37 36.5 L41 40.5"
-          stroke="#180f0a"
+          stroke="#ffffff"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

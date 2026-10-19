@@ -41,15 +41,15 @@ export function ForgotForm() {
   if (sent) {
     return (
       <div className="space-y-5">
-        <div className="flex gap-3 rounded-lg border border-good/40 bg-good/10 px-4 py-3">
+        <div className="flex gap-3 rounded-2xl border border-good/25 bg-white/60 px-4 py-3">
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-good" />
           <p className="text-sm text-ink">{sent}</p>
         </div>
-        <p className="text-xs text-faint">
+        <p className="text-xs leading-relaxed text-muted">
           The link works once and expires in an hour. Nothing has changed on your
           account yet — your current password still works until you set a new one.
         </p>
-        <Link href="/login" className="btn btn-ghost w-full">
+        <Link href="/login" className="btn btn-ghost w-full py-3">
           Back to log in
         </Link>
       </div>
@@ -77,13 +77,13 @@ export function ForgotForm() {
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad"
+          className="rounded-2xl border border-bad/30 bg-bad/10 px-4 py-2.5 text-sm text-bad"
         >
           {error}
         </p>
       )}
 
-      <button type="submit" className="btn btn-primary w-full" disabled={pending}>
+      <button type="submit" className="btn btn-primary w-full py-3" disabled={pending}>
         {pending && <Loader2 className="h-4 w-4 animate-spin" />}
         Send reset link
       </button>
@@ -154,7 +154,7 @@ export function ResetForm({ token }: { token: string }) {
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad"
+          className="rounded-2xl border border-bad/30 bg-bad/10 px-4 py-2.5 text-sm text-bad"
         >
           {error}{" "}
           <Link href="/forgot" className="font-semibold underline">
@@ -163,12 +163,12 @@ export function ResetForm({ token }: { token: string }) {
         </p>
       )}
 
-      <button type="submit" className="btn btn-primary w-full" disabled={pending}>
+      <button type="submit" className="btn btn-primary w-full py-3" disabled={pending}>
         {pending && <Loader2 className="h-4 w-4 animate-spin" />}
         Set new password
       </button>
 
-      <p className="pt-2 text-center text-xs text-faint">
+      <p className="pt-2 text-center text-xs text-muted">
         This signs you out everywhere else.
       </p>
     </form>

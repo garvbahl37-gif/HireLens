@@ -3,40 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { AudioLines, CreditCard, FilePlus2, LayoutDashboard } from "lucide-react";
+import { AudioLines, BriefcaseBusiness, FilePlus2, House } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const TABS = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/dashboard", label: "Overview", icon: House, exact: true },
   { href: "/dashboard/new", label: "Review", icon: FilePlus2, exact: false },
-  {
-    href: "/dashboard/interview",
-    label: "Interview",
-    icon: AudioLines,
-    exact: false,
-  },
-  { href: "/dashboard/billing", label: "Billing", icon: CreditCard, exact: false },
+  { href: "/dashboard/interview", label: "Interview", icon: AudioLines, exact: false },
+  { href: "/dashboard/tracker", label: "Applications", icon: BriefcaseBusiness, exact: false },
 ];
 
 /**
- * Bottom tab bar, phone only.
- *
- * The previous mobile nav crammed four links plus a logout into a horizontal
- * scroll strip in the top bar: labels wrapped onto two lines and half the
- * destinations were pushed off-screen entirely. A bottom bar puts every
- * destination in the thumb's reach and can't overflow, because the tabs share
- * the width evenly.
+ * Bottom tab bar, phone only — the forest rail, turned sideways. Every
+ * destination sits in the thumb's reach and the tabs share the width evenly,
+ * so it can't overflow.
  */
 export function MobileNav() {
   const pathname = usePathname();
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-bg/90 backdrop-blur-2xl md:hidden"
+      aria-label="Dashboard"
+      className="fixed inset-x-3 bottom-3 z-40 rounded-[22px] border border-white/10 bg-forest/95 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.6)] backdrop-blur-xl md:hidden"
       // sit above the iOS home indicator rather than under it
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex">
+      <div className="flex p-1.5">
         {TABS.map((tab) => {
           const active = tab.exact
             ? pathname === tab.href
@@ -48,19 +40,22 @@ export function MobileNav() {
               href={tab.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition-colors",
-                active ? "text-accent" : "text-faint hover:text-muted"
+                "relative flex flex-1 flex-col items-center gap-1 rounded-2xl py-2 text-[11px] font-semibold transition-colors",
+                active ? "text-white" : "text-white/60 hover:text-white/90"
               )}
             >
               {active && (
                 <motion.span
                   layoutId="mobile-tab"
-                  className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-gradient-to-r from-accent to-accent2"
+                  className="absolute inset-0 rounded-2xl bg-white/12"
                   transition={{ type: "spring", stiffness: 400, damping: 34 }}
                 />
               )}
-              <tab.icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 2} />
-              {tab.label}
+              <tab.icon
+                className={cn("relative h-[18px] w-[18px]", active && "text-neon")}
+                strokeWidth={active ? 2.3 : 1.9}
+              />
+              <span className="relative">{tab.label}</span>
             </Link>
           );
         })}

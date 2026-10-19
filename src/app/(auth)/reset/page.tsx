@@ -17,9 +17,9 @@ export default async function ResetPage({
   // mail app. It is checked exactly once, on submit.
   if (!token) {
     return (
-      <div className="card fade-up p-8">
-        <h1 className="text-2xl font-bold tracking-tight">Link incomplete</h1>
-        <p className="mt-1 mb-7 text-sm text-muted">
+      <div className="card fade-up flex h-full flex-col justify-center p-6 sm:p-9">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Link incomplete</h1>
+        <p className="mt-2 mb-7 text-sm leading-relaxed text-muted">
           That reset link is missing its token. Some email clients truncate long
           URLs — try copying the whole link, or request a fresh one.
         </p>
@@ -31,9 +31,9 @@ export default async function ResetPage({
   }
 
   return (
-    <div className="card fade-up p-8">
-      <h1 className="text-2xl font-bold tracking-tight">Choose a new password</h1>
-      <p className="mt-1 mb-7 text-sm text-muted">
+    <div className="card fade-up flex h-full flex-col justify-center p-6 sm:p-9">
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Choose a new password</h1>
+      <p className="mt-2 mb-7 text-sm leading-relaxed text-muted">
         Pick something you haven&rsquo;t used before.
       </p>
       <ResetForm token={token} />

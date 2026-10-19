@@ -67,15 +67,9 @@ export default async function NewInterviewPage({
   }));
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Mock interview</h1>
-        <p className="mt-1 text-sm text-muted">
-          A hiring manager who has read your resume, knows the job, and will
-          probe the gaps between them.
-        </p>
-      </div>
-
+    // The canopy header already titles the page ("New interview"), so the
+    // setup opens straight onto its cards, like the reference's panels.
+    <div className="mx-auto w-full max-w-3xl">
       <InterviewSetup
         reviews={past}
         isPro={isPro}

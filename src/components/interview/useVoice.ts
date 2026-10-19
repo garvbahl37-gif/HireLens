@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   type Delivery,
   PAUSE_THRESHOLD_SEC,
@@ -53,6 +53,8 @@ function pickMimeType(): string {
   }
   return "";
 }
+
+const noopSubscribe = () => () => {};
 
 export function useVoice(opts: {
   onFinish: (answer: string, delivery: Delivery) => void;
@@ -328,13 +330,22 @@ export function useVoice(opts: {
     rec.start();
   }, [finalize, stop]);
 
+  // Read through useSyncExternalStore so the server render and the hydrating
+  // client agree (both "not yet known"), then the real answer swaps in. A
+  // plain `typeof window` check rendered the typed composer on the server and
+  // the voice one on the client — a hydration mismatch on every room load.
+  const supported = useSyncExternalStore(
+    noopSubscribe,
+    () => typeof MediaRecorder !== "undefined",
+    () => false
+  );
+
   return {
     ...state,
     recording: state.status === "recording",
     transcribing: state.status === "transcribing",
     start,
     stop,
-    supported:
-      typeof window !== "undefined" && typeof MediaRecorder !== "undefined",
+    supported,
   };
 }

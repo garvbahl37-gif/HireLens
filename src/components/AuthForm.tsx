@@ -88,7 +88,7 @@ export function AuthForm({
           {mode === "login" && (
             <Link
               href="/forgot"
-              className="mb-1.5 text-xs font-medium text-faint transition-colors hover:text-accent"
+              className="mb-1.5 text-xs font-medium text-muted transition-colors hover:text-accent"
             >
               Forgot password?
             </Link>
@@ -109,13 +109,13 @@ export function AuthForm({
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad"
+          className="rounded-2xl border border-bad/30 bg-bad/10 px-4 py-2.5 text-sm text-bad"
         >
           {error}
         </p>
       )}
 
-      <button type="submit" className="btn btn-primary w-full" disabled={pending}>
+      <button type="submit" className="btn btn-primary w-full py-3" disabled={pending}>
         {pending && <Loader2 className="h-4 w-4 animate-spin" />}
         {mode === "signup" ? "Create account" : "Log in"}
       </button>

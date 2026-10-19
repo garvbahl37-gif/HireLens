@@ -29,14 +29,14 @@ export default function GlobalError({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#100c0a",
-          color: "#f7f1ea",
+          background: "#eceee9",
+          color: "#12211a",
           fontFamily: "ui-sans-serif, system-ui, sans-serif",
           padding: "1.5rem",
         }}
       >
         <div style={{ maxWidth: 420, textAlign: "center" }}>
-          <h1 style={{ fontSize: "1.125rem", fontWeight: 700 }}>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 600, letterSpacing: "-0.02em" }}>
             Something broke on our end
           </h1>
           <p
@@ -44,7 +44,7 @@ export default function GlobalError({
               marginTop: "0.5rem",
               fontSize: "0.875rem",
               lineHeight: 1.6,
-              color: "#b6a597",
+              color: "#475a4c",
             }}
           >
             The app hit an unexpected error. Reloading usually clears it.
@@ -53,13 +53,14 @@ export default function GlobalError({
             onClick={reset}
             style={{
               marginTop: "1.5rem",
-              padding: "0.6rem 1.15rem",
-              borderRadius: "0.65rem",
+              padding: "0.66rem 1.3rem",
+              borderRadius: "999px",
               border: "none",
               fontWeight: 600,
+              fontSize: "0.9rem",
               cursor: "pointer",
-              background: "#f2622e",
-              color: "#100c0a",
+              background: "#0d1a10",
+              color: "#ffffff",
             }}
           >
             Try again

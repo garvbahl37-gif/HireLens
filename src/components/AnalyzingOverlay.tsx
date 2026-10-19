@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { Check } from "lucide-react";
 
@@ -32,24 +33,28 @@ export function AnalyzingOverlay({ deep }: { deep: boolean }) {
     return () => clearInterval(t);
   }, []);
 
-  return (
+  // Portalled to <body>: the route wrapper keeps a transform from its fade-in,
+  // and a transformed ancestor turns `position: fixed` into "fixed to that
+  // wrapper" — on a long page the card ended up centred off-screen. This only
+  // mounts after a submit, so `document` is always there.
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-bg/85 px-5 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-forest/40 px-4 backdrop-blur-sm"
     >
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: EASE }}
-        className="card relative w-full max-w-md overflow-hidden p-8"
+        className="card relative w-full max-w-md overflow-hidden bg-white/80 p-6 sm:p-8"
       >
-        {/* the lens sweeping a document */}
-        <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
+        {/* the lens sweeping a document, on a pale glass disc */}
+        <div className="relative mx-auto flex h-36 w-36 items-center justify-center rounded-full border border-white/80 bg-white/60 shadow-[0_0_0_8px_rgba(255,255,255,0.35),0_0_50px_-6px_rgba(69,230,36,0.35)]">
           <ScanningLens />
         </div>
 
-        <p className="relative mt-6 text-center text-lg font-bold tracking-tight">
+        <p className="relative mt-6 text-center text-xl font-medium tracking-tight">
           {deep ? "Running deep analysis" : "Analyzing your resume"}
         </p>
         <p className="relative mt-1 text-center text-sm text-muted">
@@ -57,7 +62,7 @@ export function AnalyzingOverlay({ deep }: { deep: boolean }) {
         </p>
 
         {/* step narration */}
-        <ul className="relative mt-6 space-y-2.5">
+        <ul className="relative mt-6 space-y-1.5 rounded-2xl border border-white/80 bg-white/50 p-4">
           {STEPS.map((s, i) => {
             const done = i < step;
             const active = i === step;
@@ -86,14 +91,14 @@ export function AnalyzingOverlay({ deep }: { deep: boolean }) {
                     ) : active ? (
                       <motion.span
                         key="active"
-                        className="h-1.5 w-1.5 rounded-full bg-accent"
+                        className="h-1.5 w-1.5 rounded-full bg-accent2 shadow-[0_0_8px_1px_rgba(69,230,36,0.6)]"
                         animate={{ scale: [1, 1.7, 1], opacity: [1, 0.5, 1] }}
                         transition={{ duration: 1.2, repeat: Infinity }}
                       />
                     ) : (
                       <span
                         key="idle"
-                        className="h-1.5 w-1.5 rounded-full bg-edge2"
+                        className="h-1.5 w-1.5 rounded-full bg-ink/20"
                       />
                     )}
                   </AnimatePresence>
@@ -106,7 +111,8 @@ export function AnalyzingOverlay({ deep }: { deep: boolean }) {
           })}
         </ul>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 
@@ -116,9 +122,9 @@ function ScanningLens() {
     <svg viewBox="0 0 120 120" className="h-32 w-32">
       <defs>
         <linearGradient id="scan-rim" x1="0" y1="0" x2="120" y2="120">
-          <stop offset="0%" stopColor="#ffb877" />
-          <stop offset="55%" stopColor="#f2622e" />
-          <stop offset="100%" stopColor="#ff9a4f" />
+          <stop offset="0%" stopColor="#7af55b" />
+          <stop offset="55%" stopColor="#2a9d36" />
+          <stop offset="100%" stopColor="#17891f" />
         </linearGradient>
         <clipPath id="scan-doc">
           <rect x="30" y="22" width="60" height="76" rx="6" />
@@ -132,7 +138,7 @@ function ScanningLens() {
         width="60"
         height="76"
         rx="6"
-        fill="var(--color-card2)"
+        fill="#ffffff"
         stroke="var(--color-edge2)"
         strokeWidth="1.5"
       />

@@ -24,33 +24,29 @@ export function RescoreBanner({
   const tone = flat ? "text-muted" : up ? "text-good" : "text-bad";
 
   return (
-    <div className="card overflow-hidden p-0">
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-4 p-6 sm:p-8">
-        <div className="flex items-center gap-4">
+    <section className="card overflow-hidden p-0">
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-4 p-5 sm:p-6">
+        <div className="flex items-center gap-4 rounded-2xl border border-white/80 bg-white/50 px-5 py-3">
           <div className="text-center">
-            <p className="text-3xl font-extrabold tabular-nums text-faint">
+            <p className="text-[2rem] font-light leading-none tabular-nums tracking-tight text-faint">
               {delta.from}
             </p>
-            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-faint">
-              before
-            </p>
+            <p className="mt-1.5 text-xs text-muted">Before</p>
           </div>
           <Icon className={cn("h-6 w-6 shrink-0", tone)} />
           <div className="text-center">
-            <p className="text-3xl font-extrabold tabular-nums text-ink">
+            <p className="text-[2rem] font-light leading-none tabular-nums tracking-tight text-ink">
               {delta.to}
             </p>
-            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-faint">
-              after
-            </p>
+            <p className="mt-1.5 text-xs text-muted">After</p>
           </div>
         </div>
 
         <div className="min-w-0 flex-1">
           {delta.comparable ? (
             <>
-              <p className="font-bold">
-                <span className={tone}>
+              <p className="text-lg font-medium tracking-tight">
+                <span className={cn("tabular-nums", tone)}>
                   {up ? "+" : ""}
                   {delta.scoreDelta}
                 </span>{" "}
@@ -97,19 +93,17 @@ export function RescoreBanner({
       </div>
 
       {delta.comparable && delta.keywordsResolved.length > 0 && (
-        <div className="border-t border-edge px-6 py-4 sm:px-8">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-faint">
-            Now matched
-          </p>
-          <div className="flex flex-wrap gap-2">
+        <div className="border-t border-ink/10 px-5 py-4 sm:px-6">
+          <p className="mb-2 text-sm text-muted">Now matched</p>
+          <div className="flex flex-wrap gap-1.5">
             {delta.keywordsResolved.map((k) => (
-              <span key={k} className="chip border-good/30 text-good">
+              <span key={k} className="chip border-good/25 bg-white/60 text-good">
                 {k}
               </span>
             ))}
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

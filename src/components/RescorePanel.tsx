@@ -52,13 +52,13 @@ export function RescorePanel({
 
   if (!open) {
     return (
-      <div className="card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-edge bg-card2 text-accent">
+      <div className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="flex items-start gap-3.5">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/70 text-accent">
             <RefreshCw className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-sm font-semibold">Apply the fixes, then re-score</p>
+            <p className="text-base font-medium tracking-tight">Apply the fixes, then re-score</p>
             <p className="mt-0.5 text-sm text-muted">
               Edit your resume and re-run it on this same job. We don&rsquo;t
               guess the new number — we re-run it.
@@ -77,9 +77,9 @@ export function RescorePanel({
 
   return (
     <div className="card p-5 sm:p-6">
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold">Edit your resume</p>
-        <span className="text-xs text-faint">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <p className="text-lg font-medium tracking-tight">Edit your resume</p>
+        <span className="text-sm text-muted">
           Same job — only the resume changes
         </span>
       </div>
@@ -95,7 +95,7 @@ export function RescorePanel({
       {error && (
         <p
           role="alert"
-          className="mt-3 rounded-lg border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad"
+          className="mt-3 rounded-2xl border border-bad/30 bg-bad/10 px-4 py-2.5 text-sm text-bad"
         >
           {error}
         </p>

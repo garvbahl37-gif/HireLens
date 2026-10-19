@@ -38,6 +38,13 @@ const KIND_ICON: Record<QuestionKind, LucideIcon> = {
   closing: Waypoints,
 };
 
+/** What every panel is listening for, kept in view while you answer. */
+const LISTENING_FOR = [
+  "Lead with the result, then the how",
+  "Put a number on it",
+  "Say what you did, not the team",
+];
+
 export type Msg = {
   role: "interviewer" | "candidate";
   content: string;
@@ -189,45 +196,100 @@ export function InterviewRoom({
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
 
-  return (
-    <div className="relative flex h-[calc(100vh-9rem)] flex-col md:h-[calc(100vh-7rem)]">
-      {/* ---------- header: the session bar ---------- */}
-      <div className="card mb-4 flex flex-wrap items-center justify-between gap-4 p-4">
-        <div className="flex min-w-0 items-center gap-3.5">
-          <InterviewerOrb state={orbState} size={46} />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold leading-tight">
-              {jobTitle}
-              {company && <span className="text-muted"> · {company}</span>}
-            </p>
-            <p className="mt-0.5 flex items-center gap-2 text-xs">
-              <span
-                className={cn(
-                  "flex items-center gap-1.5 font-semibold",
-                  thinking || speaking ? "text-accent" : "text-good"
-                )}
-              >
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    thinking || speaking ? "bg-accent" : "bg-good"
-                  )}
-                />
-                {statusLabel}
-              </span>
-              <span className="text-faint">·</span>
-              <span className="text-muted">{isPro ? "Full loop" : "Screen"}</span>
-              <span className="text-faint">·</span>
-              <span className="font-mono tabular-nums text-muted">
-                {mm}:{ss}
-              </span>
-            </p>
-          </div>
-        </div>
+  // The question on the table right now, for the session card.
+  const current = lastInterviewerIndex >= 0 ? messages[lastInterviewerIndex] : null;
+  const CurrentIcon = current?.kind ? KIND_ICON[current.kind] : Sparkles;
+  const currentLabel = current?.isFollowUp
+    ? "Follow-up"
+    : current?.kind
+      ? KIND_LABELS[current.kind]
+      : "Question";
+  const questionNo = Math.min(done + 1, totalQuestions);
 
-        <div className="flex items-center gap-3">
+  const active = thinking || speaking;
+
+  const muteButton = (className: string) => (
+    <button
+      onClick={() => {
+        if (!muted) stopSpeaking();
+        setMuted((m) => !m);
+      }}
+      aria-label={muted ? "Unmute the interviewer" : "Mute the interviewer"}
+      title={muted ? "Unmute the interviewer" : "Mute the interviewer"}
+      className={className}
+    >
+      {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+    </button>
+  );
+
+  const endButton = (className: string) => (
+    <button
+      onClick={finishEarly}
+      disabled={finishing || thinking || done === 0}
+      title={
+        done === 0
+          ? "Answer at least one question first"
+          : "End and get scored on what you've answered"
+      }
+      className={className}
+    >
+      {finishing ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Flag className="h-3.5 w-3.5" />
+      )}
+      End
+    </button>
+  );
+
+  return (
+    <div className="relative flex h-[calc(100dvh-18.5rem)] min-h-[440px] flex-col gap-3 md:h-[calc(100dvh-11.5rem)] lg:h-[calc(100dvh-8rem)] lg:flex-row lg:gap-4">
+      {/* ---------- session bar (phones + tablets) ---------- */}
+      <div className="card flex items-center gap-3 p-3 lg:hidden">
+        <InterviewerOrb state={orbState} size={40} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold leading-tight">
+            {jobTitle}
+            {company && <span className="font-normal text-muted"> · {company}</span>}
+          </p>
+          <p className="mt-1 flex items-center gap-2 text-xs">
+            <span
+              className={cn(
+                "flex items-center gap-1.5 font-semibold",
+                active ? "text-accent" : "text-good"
+              )}
+            >
+              <span
+                className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-accent" : "bg-good")}
+              />
+              {statusLabel}
+            </span>
+            <span className="text-faint">·</span>
+            <span className="tabular-nums text-muted">
+              {mm}:{ss}
+            </span>
+            <span className="text-faint">·</span>
+            <span className="tabular-nums text-muted">
+              {done}/{totalQuestions}
+            </span>
+          </p>
+        </div>
+        {muteButton(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/55 text-ink transition-colors hover:bg-white"
+        )}
+        {endButton("btn btn-ghost shrink-0 px-3 py-2 text-xs")}
+      </div>
+
+      {/* ---------- the conversation ---------- */}
+      <section className="card flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="hidden items-center justify-between gap-3 border-b border-ink/[0.07] px-6 py-3.5 sm:flex">
+          <h2 className="text-lg font-medium tracking-tight">Conversation</h2>
+
           {/* segmented progress — one pip per question */}
-          <div className="hidden items-center gap-1.5 sm:flex" title={`${done} of ${totalQuestions} answered`}>
+          <div
+            className="flex items-center gap-1.5"
+            title={`${done} of ${totalQuestions} answered`}
+          >
             {Array.from({ length: totalQuestions }).map((_, i) => (
               <motion.span
                 key={i}
@@ -235,108 +297,147 @@ export function InterviewRoom({
                 animate={{
                   width: i < done ? 22 : 8,
                   backgroundColor:
-                    i < done
-                      ? "var(--color-accent)"
-                      : "var(--color-edge2)",
+                    i < done ? "var(--color-accent2)" : "rgba(18, 33, 26, 0.14)",
                 }}
                 transition={{ duration: 0.4, ease: EASE }}
               />
             ))}
           </div>
-
-          <button
-            onClick={() => {
-              if (!muted) stopSpeaking();
-              setMuted((m) => !m);
-            }}
-            aria-label={muted ? "Unmute the interviewer" : "Mute the interviewer"}
-            title={muted ? "Unmute the interviewer" : "Mute the interviewer"}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-edge text-muted transition-colors hover:border-accent/40 hover:text-accent"
-          >
-            {muted ? (
-              <VolumeX className="h-4 w-4" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
-          </button>
-
-          <button
-            onClick={finishEarly}
-            disabled={finishing || thinking || done === 0}
-            title={
-              done === 0
-                ? "Answer at least one question first"
-                : "End and get scored on what you've answered"
-            }
-            className="btn btn-ghost px-3 py-2 text-xs"
-          >
-            {finishing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Flag className="h-3.5 w-3.5" />
-            )}
-            End
-          </button>
         </div>
-      </div>
 
-      {/* ---------- transcript ---------- */}
-      <div
-        ref={scroller}
-        className="card flex-1 space-y-6 overflow-y-auto p-5 sm:p-6"
-      >
-        {messages.map((m, i) => (
-          <Bubble
-            key={i}
-            msg={m}
-            index={i}
-            muted={muted}
-            live={i === lastInterviewerIndex}
-            onSpeakingChange={i === lastInterviewerIndex ? setSpeaking : undefined}
-          />
-        ))}
+        <div
+          ref={scroller}
+          className="flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-6"
+        >
+          {messages.map((m, i) => (
+            <Bubble
+              key={i}
+              msg={m}
+              index={i}
+              muted={muted}
+              live={i === lastInterviewerIndex}
+              onSpeakingChange={i === lastInterviewerIndex ? setSpeaking : undefined}
+            />
+          ))}
 
-        <AnimatePresence>
-          {thinking && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center gap-3"
+          <AnimatePresence>
+            {thinking && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-3"
+              >
+                <InterviewerOrb state="thinking" size={30} />
+                <div className="flex gap-1 rounded-2xl rounded-tl-md border border-white/80 bg-white/60 px-4 py-3 shadow-[0_1px_2px_rgba(18,36,26,0.05)]">
+                  {[0, 1, 2].map((d) => (
+                    <motion.span
+                      key={d}
+                      className="h-1.5 w-1.5 rounded-full bg-accent2"
+                      animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
+                      transition={{
+                        duration: 1.1,
+                        repeat: Infinity,
+                        delay: d * 0.15,
+                      }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ---------- composer: voice first ---------- */}
+        <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+          {error && (
+            <p
+              role="alert"
+              className="mb-2 rounded-xl border border-bad/30 bg-white/60 px-3 py-2 text-sm text-bad"
             >
-              <InterviewerOrb state="thinking" size={34} />
-              <div className="flex gap-1 rounded-2xl rounded-tl-sm border border-edge bg-card2 px-4 py-3">
-                {[0, 1, 2].map((d) => (
-                  <motion.span
-                    key={d}
-                    className="h-1.5 w-1.5 rounded-full bg-accent"
-                    animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
-                    transition={{
-                      duration: 1.1,
-                      repeat: Infinity,
-                      delay: d * 0.15,
-                    }}
-                  />
-                ))}
-              </div>
-            </motion.div>
+              {error}
+            </p>
           )}
-        </AnimatePresence>
-      </div>
 
-      {/* ---------- composer: voice first ---------- */}
-      <div className="mt-4">
-        {error && (
-          <p
-            role="alert"
-            className="mb-2 rounded-lg border border-bad/30 bg-bad/5 px-3 py-2 text-sm text-bad"
-          >
-            {error}
+          <VoiceComposer disabled={thinking || finishing} onSubmit={send} />
+        </div>
+      </section>
+
+      {/* ---------- the interviewer (desktop column) ---------- */}
+      <aside className="hidden min-h-0 w-[300px] shrink-0 flex-col gap-4 lg:flex xl:w-[320px]">
+        <div className="card flex flex-1 flex-col items-center p-5 text-center">
+          <div className="mt-6">
+            <InterviewerOrb state={orbState} size={92} />
+          </div>
+          <p className="mt-8 text-[1.4rem] font-medium tracking-tight">{statusLabel}</p>
+          <p className="mt-1 text-sm text-muted">
+            {jobTitle}
+            {company && <> at {company}</>}
           </p>
-        )}
 
-        <VoiceComposer disabled={thinking || finishing} onSubmit={send} />
-      </div>
+          <div className="mt-6 grid w-full grid-cols-2 divide-x divide-ink/10 rounded-2xl border border-white/80 bg-white/50 py-3">
+            <div>
+              <p className="text-sm text-muted">Elapsed</p>
+              <p className="mt-0.5 text-2xl font-light tabular-nums">
+                {mm}:{ss}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted">Answered</p>
+              <p className="mt-0.5 text-2xl font-light tabular-nums">
+                {done}
+                <span className="text-base text-faint">/{totalQuestions}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* what a panel listens for — set like the reference's prompt list;
+              dropped on short screens so the column never overflows */}
+          <ul className="mt-5 hidden w-full space-y-2 text-left [@media(min-height:860px)]:block">
+            {LISTENING_FOR.map((tip) => (
+              <li
+                key={tip}
+                className="flex items-center gap-2.5 rounded-xl border border-white/80 bg-white/40 px-3.5 py-2.5 text-sm text-ink/85"
+              >
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent2" aria-hidden />
+                {tip}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-auto flex w-full gap-2 pt-5">
+            {muteButton(
+              "btn btn-ghost flex-1 px-3 py-2.5 text-sm"
+            )}
+            {endButton("btn btn-ghost flex-1 px-3 py-2.5 text-sm")}
+          </div>
+        </div>
+
+        {/* the one emphasised thing: where you are in the loop */}
+        <div className="card-forest p-5">
+          <p className="text-sm text-white/70">
+            {isPro ? "Full loop" : "Screen"} · adaptive follow-ups
+          </p>
+          <p className="mt-1 text-xl font-medium tracking-tight">
+            Question {questionNo} of {totalQuestions}
+          </p>
+          <p className="mt-3 flex items-center gap-2 text-sm text-white/85">
+            <CurrentIcon className="h-4 w-4 text-neon" />
+            {currentLabel}
+          </p>
+          <div className="mt-4 flex gap-1" aria-hidden>
+            {Array.from({ length: totalQuestions }).map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "h-1 flex-1 rounded-full transition-colors",
+                  i < done ? "bg-neon" : i === done ? "bg-white/50" : "bg-white/15"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
@@ -374,20 +475,18 @@ function Bubble({
       )}
     >
       {isInterviewer && (
-        <div className="mt-6 shrink-0">
-          <InterviewerOrb state={live ? "speaking" : "idle"} size={30} />
+        <div className="mt-8 shrink-0">
+          <InterviewerOrb state={live ? "speaking" : "idle"} size={28} />
         </div>
       )}
 
-      <div className={cn("max-w-[85%]", !isInterviewer && "order-1")}>
+      <div className={cn("max-w-[85%] sm:max-w-[78%]", !isInterviewer && "order-1")}>
         {isInterviewer && (
           <div className="mb-2 flex items-center gap-2">
             <span
               className={cn(
-                "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-                msg.isFollowUp
-                  ? "border-warn/30 bg-warn/5 text-warn"
-                  : "border-accent/25 bg-accent/5 text-accent"
+                "chip gap-1.5 px-2.5 py-1 text-xs",
+                msg.isFollowUp ? "text-warn" : "text-accent"
               )}
             >
               <KindIcon className="h-3 w-3" />
@@ -399,9 +498,9 @@ function Bubble({
               onClick={() => setReplay((r) => r + 1)}
               aria-label="Hear this question again"
               title="Play it again"
-              className="flex h-6 w-6 items-center justify-center rounded-full border border-edge text-faint transition-colors hover:border-accent/40 hover:text-accent"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/80 bg-white/50 text-muted transition-colors hover:bg-white hover:text-ink"
             >
-              <Volume2 className="h-3 w-3" />
+              <Volume2 className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
@@ -410,8 +509,8 @@ function Bubble({
           className={cn(
             "text-[15px] leading-relaxed",
             isInterviewer
-              ? "rounded-2xl rounded-tl-md border border-edge2/60 bg-card2/80 px-4 py-3.5 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.5)] backdrop-blur"
-              : "rounded-2xl rounded-tr-md bg-gradient-to-br from-accent to-accent2 px-4 py-3.5 font-medium text-[#180f0a] shadow-[0_6px_20px_-10px_var(--color-accent)]"
+              ? "rounded-2xl rounded-tl-md border border-white/80 bg-white/60 px-4 py-3.5 text-ink shadow-[0_1px_2px_rgba(18,36,26,0.05),0_10px_24px_-18px_rgba(18,36,26,0.3)]"
+              : "rounded-2xl rounded-tr-md bg-pill px-4 py-3.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_12px_26px_-16px_rgba(13,26,16,0.7)]"
           )}
         >
           {isInterviewer && (live || replay > 0) ? (

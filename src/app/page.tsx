@@ -1,255 +1,132 @@
 import Link from "next/link";
-import { ArrowRight, MessageCircleQuestion } from "lucide-react";
+import { FileText, Puzzle, ScrollText, KanbanSquare, Mic } from "lucide-react";
 import { Faq } from "@/components/landing/Faq";
 import { Proof } from "@/components/landing/Proof";
 import { InterviewShowcase } from "@/components/landing/InterviewShowcase";
-import { Logo } from "@/components/Logo";
+import { LogoMark } from "@/components/Logo";
 import { PricingCards } from "@/components/PricingCards";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
-import { TrustMarquee } from "@/components/landing/Marquee";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Catches } from "@/components/landing/Catches";
 import { Stats } from "@/components/landing/Stats";
-import { FeaturesGrid } from "@/components/landing/FeaturesGrid";
-import { Reveal } from "@/components/landing/Reveal";
+import { Footer } from "@/components/landing/Footer";
+import { Rise, ScrollWords } from "@/components/landing/motion";
 import { getCurrentUser } from "@/lib/auth";
+import { DIMENSION_LABELS } from "@/lib/ai";
 import { isDemoBilling } from "@/lib/demo-billing";
-import { FREE_MONTHLY_LIMIT } from "@/lib/plans";
+import {
+  FREE_INTERVIEWS_PER_MONTH,
+  FREE_MONTHLY_LIMIT,
+  INTERVIEW_QUESTIONS_PRO,
+} from "@/lib/plans";
+
+const DIMENSIONS = Object.keys(DIMENSION_LABELS).length;
 
 export default async function LandingPage() {
   const user = await getCurrentUser();
   const authed = !!user;
   const demoBilling = isDemoBilling();
+  const start = authed ? "/dashboard/new" : "/signup";
 
   return (
-    <div className="grain relative flex-1 overflow-hidden bg-bg">
-      {/* one continuous ambient canvas behind everything */}
+    <div className="relative flex-1 overflow-x-clip bg-bg">
+      {/* the reference's page wash: pale stone above, green rising from below */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(120% 60% at 50% -10%, rgba(242,98,46,0.11), transparent 60%), radial-gradient(90% 50% at 100% 40%, rgba(255,154,79,0.07), transparent 55%), radial-gradient(80% 50% at 0% 75%, rgba(201,69,43,0.06), transparent 55%)",
-        }}
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(70%_45%_at_15%_100%,rgba(82,188,79,0.22),transparent_70%),radial-gradient(60%_40%_at_95%_90%,rgba(196,226,150,0.35),transparent_70%)]"
       />
 
       <Navbar authed={authed} />
 
-      <Hero authed={authed} freeLimit={FREE_MONTHLY_LIMIT} />
+      <Hero authed={authed} freeLimit={FREE_MONTHLY_LIMIT} dimensions={DIMENSIONS} />
 
-      {/* trust strip — framed by fading hairlines, not hard borders */}
-      <section className="relative">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="divider" />
-          <TrustMarquee />
-          <div className="divider" />
-        </div>
-      </section>
+      <HowItWorks authed={authed} />
 
-      {/* stats */}
-      <section className="relative mx-auto max-w-6xl px-5 pb-16 pt-24">
-        <Reveal>
-          <Stats />
-        </Reveal>
-      </section>
+      <Catches />
 
-      {/* ---------------- Proof: the real 62 → 92 result ---------------- */}
-      <section className="relative scroll-mt-28 px-5 py-16">
-        <div className="relative">
-          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
-              Proof
-            </p>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-              We took our own advice
-            </h2>
-          </Reveal>
-          <Proof />
-        </div>
-      </section>
+      <InterviewShowcase authed={authed} freeInterviews={FREE_INTERVIEWS_PER_MONTH} />
 
-      {/* ---------------- Mock interview showcase ---------------- */}
-      <section id="interview" className="relative scroll-mt-28 px-5 py-24">
-        <div className="relative">
-          <Reveal className="mx-auto mb-14 max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
-              Mock interview
-            </p>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-              Then rehearse against{" "}
-              <span className="text-gradient">a real interviewer</span>
-            </h2>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <InterviewShowcase />
-          </Reveal>
-        </div>
-      </section>
+      <Stats dimensions={DIMENSIONS} proQuestions={INTERVIEW_QUESTIONS_PRO} />
 
-      {/* ---------------- Features ---------------- */}
-      <section id="features" className="relative scroll-mt-28 px-5 py-24">
-        <div className="relative mx-auto max-w-6xl">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
-              Features
-            </p>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-              A hiring manager&apos;s eye,{" "}
-              <span className="text-gradient">on demand</span>
-            </h2>
-            <p className="mt-4 text-muted">
-              Not a grammar checker. HireLens reads your resume the way the
-              person rejecting it does — against a specific job.
-            </p>
-          </Reveal>
-          <FeaturesGrid />
-        </div>
-      </section>
-
-      {/* ---------------- How it works ---------------- */}
-      <section id="how" className="relative mx-auto max-w-6xl scroll-mt-28 px-5 py-24">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
-            How it works
-          </p>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Three minutes to a{" "}
-            <span className="text-gradient">better resume</span>
-          </h2>
-        </Reveal>
-
-        <div className="relative mx-auto mt-16 grid max-w-5xl gap-y-10 md:grid-cols-3 md:gap-8">
-          <div className="pointer-events-none absolute left-8 right-8 top-6 hidden h-px bg-gradient-to-r from-transparent via-edge2 to-transparent md:block" />
-          {STEPS.map((s, i) => (
-            <Reveal key={s.title} delay={i * 0.1}>
-              <div className="relative flex flex-col items-center px-2 text-center md:items-start md:text-left">
-                <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-lg font-bold text-[#180f0a] shadow-[0_0_30px_-6px_var(--color-accent)]">
-                  {i + 1}
-                </span>
-                <h3 className="mt-5 font-bold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  {s.body}
-                </p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <Proof />
 
       {/* ---------------- Pricing ---------------- */}
-      <section id="pricing" className="relative scroll-mt-28 px-5 py-24">
-        <div className="relative">
-          <Reveal className="mx-auto max-w-xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
-              Pricing
-            </p>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-              Simple pricing, <span className="text-gradient">honest limits</span>
-            </h2>
-            <p className="mt-4 text-muted">
-              Start free. Upgrade when one interview would already pay for a
-              year of Pro.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1} className="mt-14">
-            <PricingCards authed={authed} plan={user?.plan ?? null} demo={demoBilling} />
-          </Reveal>
+      <section id="pricing" className="scroll-mt-24 px-4 pt-32 sm:pt-40">
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="font-display text-4xl font-medium leading-[1.1] text-ink sm:text-5xl">
+            <ScrollWords lines={["Simple pricing,", "honest limits"]} />
+          </h2>
+          <Rise y={16} className="mt-4 text-muted">
+            Start free. Upgrade when one interview would already pay for a year of Pro.
+          </Rise>
         </div>
+        <Rise y={60} className="mt-12">
+          <PricingCards authed={authed} plan={user?.plan ?? null} demo={demoBilling} />
+        </Rise>
       </section>
 
       {/* ---------------- FAQ ---------------- */}
-      <section id="faq" className="relative scroll-mt-28 px-5 py-24">
-        <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-          {/* sticky editorial column */}
-          <Reveal>
-            <div className="lg:sticky lg:top-28">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">
-                FAQ
-              </p>
-              <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Everything you&apos;re <span className="text-gradient">about to ask</span>
-              </h2>
-              <p className="mt-4 leading-relaxed text-muted">
-                The honest answers — including what we do with your resume and
-                what actually separates the free tier from Pro.
-              </p>
-
-              <div className="mt-8 rounded-2xl border border-edge bg-card/60 p-5">
-                <p className="flex items-center gap-2 text-sm font-bold">
-                  <MessageCircleQuestion className="h-4 w-4 text-accent" />
-                  Still deciding?
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  The free plan gives you {FREE_MONTHLY_LIMIT} full reviews a
-                  month. No card, no trial timer.
-                </p>
-                <Link
-                  href={authed ? "/dashboard/new" : "/signup"}
-                  className="btn btn-ghost mt-4 w-full text-sm"
-                >
-                  Try it free <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </Reveal>
-
+      <section id="faq" className="scroll-mt-24 px-4 pt-32 sm:pt-40">
+        <h2 className="text-center font-display text-4xl font-medium leading-[1.1] text-ink sm:text-5xl">
+          <ScrollWords lines={["Most frequent questions", "and answers"]} />
+        </h2>
+        <div className="mt-12">
           <Faq items={FAQ} />
         </div>
       </section>
 
-      {/* ---------------- CTA ---------------- */}
-      <section className="relative px-5 pb-24">
-        <Reveal>
-          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-edge bg-card/60 px-6 py-20 text-center backdrop-blur">
-            <h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">
-              Your next application deserves{" "}
-              <span className="text-gradient-animate">
-                a second pair of eyes.
-              </span>
-            </h2>
-            <p className="relative mx-auto mt-4 max-w-md text-muted">
-              Free to start. No card required. Your first review takes about a
-              minute.
-            </p>
-            <Link
-              href={authed ? "/dashboard/new" : "/signup"}
-              className="btn btn-primary btn-sheen relative mt-8 px-7 py-3 text-base"
-            >
-              Get your free review <ArrowRight className="h-4 w-4" />
+      {/* ---------------- Closing panel ---------------- */}
+      <section className="px-3 pt-32 sm:px-4 sm:pt-40">
+        <div className="panel overflow-hidden px-5 pb-14 pt-16 text-center sm:pb-16 sm:pt-20">
+          <div className="light-streaks" />
+          <p className="relative flex items-center justify-center gap-2 font-semibold text-ink">
+            <LogoMark className="h-6 w-6 rounded-[7px]" animate={false} /> HireLens
+          </p>
+          <h2 className="relative mt-4 font-display text-4xl font-medium leading-[1.1] text-ink sm:text-5xl">
+            <ScrollWords lines={["Your next application", "deserves a second look"]} />
+          </h2>
+          <p className="relative mt-4 text-muted">
+            Free to start. No card required. Your first review takes about a minute.
+          </p>
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            <Link href={start} className="btn-neon">
+              Review my resume
             </Link>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ---------------- Footer ---------------- */}
-      <footer className="relative">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="divider" />
-          <div className="flex flex-col items-center justify-between gap-4 py-10 text-sm text-muted sm:flex-row">
-            <Logo />
-            <p className="text-center sm:text-right">
-              © {new Date().getFullYear()} HireLens. Payments in Stripe test
-              mode — no real charges.
-            </p>
+            <a href="#how" className="btn-stone">
+              See how it works
+            </a>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* the reference's row of locations, as the places HireLens works */}
+      <section className="px-4 pt-14">
+        <ul className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-10 gap-y-5">
+          {TOOLS.map((t) => (
+            <li key={t.label} className="flex items-center gap-2.5 text-sm leading-tight text-ink">
+              <t.icon className="h-4 w-4 text-accent" />
+              <span>
+                HireLens
+                <br />
+                <span className="text-muted">{t.label}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <Footer authed={authed} />
     </div>
   );
 }
 
-const STEPS = [
-  {
-    title: "Upload your resume",
-    body: "Drop a PDF or paste the text. We extract and parse it exactly like an applicant tracking system would.",
-  },
-  {
-    title: "Paste the job description",
-    body: "Reviews are always against a specific role — generic feedback is how resumes stay mediocre.",
-  },
-  {
-    title: "Get your action plan",
-    body: "A scored, prioritized fix list: what to rewrite, which keywords to add, and what interviewers will probe.",
-  },
+const TOOLS = [
+  { icon: FileText, label: "Resume review" },
+  { icon: Mic, label: "Mock interview" },
+  { icon: ScrollText, label: "Cover letters" },
+  { icon: KanbanSquare, label: "Job tracker" },
+  { icon: Puzzle, label: "Chrome extension" },
 ];
 
 const FAQ = [

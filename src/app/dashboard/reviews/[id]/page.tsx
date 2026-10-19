@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { ReviewResult } from "@/components/ReviewResult";
 import { RescorePanel } from "@/components/RescorePanel";
 import { RescoreBanner } from "@/components/RescoreBanner";
@@ -50,30 +49,10 @@ export default async function ReviewPage({
 
   const coverLetter = coverLetterSchema.safeParse(review.coverLetter);
 
+  // The header above already carries the back arrow, so the page opens
+  // straight onto the review. Track and export live in the forest strip.
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
-        >
-          <ArrowLeft className="h-4 w-4" /> All reviews
-        </Link>
-        <div className="flex items-center gap-5">
-          <TrackJobButton
-            reviewId={review.id}
-            company={review.company}
-            jobTitle={review.jobTitle}
-          />
-          <a
-            href={`/api/reviews/${review.id}/pdf`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
-          >
-            <Download className="h-4 w-4" /> Export PDF
-          </a>
-        </div>
-      </div>
-
+    <div className="mx-auto w-full max-w-[1400px] space-y-5">
       {delta && review.parentReviewId && (
         <RescoreBanner delta={delta} parentReviewId={review.parentReviewId} />
       )}
@@ -88,15 +67,30 @@ export default async function ReviewPage({
           resumeFilename: review.resumeFilename,
           createdAt: review.createdAt,
         }}
-      />
+        actions={
+          <>
+            <TrackJobButton
+              reviewId={review.id}
+              company={review.company}
+              jobTitle={review.jobTitle}
+            />
+            <a
+              href={`/api/reviews/${review.id}/pdf`}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25),0_0_22px_-4px_rgba(69,230,36,0.55)] transition-[filter] hover:brightness-110 focus-visible:outline-white"
+            >
+              <Download className="h-4 w-4" /> Export PDF
+            </a>
+          </>
+        }
+      >
+        <CoverLetterPanel
+          reviewId={review.id}
+          isPro={user.plan === "PRO"}
+          initial={coverLetter.success ? coverLetter.data : null}
+        />
 
-      <CoverLetterPanel
-        reviewId={review.id}
-        isPro={user.plan === "PRO"}
-        initial={coverLetter.success ? coverLetter.data : null}
-      />
-
-      <RescorePanel reviewId={review.id} resumeText={review.resumeText} />
+        <RescorePanel reviewId={review.id} resumeText={review.resumeText} />
+      </ReviewResult>
     </div>
   );
 }

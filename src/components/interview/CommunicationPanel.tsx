@@ -48,23 +48,23 @@ function Metric({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px 120px 0px" }}
       transition={{ duration: 0.5, delay: index * 0.07, ease: EASE }}
-      className="rounded-2xl border border-edge bg-card2 p-4"
+      className="rounded-2xl border border-white/80 bg-white/50 p-4"
     >
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-muted">
+        <span className="flex items-center gap-1.5 text-sm text-muted">
           <Icon className="h-3.5 w-3.5" />
           {label}
         </span>
       </div>
 
-      <p className="mt-2 text-2xl font-extrabold tabular-nums" style={{ color }}>
+      <p className="mt-2 text-3xl font-light tabular-nums" style={{ color }}>
         {value}
         {unit && (
-          <span className="ml-1 text-xs font-semibold text-faint">{unit}</span>
+          <span className="ml-1 text-xs font-medium text-faint">{unit}</span>
         )}
       </p>
 
-      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-edge">
+      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-ink/10">
         <motion.div
           className="h-full rounded-full"
           style={{ background: color }}
@@ -100,10 +100,10 @@ export function CommunicationPanel({
   const secs = delivery.durationSec % 60;
 
   return (
-    <div className="card p-6 sm:p-8">
+    <section className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="flex items-center gap-2 font-bold">
+          <h2 className="flex items-center gap-2 text-lg font-medium tracking-tight">
             <AudioLines className="h-4 w-4 text-accent" /> How you came across
           </h2>
           <p className="mt-1 text-sm text-muted">
@@ -113,7 +113,7 @@ export function CommunicationPanel({
 
         <div className="text-right">
           <p
-            className="text-3xl font-extrabold tabular-nums"
+            className="text-4xl font-light leading-none tabular-nums"
             style={{
               color:
                 score >= 75
@@ -125,14 +125,12 @@ export function CommunicationPanel({
           >
             {score}
           </p>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">
-            Delivery
-          </p>
+          <p className="mt-1.5 text-sm text-muted">Delivery</p>
         </div>
       </div>
 
       {/* the four numbers that actually decide how you land */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric
           index={0}
           icon={Gauge}
@@ -193,28 +191,24 @@ export function CommunicationPanel({
       {/* the specific tics, named */}
       {topFillers.length > 0 && (
         <div className="mt-6">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
-            Your tics, counted
-          </p>
+          <p className="mb-2 text-sm text-muted">Your tics, counted</p>
           <div className="flex flex-wrap gap-1.5">
             {topFillers.map(([word, n]) => (
               <span
                 key={word}
                 className={cn(
                   "chip gap-1.5",
-                  n >= 4
-                    ? "border-bad/40 text-bad"
-                    : "border-warn/30 text-warn"
+                  n >= 4 ? "border-bad/35 text-bad" : "border-warn/30 text-warn"
                 )}
               >
                 &ldquo;{word}&rdquo;
-                <span className="font-mono text-[10px] opacity-70">×{n}</span>
+                <span className="text-[11px] tabular-nums opacity-75">×{n}</span>
               </span>
             ))}
             {topHedges.map(([word, n]) => (
-              <span key={word} className="chip gap-1.5 border-edge2 text-muted">
+              <span key={word} className="chip gap-1.5 text-muted">
                 &ldquo;{word}&rdquo;
-                <span className="font-mono text-[10px] opacity-70">×{n}</span>
+                <span className="text-[11px] tabular-nums opacity-75">×{n}</span>
               </span>
             ))}
           </div>
@@ -223,13 +217,13 @@ export function CommunicationPanel({
 
       {/* the coach's read, grounded in the numbers above */}
       {coaching && (
-        <div className="mt-6 rounded-2xl border border-accent/30 bg-accent/[0.04] p-5">
+        <div className="mt-6 rounded-2xl border border-white/80 bg-white/55 p-5">
           <p className="text-sm leading-relaxed">{coaching.summary}</p>
           {coaching.notes.length > 0 && (
             <ul className="mt-4 space-y-2.5">
               {coaching.notes.map((n) => (
                 <li key={n} className="flex gap-2.5 text-sm">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-accent" />
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent2" />
                   <span className="leading-relaxed text-muted">{n}</span>
                 </li>
               ))}
@@ -242,6 +236,6 @@ export function CommunicationPanel({
         {mins > 0 ? `${mins}m ${secs}s` : `${secs}s`} of speech ·{" "}
         {delivery.wordCount} words · {delivery.fillerCount} fillers total
       </p>
-    </div>
+    </section>
   );
 }

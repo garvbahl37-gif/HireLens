@@ -49,17 +49,37 @@ export default async function TrackerPage() {
     appliedAt: a.appliedAt ? a.appliedAt.toISOString() : null,
   }));
 
+  // A pipeline summary in the reference's "Job Analysis" header style: a few
+  // light numbers with hairline dividers.
+  const inPlay = cards.filter((c) =>
+    ["APPLIED", "SCREEN", "ONSITE"].includes(c.status)
+  ).length;
+  const offers = cards.filter((c) => c.status === "OFFER").length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Applications</h1>
+    <div className="space-y-4">
+      <section className="card flex flex-wrap items-center justify-between gap-x-8 gap-y-4 p-5 md:px-6">
+        <div className="min-w-0 max-w-xl">
+          <h2 className="text-lg font-medium tracking-tight">Your pipeline</h2>
           <p className="mt-1 text-sm text-muted">
             Every job you&rsquo;re chasing, from wishlist to offer — linked to the
-            review and interview you ran for it.
+            review and interview you ran for it. Drag a card to move it, or use
+            its menu.
           </p>
         </div>
-      </div>
+        <dl className="flex divide-x divide-ink/10">
+          {[
+            { label: "Tracking", value: cards.length },
+            { label: "In play", value: inPlay },
+            { label: "Offers", value: offers },
+          ].map((s) => (
+            <div key={s.label} className="px-5 first:pl-0 last:pr-0">
+              <dt className="text-sm text-muted">{s.label}</dt>
+              <dd className="mt-0.5 text-3xl font-light tabular-nums">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       <TrackerBoard
         initial={cards}

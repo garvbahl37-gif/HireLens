@@ -2,41 +2,28 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useScroll,
-  useSpring,
-} from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Menu, X } from "lucide-react";
-import { Logo } from "@/components/Logo";
+import { LogoMark } from "@/components/Logo";
 import { cn } from "@/lib/cn";
+import { EASE } from "./motion";
 
 const LINKS = [
-  { href: "#features", label: "Features" },
   { href: "#how", label: "How it works" },
-  { href: "#interview", label: "Interview" },
+  { href: "#features", label: "Features" },
   { href: "#pricing", label: "Pricing" },
   { href: "#faq", label: "FAQ" },
 ];
 
-const EASE = [0.16, 1, 0.3, 1] as const;
-
+/**
+ * The reference's floating glass pill. On load it opens out from the logo,
+ * the links arrive left to right and the CTA lands last; a soft green glow
+ * then follows whichever section you're reading.
+ */
 export function Navbar({ authed }: { authed: boolean }) {
-  const { scrollY, scrollYProgress } = useScroll();
-  const [scrolled, setScrolled] = useState(false);
+  const reduce = useReducedMotion();
   const [active, setActive] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // spring the progress bar so it glides rather than tracking pixel-for-pixel
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 30,
-    restDelta: 0.001,
-  });
-
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
   useEffect(() => {
     const ids = LINKS.map((l) => l.href.slice(1));
@@ -53,191 +40,100 @@ export function Navbar({ authed }: { authed: boolean }) {
     return () => obs.disconnect();
   }, []);
 
+  const later = (i: number) =>
+    reduce ? {} : { initial: { opacity: 0, x: -10 }, animate: { opacity: 1, x: 0 }, transition: { delay: 0.45 + i * 0.09, duration: 0.5, ease: EASE } };
+
   return (
-    <motion.header
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: EASE }}
-      className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-3 sm:pt-4"
-    >
-      {/* Content scrolls through the gap above the bar, so fade it out behind
-          the glass instead of letting text float over the top of the page. */}
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 h-24 transition-opacity duration-500",
-          scrolled ? "opacity-100" : "opacity-0"
-        )}
-        style={{
-          background:
-            "linear-gradient(to bottom, var(--color-bg) 30%, transparent)",
-          maskImage: "linear-gradient(to bottom, black 55%, transparent)",
-        }}
-      />
-
+    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-4 sm:pt-5">
       <motion.div
-        animate={{
-          paddingTop: scrolled ? 8 : 12,
-          paddingBottom: scrolled ? 8 : 12,
+        initial={reduce ? false : { maxWidth: 176, opacity: 0, y: -12 }}
+        animate={{ maxWidth: 820, opacity: 1, y: 0 }}
+        transition={{
+          maxWidth: { duration: 0.9, delay: 0.25, ease: EASE },
+          opacity: { duration: 0.4 },
+          y: { duration: 0.5, ease: EASE },
         }}
-        transition={{ duration: 0.4, ease: EASE }}
-        className={cn(
-          "relative flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl px-4 transition-[background-color,border-color,box-shadow] duration-500 sm:px-5",
-          scrolled
-            ? "border border-edge2/70 bg-bg/70 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.9)] backdrop-blur-2xl"
-            : "border border-transparent bg-transparent"
-        )}
+        className="relative w-full overflow-hidden rounded-full border border-white/90 bg-white/80 shadow-[inset_0_1px_0_#fff,0_14px_34px_-18px_rgba(18,36,26,0.35)] backdrop-blur-2xl"
       >
-        {/* specular hairline along the top edge of the glass */}
-        {scrolled && (
-          <motion.div
-            aria-hidden
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="pointer-events-none absolute inset-x-10 top-0 h-px"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, color-mix(in srgb, var(--color-accent) 60%, transparent), transparent)",
-            }}
-          />
-        )}
+        {/* min-w-max: while the pill is still opening, the row keeps its full
+            width and is clipped, rather than squeezing and wrapping */}
+        <div className="flex min-w-max items-center gap-2 py-1.5 pl-3 pr-1.5 sm:gap-4">
+          <Link href="/" className="flex shrink-0 items-center gap-2 rounded-full pr-1">
+            <LogoMark className="h-7 w-7 rounded-[9px]" animate={false} />
+            <span className="text-[1.05rem] font-semibold tracking-tight text-ink">HireLens</span>
+          </Link>
 
-        {/* reading progress, pinned to the bottom of the bar */}
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left rounded-full"
-          style={{
-            scaleX: progress,
-            background:
-              "linear-gradient(to right, var(--color-accent), var(--color-accent2))",
-            opacity: scrolled ? 1 : 0,
-          }}
-        />
+          <nav aria-label="Sections" className="mx-auto hidden items-center gap-0.5 md:flex">
+            {LINKS.map((l, i) => {
+              const isActive = active === l.href.slice(1);
+              return (
+                <motion.a key={l.href} href={l.href} {...later(i)} className="relative rounded-full px-3.5 py-2 text-sm text-muted transition-colors hover:text-ink">
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-glow"
+                      aria-hidden
+                      className="absolute inset-0 rounded-full bg-[radial-gradient(closest-side,rgba(110,232,80,0.55),rgba(110,232,80,0.12)_70%,transparent)]"
+                      transition={{ type: "spring", stiffness: 380, damping: 34 }}
+                    />
+                  )}
+                  <span className={cn("relative", isActive && "text-ink")}>{l.label}</span>
+                </motion.a>
+              );
+            })}
+          </nav>
 
-        <Logo />
+          <motion.div {...later(LINKS.length)} className="ml-auto flex items-center gap-1 md:ml-0">
+            {authed ? (
+              <Link href="/dashboard" className="btn-stone px-4 py-2 text-[0.82rem]">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hidden rounded-full px-3 py-2 text-sm text-muted transition-colors hover:text-ink sm:block">
+                  Log in
+                </Link>
+                <Link href="/signup" className="btn-stone px-4 py-2 text-[0.82rem]">
+                  Get started
+                </Link>
+              </>
+            )}
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-white/80 hover:text-ink md:hidden"
+            >
+              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+          </motion.div>
+        </div>
+      </motion.div>
 
-        {/* center pill nav */}
-        <nav className="relative hidden items-center gap-1 rounded-full border border-edge/70 bg-card/40 px-1.5 py-1 backdrop-blur md:flex">
-          {LINKS.map((l) => {
-            const isActive = active === l.href.slice(1);
-            return (
+      {/* phone menu — outside the pill so the pill's clipping can't cut it */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.nav
+            aria-label="Sections"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: EASE }}
+            className="absolute inset-x-3 top-full mt-2 rounded-3xl border border-white/90 bg-white/90 p-2 shadow-[0_24px_60px_-24px_rgba(18,36,26,0.45)] backdrop-blur-2xl md:hidden"
+          >
+            {[...LINKS, ...(authed ? [] : [{ href: "/login", label: "Log in" }])].map((l) => (
               <a
                 key={l.href}
                 href={l.href}
-                className={cn(
-                  "relative rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors duration-200",
-                  isActive ? "text-ink" : "text-muted hover:text-ink"
-                )}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-ink transition-colors hover:bg-card2"
               >
-                {isActive && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-0 rounded-full border border-accent/30 bg-card2 shadow-[0_0_20px_-6px_var(--color-accent)]"
-                    transition={{ type: "spring", stiffness: 400, damping: 34 }}
-                  />
-                )}
-                <span className="relative z-10">{l.label}</span>
+                {l.label}
+                <ArrowRight className="h-3.5 w-3.5 text-faint" />
               </a>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-1.5">
-          <AnimatePresence mode="wait">
-            {authed ? (
-              <motion.div
-                key="dash"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <CtaButton href="/dashboard" label="Dashboard" />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="auth"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-1.5"
-              >
-                {/* ghost login with an ember underline that wipes in */}
-                <Link
-                  href="/login"
-                  className="group relative hidden rounded-lg px-3.5 py-2 text-sm font-semibold text-muted transition-colors hover:text-ink sm:block"
-                >
-                  Log in
-                  <span className="absolute inset-x-3.5 bottom-1.5 h-px origin-left scale-x-0 bg-gradient-to-r from-accent to-accent2 transition-transform duration-300 group-hover:scale-x-100" />
-                </Link>
-                <CtaButton href="/signup" label="Get started" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Without this, the section links are simply unreachable on a phone:
-              the pill nav is desktop-only, so Features / Pricing / FAQ had no
-              mobile entry point at all. */}
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-edge bg-card/70 text-muted transition-colors hover:border-accent/40 hover:text-ink md:hidden"
-          >
-            {menuOpen ? (
-              <X className="h-4 w-4" />
-            ) : (
-              <Menu className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-
-        {/* mobile sheet */}
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.nav
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.24, ease: EASE }}
-              className="absolute inset-x-0 top-full mt-2 overflow-hidden rounded-2xl border border-edge2/70 bg-bg/95 p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl md:hidden"
-            >
-              {LINKS.map((l, i) => (
-                <motion.a
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setMenuOpen(false)}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.04 + i * 0.04 }}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-muted transition-colors hover:bg-card2 hover:text-ink"
-                >
-                  {l.label}
-                  <ArrowRight className="h-3.5 w-3.5 text-faint" />
-                </motion.a>
-              ))}
-
-              {!authed && (
-                <Link
-                  href="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="mt-1 flex items-center justify-between rounded-xl border-t border-edge px-4 py-3 text-sm font-semibold text-muted transition-colors hover:bg-card2 hover:text-ink"
-                >
-                  Log in
-                  <ArrowRight className="h-3.5 w-3.5 text-faint" />
-                </Link>
-              )}
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </motion.header>
-  );
-}
-
-/** Ember CTA: flat, with an arrow that leads on hover. */
-function CtaButton({ href, label }: { href: string; label: string }) {
-  return (
-    <Link href={href} className="group btn btn-primary">
-      {label}
-      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-    </Link>
+            ))}
+          </motion.nav>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }

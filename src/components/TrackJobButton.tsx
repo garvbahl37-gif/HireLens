@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check, KanbanSquare, Loader2 } from "lucide-react";
 
+// A glass pill for the review's dark forest strip, where this button sits.
+const PILL =
+  "inline-flex h-10 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-sm font-medium text-white transition-colors hover:border-white/35 hover:bg-white/20 focus-visible:outline-white disabled:opacity-70";
+
 /**
  * One-click "add this job to the tracker" from a review. Prefilled from the
  * review's own company/role and linked back to it, so the board card already
@@ -45,9 +49,9 @@ export function TrackJobButton({
     return (
       <Link
         href="/dashboard/tracker"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-good transition-colors hover:text-ink"
+        className={PILL}
       >
-        <Check className="h-4 w-4" /> Tracked — open board
+        <Check className="h-4 w-4 text-neon" /> Tracked — open board
       </Link>
     );
   }
@@ -56,7 +60,7 @@ export function TrackJobButton({
     <button
       onClick={track}
       disabled={state === "saving"}
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
+      className={PILL}
     >
       {state === "saving" ? (
         <Loader2 className="h-4 w-4 animate-spin" />

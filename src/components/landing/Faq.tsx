@@ -2,86 +2,63 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Plus } from "lucide-react";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
+import { Minus, Plus } from "lucide-react";
+import { EASE } from "./motion";
 
 export type FaqItem = { q: string; a: string };
 
+/**
+ * The reference's FAQ: a narrow centred column of glass rows, each with a
+ * plus that turns into a minus as the answer slides open.
+ */
 export function Faq({ items }: { items: FaqItem[] }) {
   // Accordion, not independent toggles: one answer at a time keeps the column
   // from growing into a wall of text.
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="mx-auto flex max-w-xl flex-col gap-3">
       {items.map((item, i) => {
         const isOpen = open === i;
+        const id = `faq-${i}`;
         return (
           <motion.div
             key={item.q}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "0px 0px 160px 0px" }}
-            transition={{ duration: 0.5, delay: i * 0.05, ease: EASE }}
+            viewport={{ once: true, margin: "0px 0px 120px 0px" }}
+            transition={{ duration: 0.6, delay: i * 0.05, ease: EASE }}
+            className="glass overflow-hidden rounded-2xl"
           >
-            <div
-              className={`group relative overflow-hidden rounded-2xl border transition-colors duration-300 ${
-                isOpen
-                  ? "border-accent/40 bg-card"
-                  : "border-edge bg-card/60 hover:border-edge2"
-              }`}
+            <button
+              onClick={() => setOpen(isOpen ? null : i)}
+              aria-expanded={isOpen}
+              aria-controls={id}
+              className="flex w-full items-center gap-4 px-5 py-4 text-left"
             >
-              <button
-                onClick={() => setOpen(isOpen ? null : i)}
-                aria-expanded={isOpen}
-                className="relative flex w-full items-center gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
-              >
-                <span
-                  className={`font-mono text-xs tabular-nums transition-colors ${
-                    isOpen ? "text-accent" : "text-faint"
-                  }`}
+              <span className="flex-1 text-sm font-medium text-ink">{item.q}</span>
+              {isOpen ? (
+                <Minus className="h-4 w-4 shrink-0 text-ink" />
+              ) : (
+                <Plus className="h-4 w-4 shrink-0 text-ink" />
+              )}
+            </button>
+
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  key="answer"
+                  id={id}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                  className="overflow-hidden"
                 >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-
-                <span className="flex-1 font-semibold tracking-tight">
-                  {item.q}
-                </span>
-
-                <motion.span
-                  animate={{ rotate: isOpen ? 45 : 0 }}
-                  transition={{ duration: 0.35, ease: EASE }}
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors ${
-                    isOpen
-                      ? "border-accent/50 bg-accent/10 text-accent"
-                      : "border-edge text-muted group-hover:border-edge2 group-hover:text-ink"
-                  }`}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </motion.span>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    key="answer"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: EASE }}
-                    className="relative overflow-hidden"
-                  >
-                    <div className="px-5 pb-5 pl-[3.4rem] sm:px-6 sm:pb-6 sm:pl-[4.1rem]">
-                      <div className="mb-3 h-px w-full bg-gradient-to-r from-edge2 to-transparent" />
-                      <p className="text-sm leading-relaxed text-muted">
-                        {item.a}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  <p className="px-5 pb-5 text-sm leading-relaxed text-muted">{item.a}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         );
       })}
