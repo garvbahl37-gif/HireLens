@@ -220,25 +220,54 @@ const BASIC_MAX_TOKENS = 2400;
 const DEEP_MAX_TOKENS = 4200;
 
 /**
- * Groq's free tier meters tokens-per-minute PER MODEL, and the limits differ
- * sharply (gpt-oss-120b 8k · llama-3.3-70b 12k · llama-4-scout 30k). If the
- * chosen model is capped mid-review we retry on the next one up rather than
- * failing the request, so back-to-back reviews keep working on a free key.
+ * The Groq models the app walks through, in order. Groq's free tier meters
+ * tokens-per-minute PER MODEL, so if one is capped (or retired) mid-request we
+ * move to the next rather than failing, and back-to-back reviews keep working.
+ *
+ * Both are served by Groq as of October 2026, when it retired the previous
+ * pair (llama-3.3-70b-versatile and llama-4-scout). qwen3.8-27b leads because
+ * it answers in JSON with no hidden reasoning, so the small budgets here (400
+ * tokens for an interview question) are all output. gpt-oss-120b reasons
+ * before it answers; it runs with low reasoning effort as the fallback.
  */
-const GROQ_FALLBACKS = [
-  "llama-3.3-70b-versatile",
-  "meta-llama/llama-4-scout-17b-16e-instruct",
-];
+const GROQ_DEFAULT_MODEL = "qwen/qwen3.8-27b";
+const GROQ_FALLBACKS = [GROQ_DEFAULT_MODEL, "openai/gpt-oss-120b"];
+
+/** The configured model first (if any), then the fallbacks, without repeats. */
+export function groqModelChain(configured: string | undefined): string[] {
+  const first = configured || GROQ_DEFAULT_MODEL;
+  return [first, ...GROQ_FALLBACKS.filter((m) => m !== first)];
+}
 
 function modelChain(p: Provider): string[] {
   if (p.name !== "groq") return [p.model];
-  return [p.model, ...GROQ_FALLBACKS.filter((m) => m !== p.model)];
+  return groqModelChain(p.model);
 }
+
+type ApiErrorLike = { status?: number; code?: string | null };
 
 /** 429 (rate limit) or 413 (request exceeds the per-minute token budget). */
 function isRateLimit(err: unknown): boolean {
-  const status = (err as { status?: number })?.status;
+  const status = (err as ApiErrorLike)?.status;
   return status === 429 || status === 413;
+}
+
+/** The model is gone upstream: retired, renamed, or not available to this key. */
+export function isModelUnavailable(err: unknown): boolean {
+  const e = err as ApiErrorLike;
+  return (
+    e?.status === 404 ||
+    e?.code === "model_not_found" ||
+    e?.code === "model_decommissioned"
+  );
+}
+
+/**
+ * Groq validates JSON mode server-side and rejects output that doesn't parse —
+ * typically a reasoning model running out of budget mid-object.
+ */
+export function isJsonGenerationFailure(err: unknown): boolean {
+  return (err as ApiErrorLike)?.code === "json_validate_failed";
 }
 
 /**
@@ -260,9 +289,8 @@ function resolveProvider(): Provider {
       name: "groq",
       apiKey: groq,
       baseURL: "https://api.groq.com/openai/v1",
-      // 12k TPM on the free tier vs 8k for gpt-oss-120b, and strong at
-      // structured JSON — the best quality/headroom trade for this workload.
-      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      // See GROQ_FALLBACKS for why this is the default.
+      model: process.env.GROQ_MODEL || GROQ_DEFAULT_MODEL,
     };
   }
 
@@ -414,6 +442,7 @@ export async function chat<T>(opts: {
   const chain = modelChain(provider);
   let lastError = "";
   let rateLimited = false;
+  let unavailable = 0;
 
   for (const model of chain) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -421,6 +450,12 @@ export async function chat<T>(opts: {
       try {
         completion = await client.chat.completions.create({
           model,
+          // gpt-oss reasons before answering, and the reasoning counts against
+          // max_tokens; at the default effort it can eat a 400-token budget
+          // and leave the JSON cut off.
+          ...(model.startsWith("openai/gpt-oss")
+            ? { reasoning_effort: "low" as const }
+            : {}),
           messages:
             attempt === 0
               ? messages
@@ -442,6 +477,20 @@ export async function chat<T>(opts: {
           lastError = "rate limited";
           break; // fall through to the next model in the chain
         }
+        if (isModelUnavailable(err)) {
+          // Retired or renamed upstream: one dead model shouldn't take the
+          // whole feature down while another in the chain still works.
+          console.warn(`[ai] model "${model}" is unavailable; trying the next one`);
+          unavailable++;
+          lastError = `model ${model} unavailable`;
+          break;
+        }
+        if (isJsonGenerationFailure(err)) {
+          // Rejected by the provider's own JSON check — the same failure as a
+          // local parse error, so it gets the same corrective second attempt.
+          lastError = "the response was not valid JSON";
+          continue;
+        }
         throw err;
       }
 
@@ -458,6 +507,11 @@ export async function chat<T>(opts: {
   if (rateLimited) {
     throw new AnalysisError(
       "The AI service is rate-limited right now. Wait a few seconds and try again."
+    );
+  }
+  if (unavailable === chain.length) {
+    throw new AnalysisError(
+      "None of the configured AI models are available right now. Set GROQ_MODEL to a model your provider currently serves."
     );
   }
   throw new AnalysisError(
