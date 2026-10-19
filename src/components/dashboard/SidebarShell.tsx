@@ -42,7 +42,9 @@ export function SidebarShell({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-3 hidden h-[calc(100dvh-1.5rem)] w-[76px] shrink-0 flex-col items-center rounded-[22px] border border-white/[0.06] bg-rail/80 py-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] md:flex">
+    // z-40: a sticky element is its own stacking context, so without a z-index
+    // of its own the green panel painted after it covered the tooltips.
+    <aside className="sticky top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[76px] shrink-0 flex-col items-center rounded-[22px] border border-white/[0.06] bg-rail/80 py-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] md:flex">
       <Link href="/dashboard" aria-label="HireLens overview" className="rounded-2xl">
         <LogoMark className="h-12 w-12 rounded-2xl" />
       </Link>
